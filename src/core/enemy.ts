@@ -39,6 +39,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     45,
                     135,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -48,6 +49,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     -45,
                     45,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -57,6 +59,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     225,
                     315,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -66,6 +69,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     135,
                     225,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -75,6 +79,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     0,
                     90,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -84,6 +89,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     -90,
                     0,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -93,6 +99,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     180,
                     270,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break
@@ -102,6 +109,7 @@ export class Enemy implements IDrawable, IUpdatable {
                     this._radius,
                     90,
                     180,
+                    { r: 0, g: 255, b: 0 },
                     { r: 0, g: 255, b: 0 }
                 )
                 break

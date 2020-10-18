@@ -1,20 +1,27 @@
 import { Direction, IControllable, IMyScreen, IUpdatable } from '.'
-import { IColor, IDrawable, IPoint } from '../gui'
+import { Colors, IColor, IDrawable, IPoint } from '../gui'
+import { CircleCollision, ICollidable, IHasCollisions } from './collision'
 
-export class Player implements IDrawable, IControllable, IUpdatable {
+export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisions {
     private _location: IPoint
     private _oldLocation: IPoint
     private _radius: number = 25
-    private _color: IColor = { r: 255, g: 255, b: 255 }
     private _direction: Direction = Direction.Up
     private _isMoving: boolean = false
     private readonly _myScreen: IMyScreen
     private readonly _movementSpeed = 200
+    private _collisionCircle: CircleCollision
+    private _isColliding = false
+    private _mainColor: IColor = Colors.Blue
+    private _secondaryColor: IColor = Colors.Green
+    private _noCollisionColor: IColor = Colors.Green
+    private _yesCollisionColor: IColor = Colors.Red
 
     constructor(location: IPoint, myScreen: IMyScreen) {
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
+        this._collisionCircle = new CircleCollision(this._location, this._radius + 3)
     }
 
     public getLocation(): IPoint {
@@ -23,14 +30,6 @@ export class Player implements IDrawable, IControllable, IUpdatable {
 
     public setLocation(location: IPoint) {
         this._location = location
-    }
-
-    public getColor(): IColor {
-        return this._color
-    }
-
-    public setColor(color: IColor) {
-        this._color = color
     }
 
     public getRadius(): number {
@@ -42,21 +41,24 @@ export class Player implements IDrawable, IControllable, IUpdatable {
     }
 
     public draw(): void {
-        // clear character area
-        this._myScreen.drawArc(
-            this._oldLocation,
-            this._radius + 1,
-            0,
-            360,
-            { r: 255, g: 255, b: 255 }
-        )
+        // clear collision rectangle while I figure out circle vs rectangle collision
+        this._myScreen.drawRect({
+            x: this._collisionCircle.getOldLocation().x - this._collisionCircle.getRadius() - 2,
+            y: this._collisionCircle.getOldLocation().y - this._collisionCircle.getRadius() - 2
+        }, {
+            width: 2 * this._collisionCircle.getRadius() + 4,
+            height: 2 * this._collisionCircle.getRadius() + 4
+        }, Colors.White, Colors.White)
+        // clear character circle
+        this._myScreen.drawArc(this._oldLocation, this._radius + 2, 0, 360, Colors.White, Colors.White)
         // draw character circle
         this._myScreen.drawArc(
             this._location,
             this._radius,
             0,
             360,
-            { r: 0, g: 0, b: 255 }
+            this._mainColor,
+            this._mainColor
         )
         // draw character direction arc
         switch (this._direction) {
@@ -66,7 +68,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     45,
                     135,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.Right:
@@ -75,7 +78,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     -45,
                     45,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.Down:
@@ -84,7 +88,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     225,
                     315,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.Left:
@@ -93,7 +98,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     135,
                     225,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.UpRight:
@@ -102,7 +108,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     0,
                     90,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.DownRight:
@@ -111,7 +118,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     -90,
                     0,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.DownLeft:
@@ -120,7 +128,8 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     180,
                     270,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
             case Direction.UpLeft:
@@ -129,9 +138,29 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                     this._radius,
                     90,
                     180,
-                    { r: 0, g: 255, b: 0 }
+                    this._secondaryColor,
+                    this._secondaryColor
                 )
                 break
+        }
+        // draw collision rectangle while I figure out circle vs rectangle collision
+        if (this._isColliding) {
+            this._myScreen.drawRect({
+                x: this._collisionCircle.getLocation().x - this._collisionCircle.getRadius(),
+                y: this._collisionCircle.getLocation().y - this._collisionCircle.getRadius()
+            }, {
+                width: 2 * this._collisionCircle.getRadius(),
+                height: 2 * this._collisionCircle.getRadius()
+            }, this._yesCollisionColor)
+        }
+        else {
+            this._myScreen.drawRect({
+                x: this._collisionCircle.getLocation().x - this._collisionCircle.getRadius(),
+                y: this._collisionCircle.getLocation().y - this._collisionCircle.getRadius()
+            }, {
+                width: 2 * this._collisionCircle.getRadius(),
+                height: 2 * this._collisionCircle.getRadius()
+            }, this._noCollisionColor)
         }
     }
 
@@ -252,6 +281,7 @@ export class Player implements IDrawable, IControllable, IUpdatable {
 
     public update(deltaTime: number): void {
         this.calculateLocation(deltaTime)
+        this._collisionCircle.setLocation(this._location)
         this.draw()
     }
 
@@ -320,5 +350,18 @@ export class Player implements IDrawable, IControllable, IUpdatable {
 
         this._oldLocation = this._location
         this._location = newLocation
+    }
+
+    public getCollisionShapes(): ICollidable[] {
+        return [this._collisionCircle]
+    }
+
+    public collisionStarted(shapes: ICollidable[]): void {
+        shapes
+        this._isColliding = true
+    }
+
+    public collisionEnded(): void {
+        this._isColliding = false
     }
 }

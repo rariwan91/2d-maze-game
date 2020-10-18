@@ -15,7 +15,9 @@
     "noImplicitThis": true,
     "noUnusedParameters": true,
     "strictNullChecks": false,
-    "lib": ["es2017", "dom"]
+    "lib": ["es2017", "dom"],
+    "outDir": "dist",
+    "rootDirs": ["src", "tests"]
   },
   "exclude": ["node_modules", "dist", "webpack.config.js"]
 }

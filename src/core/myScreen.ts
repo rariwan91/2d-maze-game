@@ -23,26 +23,39 @@ export class MyScreen implements IMyScreen {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
     }
 
-    public drawRect(point: IPoint, size: ISize, color: IColor): void {
-        if(!isPointValid(point, this.getSize())) return
+    public drawRect(point: IPoint, size: ISize, borderColor: IColor, fillColor?: IColor): void {
+        if (!isPointValid(point, this.getSize())) return
 
         this._context.save()
-        this._context.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
-        this._context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
-        this._context.strokeRect(point.x, point.y, size.width, size.height)
+        this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
+        if (fillColor) {
+            this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
+            this._context.fillRect(point.x, point.y, size.width, size.height)
+        }
+        else {
+            this._context.strokeRect(point.x, point.y, size.width, size.height)
+        }
         this._context.restore()
     }
 
-    public drawArc(point: IPoint, radius: number, startAngleDegrees: number, endAngleDegrees: number, color: IColor): void {
-        if(!isPointValid(point, this.getSize())) return        
+    public drawArc(point: IPoint, radius: number, startAngleDegrees: number, endAngleDegrees: number, borderColor: IColor, fillColor?: IColor): void {
+        if (!isPointValid(point, this.getSize())) return
 
         this._context.save()
-        this._context.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
-        this._context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
+        this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
+        if (fillColor) {
+            this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
+        }
         this._context.beginPath()
-        this._context.moveTo(point.x, point.y)
-        this._context.arc(point.x, point.y, radius, - endAngleDegrees * Math.PI / 180, - startAngleDegrees * Math.PI / 180)
-        this._context.fill()
+        if (fillColor) {
+            this._context.moveTo(point.x, point.y)
+            this._context.arc(point.x, point.y, radius, - endAngleDegrees * Math.PI / 180, - startAngleDegrees * Math.PI / 180)
+            this._context.fill()
+        }
+        else {
+            this._context.arc(point.x, point.y, radius, - endAngleDegrees * Math.PI / 180, - startAngleDegrees * Math.PI / 180)
+            this._context.stroke()
+        }
         this._context.closePath()
         this._context.restore()
     }

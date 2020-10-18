@@ -4,6 +4,7 @@ import { Keycodes } from '../gui'
 export class Game {
     private readonly _screen: MyScreen
     private readonly _rooms: Room[] = []
+    private _activeRoom: Room
     private readonly _player: Player
     private readonly _enemies: Enemy[] = []
     private _lastTime: number = Date.now()
@@ -11,23 +12,36 @@ export class Game {
     constructor(canvas: HTMLCanvasElement) {
         this._screen = new MyScreen(canvas)
         this._rooms.push(new Room(this._screen))
+        this._activeRoom = this._rooms[0]
         this._player = new Player({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 26
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
         }, this._screen)
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + 26
+            y: this._rooms[0].getLocation().y + 40
         }, this._screen))
 
         this._screen.clearScreen()
     }
 
     public updateTick(time: number): void {
+        const roomCollisionShapes = this._activeRoom.getCollisionShapes()
+        const playerCollisionShapes = this._player.getCollisionShapes()
+        const collidingShapes = playerCollisionShapes[0].isCollidingWithShapes(roomCollisionShapes)
+        if (collidingShapes && collidingShapes.length > 0) {
+            this._player.collisionStarted(collidingShapes)
+            this._activeRoom.collisionStarted(playerCollisionShapes)
+        }
+        else {
+            this._player.collisionEnded()
+            this._activeRoom.collisionEnded()
+        }
+
         this._player.update((time - this._lastTime) / 1000.0)
         this._enemies.forEach(enemy => {
             enemy.update((time - this._lastTime) / 1000.0)
-        });
+        })
         this._rooms[0].update()
         this._lastTime = time
     }
