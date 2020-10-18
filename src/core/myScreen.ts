@@ -1,4 +1,5 @@
-import { IColor, IMyScreen, IPoint, ISize } from '.'
+import { IMyScreen } from '.'
+import { IColor, IPoint, ISize } from '../gui'
 import { isPointValid } from '../helpers/pointHelpers'
 
 export class MyScreen implements IMyScreen {

@@ -1,5 +1,5 @@
 import { IpcNetConnectOpts } from 'net';
-import { IColor, IPoint, ISize } from '.';
+import { IColor, IPoint, ISize } from '../gui';
 
 export interface IMyScreen {
     drawRect(point: IPoint, size: ISize, borderColor?: IColor, fillColor?: IColor): void

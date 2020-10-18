@@ -1,4 +1,5 @@
-import { Direction, IColor, IControllable, IDrawable, IMyScreen, IPoint, IUpdatable } from './'
+import { Direction, IControllable, IMyScreen, IUpdatable } from '.'
+import { IColor, IDrawable, IPoint } from '../gui'
 
 export class Player implements IDrawable, IControllable, IUpdatable {
     private _location: IPoint

@@ -1,4 +1,4 @@
-import { Game } from './types/game'
+import { Game } from './core/game'
 
 const canvas = <HTMLCanvasElement>document.getElementById('canvas')
 const game = new Game(canvas)

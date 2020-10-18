@@ -1,4 +1,5 @@
-import { Direction, IColor, IDrawable, IMyScreen, IPoint, IUpdatable } from './'
+import { Direction, IMyScreen, IUpdatable } from '.'
+import { IColor, IDrawable, IPoint } from '../gui'
 
 export class Enemy implements IDrawable, IUpdatable {
     private _location: IPoint

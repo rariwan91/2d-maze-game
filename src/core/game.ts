@@ -1,4 +1,5 @@
-import { Direction, Enemy, Keycodes, MyScreen, Player, Room } from '.'
+import { Direction, Enemy, MyScreen, Player, Room } from '.'
+import { Keycodes } from '../gui'
 
 export class Game {
     private readonly _screen: MyScreen

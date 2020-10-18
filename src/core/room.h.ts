@@ -1,4 +1,4 @@
-import { IPoint, ISize } from './';
+import { IPoint, ISize } from '../gui';
 
 export interface IRoom {
     getLocation(): IPoint

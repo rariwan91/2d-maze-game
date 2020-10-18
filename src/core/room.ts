@@ -1,4 +1,5 @@
-import { IColor, IDrawable, IMyScreen, IPoint, IRoom, ISize, IUpdatable } from './'
+import { IMyScreen, IRoom, IUpdatable } from '.'
+import { IColor, IDrawable, IPoint, ISize } from '../gui'
 
 export class Room implements IDrawable, IRoom, IUpdatable {
     private _location: IPoint

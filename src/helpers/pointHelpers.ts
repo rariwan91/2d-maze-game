@@ -1,5 +1,4 @@
-import { IPoint } from '../types/point.h'
-import { ISize } from '../types/size.h'
+import { IPoint, ISize } from '../gui'
 
 export function isPointValid(point: IPoint, screenSize: ISize) {
     return point.x >= 0 &&
