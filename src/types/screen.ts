@@ -34,6 +34,7 @@ export class MyScreen implements IScreen {
         this._context.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
         this._context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
         this._context.beginPath()
+        this._context.moveTo(point.x, point.y)
         this._context.arc(point.x, point.y, radius, - endAngleDegrees * Math.PI / 180, - startAngleDegrees * Math.PI / 180)
         this._context.fill()
         this._context.closePath()
