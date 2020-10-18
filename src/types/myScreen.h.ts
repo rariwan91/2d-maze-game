@@ -1,7 +1,7 @@
 import { IpcNetConnectOpts } from 'net';
-import { IColor, IPoint, ISize } from './';
+import { IColor, IPoint, ISize } from '.';
 
-export interface IScreen {
+export interface IMyScreen {
     drawRect(point: IPoint, size: ISize, borderColor?: IColor, fillColor?: IColor): void
     drawArc(point: IPoint, radius: number, startAngle: number, endAngle: number, color: IColor): void
     // clearPoint(point: IPoint): void

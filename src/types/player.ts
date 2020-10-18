@@ -1,61 +1,58 @@
-import { Direction, IColor, IControllable, IDrawable, IPoint, IScreen, ISize, IUpdatable } from './'
+import { Direction, IColor, IControllable, IDrawable, IMyScreen, IPoint, IUpdatable } from './'
 
 export class Player implements IDrawable, IControllable, IUpdatable {
     private _location: IPoint
     private _oldLocation: IPoint
-    private _size: ISize = { width: 50, height: 50 }
+    private _radius: number = 25
     private _color: IColor = { r: 255, g: 255, b: 255 }
     private _direction: Direction = Direction.Up
     private _isMoving: boolean = false
-    private readonly _screen: IScreen
+    private readonly _myScreen: IMyScreen
     private readonly _movementSpeed = 200
 
-    constructor(roomSize: ISize, screen: IScreen) {
-        this._location = {
-            x: roomSize.width / 2,
-            y: roomSize.height / 2
-        }
-        this._oldLocation = this._location
-        this._screen = screen
+    constructor(location: IPoint, myScreen: IMyScreen) {
+        this._location = location
+        this._oldLocation = location
+        this._myScreen = myScreen
     }
 
-    public get location(): IPoint {
+    public getLocation(): IPoint {
         return this._location
     }
 
-    public set location(location: IPoint) {
+    public setLocation(location: IPoint) {
         this._location = location
     }
 
-    public get color(): IColor {
+    public getColor(): IColor {
         return this._color
     }
 
-    public set color(color: IColor) {
+    public setColor(color: IColor) {
         this._color = color
     }
 
-    public get size(): ISize {
-        return this._size
+    public getRadius(): number {
+        return this._radius
     }
 
-    public set size(size: ISize) {
-        this._size = size
+    public setRadius(radius: number) {
+        this._radius = radius
     }
 
     public draw(): void {
         // clear character area
-        this._screen.drawArc(
+        this._myScreen.drawArc(
             this._oldLocation,
-            Math.sqrt(2 * Math.pow(25, 2)) + 2,
+            this._radius + 1,
             0,
             360,
             { r: 255, g: 255, b: 255 }
         )
         // draw character circle
-        this._screen.drawArc(
-            this.location,
-            Math.sqrt(2 * Math.pow(25, 2)),
+        this._myScreen.drawArc(
+            this._location,
+            this._radius,
             0,
             360,
             { r: 0, g: 0, b: 255 }
@@ -63,72 +60,72 @@ export class Player implements IDrawable, IControllable, IUpdatable {
         // draw character direction arc
         switch (this._direction) {
             case Direction.Up:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     45,
                     135,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.Right:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     -45,
                     45,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.Down:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     225,
                     315,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.Left:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     135,
                     225,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.UpRight:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     0,
                     90,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.DownRight:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     -90,
                     0,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.DownLeft:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     180,
                     270,
                     { r: 0, g: 255, b: 0 }
                 )
                 break
             case Direction.UpLeft:
-                this._screen.drawArc(
-                    this.location,
-                    Math.sqrt(2 * Math.pow(25, 2)),
+                this._myScreen.drawArc(
+                    this._location,
+                    this._radius,
                     90,
                     180,
                     { r: 0, g: 255, b: 0 }
@@ -253,13 +250,13 @@ export class Player implements IDrawable, IControllable, IUpdatable {
     }
 
     public update(deltaTime: number): void {
-        if (this._isMoving) {
-            this.calculateLocation(deltaTime)
-        }
+        this.calculateLocation(deltaTime)
         this.draw()
     }
 
     private calculateLocation(deltaTime: number): void {
+        if (!this._isMoving) return
+
         let newVelocity = {
             x: 0,
             y: 0
@@ -315,12 +312,12 @@ export class Player implements IDrawable, IControllable, IUpdatable {
                 break
         }
 
-        let newLocation = {
-            x: this.location.x + newVelocity.x * deltaTime,
-            y: this.location.y + newVelocity.y * deltaTime
+        const newLocation = {
+            x: this._location.x + newVelocity.x * deltaTime,
+            y: this._location.y + newVelocity.y * deltaTime
         }
 
-        this._oldLocation = this.location
-        this.location = newLocation
+        this._oldLocation = this._location
+        this._location = newLocation
     }
 }
