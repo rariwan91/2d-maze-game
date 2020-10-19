@@ -14,7 +14,7 @@ export class MyScreen implements IMyScreen {
             this._context.lineWidth = 2
         }
         else {
-            console.log('unable tto get canvas context')
+            console.log('unable to get canvas context')
             throw new Error('unable to get canvas context')
         }
     }

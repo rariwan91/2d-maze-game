@@ -1,6 +1,7 @@
 import { Direction, IControllable, IMyScreen, IUpdatable } from '.'
 import { Colors, IColor, IDrawable, IPoint } from '../gui'
 import { CircleCollision, ICollidable, IHasCollisions } from './collision'
+import { WallCollision } from './collision/wallCollision'
 
 export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisions {
     private _location: IPoint
@@ -357,8 +358,13 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
     }
 
     public collisionStarted(shapes: ICollidable[]): void {
-        shapes
         this._isColliding = true
+
+        shapes.forEach(shape => {
+            if (shape instanceof WallCollision) {
+                this._location = this._oldLocation
+            }
+        })
     }
 
     public collisionEnded(): void {

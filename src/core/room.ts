@@ -1,12 +1,12 @@
 import { IMyScreen, IRoom, IUpdatable } from '.'
 import { Colors, IDrawable, IPoint, ISize } from '../gui'
-import { BoxCollision, ICollidable, IHasCollisions } from './collision'
+import { ICollidable, IHasCollisions, WallCollision } from './collision'
 
 export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
     private _location: IPoint = { x: 20, y: 20 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
-    private readonly _collisionBoxes: BoxCollision[] = []
+    private readonly _collisionBoxes: WallCollision[] = []
     private _isColliding = false
     private _mainColor = Colors.Black
     private _noCollisionsColor = Colors.Green
@@ -19,28 +19,28 @@ export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
             height: myScreen.getSize().height - 40
         }
         this._collisionBoxes.push(
-            new BoxCollision({
+            new WallCollision({
                 x: this._location.x - 3,
                 y: this._location.y - 3
             }, {
                 height: 6,
                 width: this._size.width + 6
             }),
-            new BoxCollision({
+            new WallCollision({
                 x: this._location.x + this._size.width - 3,
                 y: this._location.y - 3
             }, {
                 height: this._size.height + 6,
                 width: 6
             }),
-            new BoxCollision({
+            new WallCollision({
                 x: this._location.x - 3,
                 y: this._location.y + this._size.height - 3
             }, {
                 height: 6,
                 width: this._size.width + 6
             }),
-            new BoxCollision({
+            new WallCollision({
                 x: this._location.x - 3,
                 y: this._location.y - 3
             }, {

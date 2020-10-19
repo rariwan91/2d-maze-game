@@ -1,10 +1,9 @@
 import { CircleCollision, ICollidable } from '.'
-import { ICircle, IPoint, IRectangle, ISize } from '../../gui'
-import { isPointInCircle, isPointInRectangle } from '../../helpers'
+import { IPoint, ISize } from '../../gui'
 
 export class BoxCollision implements ICollidable {
-    private _location: IPoint
-    private _size: ISize
+    protected _location: IPoint
+    protected _size: ISize
 
     constructor(location: IPoint, size: ISize) {
         this._location = location
@@ -52,8 +51,8 @@ export class BoxCollision implements ICollidable {
             const bLoc = shape.getLocation()
             const bSize = shape.getSize()
 
-            if(aLoc.x + aSize.width < bLoc.x || bLoc.x + bSize.width < aLoc.x) return false
-            if(aLoc.y + aSize.height < bLoc.y || bLoc.y + bSize.height < aLoc.y) return false
+            if (aLoc.x + aSize.width < bLoc.x || bLoc.x + bSize.width < aLoc.x) return false
+            if (aLoc.y + aSize.height < bLoc.y || bLoc.y + bSize.height < aLoc.y) return false
             return true
         }
         return false
