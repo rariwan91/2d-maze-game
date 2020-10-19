@@ -1,27 +1,30 @@
-import { Direction, IHasAI, IMyScreen, IUpdatable, Player } from '.'
+import { Direction, IHasAI, IHasHealth, IMyScreen, IUpdatable, Player } from '.'
 import { Colors, IColor, IDrawable, IPoint } from '../gui'
-import { CircleCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { clearOldCharacter, clearOldCollision, clearOldHealthBar, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
+import { EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
 
-export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI {
+export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
     private _oldLocation: IPoint
     private readonly _radius: number = 25
     private _direction = Direction.Down
     private readonly _myScreen: IMyScreen
     private _isColliding = false
-    private _collisionCircle: CircleCollision
+    private _collisionShape: EnemyCollision
     private _mainColor: IColor = Colors.Red
     private _secondaryColor: IColor = Colors.Green
     private _yesCollisionColor: IColor = Colors.Red
     private _noCollisionColor: IColor = Colors.Green
     private readonly _movementSpeed = 50
     private _isMoving = false
+    private _maxHealth: number = 100
+    private _currentHealth: number = 100
 
     constructor(location: IPoint, myScreen: IMyScreen) {
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
-        this._collisionCircle = new CircleCollision(location, this._radius + 3)
+        this._collisionShape = new EnemyCollision(location, this._radius + 3)
     }
 
     public getLocation(): IPoint {
@@ -33,72 +36,20 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI {
     }
 
     public clearOld(): void {
-        // clear collision rectangle while I figure out circle vs rectangle collision
-        this._myScreen.drawRect({
-            x: this._collisionCircle.getOldLocation().x - this._collisionCircle.getRadius() - 2,
-            y: this._collisionCircle.getOldLocation().y - this._collisionCircle.getRadius() - 2
-        }, {
-            width: 2 * this._collisionCircle.getRadius() + 4,
-            height: 2 * this._collisionCircle.getRadius() + 4
-        }, Colors.White, Colors.White)
-        // clear enemy circle
-        this._myScreen.drawArc(this._oldLocation, this._radius + 2, 0, 360, Colors.White, Colors.White)
+        clearOldCollision(this._myScreen, this._collisionShape.getOldLocation(), this._collisionShape.getRadius())
+        clearOldCharacter(this._myScreen, this._oldLocation, this._radius)
+        clearOldHealthBar(this._myScreen, this._oldLocation, this._radius)
     }
 
     public draw(): void {
-        // draw enemy circle
-        this._myScreen.drawArc(this._location, this._radius, 0, 360, this._mainColor, this._mainColor)
-        // draw enemy direction arc
-        switch (this._direction) {
-            case Direction.Up:
-                this._myScreen.drawArc(this._location, this._radius, 45, 135, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.Right:
-                this._myScreen.drawArc(this._location, this._radius, -45, 45, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.Down:
-                this._myScreen.drawArc(this._location, this._radius, 225, 315, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.Left:
-                this._myScreen.drawArc(this._location, this._radius, 135, 225, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.UpRight:
-                this._myScreen.drawArc(this._location, this._radius, 0, 90, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.DownRight:
-                this._myScreen.drawArc(this._location, this._radius, -90, 0, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.DownLeft:
-                this._myScreen.drawArc(this._location, this._radius, 180, 270, this._secondaryColor, this._secondaryColor)
-                break
-            case Direction.UpLeft:
-                this._myScreen.drawArc(this._location, this._radius, 90, 180, this._secondaryColor, this._secondaryColor)
-                break
-        }
-        // draw collision rectangle while I figure out circle vs rectangle collision
-        if (this._isColliding) {
-            this._myScreen.drawRect({
-                x: this._collisionCircle.getLocation().x - this._collisionCircle.getRadius(),
-                y: this._collisionCircle.getLocation().y - this._collisionCircle.getRadius()
-            }, {
-                width: 2 * this._collisionCircle.getRadius(),
-                height: 2 * this._collisionCircle.getRadius()
-            }, this._yesCollisionColor)
-        }
-        else {
-            this._myScreen.drawRect({
-                x: this._collisionCircle.getLocation().x - this._collisionCircle.getRadius(),
-                y: this._collisionCircle.getLocation().y - this._collisionCircle.getRadius()
-            }, {
-                width: 2 * this._collisionCircle.getRadius(),
-                height: 2 * this._collisionCircle.getRadius()
-            }, this._noCollisionColor)
-        }
+        drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
+        drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this._isColliding)
+        drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
 
     public update(deltaTime: number): void {
         this.calculateLocation(deltaTime)
-        this._collisionCircle.setLocation(this._location)
+        this._collisionShape.setLocation(this._location)
         this.draw()
     }
 
@@ -124,6 +75,18 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI {
         // player is up and to the left of me
         else if (deltaX < 0 && deltaY < 0) {
             angle = 180 + angle
+        }
+        else if (deltaX === 0 && deltaY > 0) {
+            angle = 270
+        }
+        else if (deltaX === 0 && deltaY < 0) {
+            angle = 90
+        }
+        else if (deltaY === 0 && deltaX > 0) {
+            angle = 0
+        }
+        else if (deltaY === 0 && deltaX < 0) {
+            angle = 180
         }
 
         if (angle < 22.5 || angle >= 337.5) {
@@ -151,12 +114,12 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI {
             this._direction = Direction.DownRight
         }
 
-        if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + player.getRadius(), 2)) {
-            this._isMoving = false
-        }
-        else {
-            this._isMoving = true
-        }
+        // if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + player.getRadius(), 2)) {
+        //     this._isMoving = false
+        // }
+        // else {
+        //     this._isMoving = true
+        // }
     }
 
     private calculateLocation(deltaTime: number): void {
@@ -227,7 +190,7 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI {
     }
 
     public getCollisionShapes(): ICollidable[] {
-        return [this._collisionCircle]
+        return [this._collisionShape]
     }
 
     public collisionStarted(shapes: ICollidable[]): void {
@@ -242,5 +205,17 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI {
 
     public collisionEnded(): void {
         this._isColliding = false
+    }
+
+    public getMaxHealth(): number {
+        return this._maxHealth
+    }
+
+    public getCurrentHealth(): number {
+        return this._currentHealth
+    }
+
+    public takeDamage(amount: number): void {
+        this._currentHealth = Math.max(this._currentHealth - amount, 0)
     }
 }

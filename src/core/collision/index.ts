@@ -1,5 +1,6 @@
 export * from './boxCollision'
 export * from './circleCollision'
 export * from './collidable.h'
+export * from './enemyCollision'
 export * from './hasCollisions.h'
 export * from './wallCollision'

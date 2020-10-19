@@ -32,9 +32,7 @@ export class MyScreen implements IMyScreen {
             this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
             this._context.fillRect(point.x, point.y, size.width, size.height)
         }
-        else {
-            this._context.strokeRect(point.x, point.y, size.width, size.height)
-        }
+        this._context.strokeRect(point.x, point.y, size.width, size.height)
         this._context.restore()
     }
 

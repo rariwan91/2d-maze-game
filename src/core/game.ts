@@ -23,6 +23,7 @@ export class Game {
         }, this._screen))
 
         this._screen.clearScreen()
+        this._enemies[0].draw()
     }
 
     public updateTick(time: number): void {
