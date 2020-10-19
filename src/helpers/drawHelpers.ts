@@ -24,15 +24,15 @@ export function drawCharacter(screen: IMyScreen, location: IPoint, radius: numbe
         startAngle = 135
         endAngle = 225
     }
-    else if (Direction.UpRight) {
+    else if (direction === Direction.UpRight) {
         startAngle = 0
         endAngle = 90
     }
-    else if (Direction.DownRight) {
+    else if (direction === Direction.DownRight) {
         startAngle = -90
         endAngle = 0
     }
-    else if (Direction.DownLeft) {
+    else if (direction === Direction.DownLeft) {
         startAngle = 180
         endAngle = 270
     }

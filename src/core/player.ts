@@ -1,6 +1,6 @@
 import { Direction, IControllable, IHasHealth, IMyScreen, IUpdatable } from '.'
 import { Colors, IColor, IDrawable, IPoint } from '../gui'
-import { clearOldCharacter, clearOldCollision, clearOldHealthBar, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
+import { calculateNewPosition, calculateVelocity, clearOldCharacter, clearOldCollision, clearOldHealthBar, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
 import { CircleCollision, EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
 
 export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisions, IHasHealth {
@@ -179,65 +179,8 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
     private calculateLocation(deltaTime: number): void {
         if (!this._isMoving) return
 
-        let newVelocity = {
-            x: 0,
-            y: 0
-        }
-        switch (this._direction) {
-            case Direction.Up:
-                newVelocity = {
-                    x: 0,
-                    y: -this._movementSpeed
-                }
-                break;
-            case Direction.Right:
-                newVelocity = {
-                    x: this._movementSpeed,
-                    y: 0
-                }
-                break;
-            case Direction.Down:
-                newVelocity = {
-                    x: 0,
-                    y: this._movementSpeed
-                }
-                break;
-            case Direction.Left:
-                newVelocity = {
-                    x: -this._movementSpeed,
-                    y: 0
-                }
-                break;
-            case Direction.UpRight:
-                newVelocity = {
-                    x: this._movementSpeed * Math.sin(45 * Math.PI / 180),
-                    y: -this._movementSpeed * Math.sin(45 * Math.PI / 180)
-                }
-                break
-            case Direction.DownRight:
-                newVelocity = {
-                    x: this._movementSpeed * Math.sin(45 * Math.PI / 180),
-                    y: this._movementSpeed * Math.sin(45 * Math.PI / 180)
-                }
-                break
-            case Direction.DownLeft:
-                newVelocity = {
-                    x: -this._movementSpeed * Math.sin(45 * Math.PI / 180),
-                    y: this._movementSpeed * Math.sin(45 * Math.PI / 180)
-                }
-                break
-            case Direction.UpLeft:
-                newVelocity = {
-                    x: -this._movementSpeed * Math.sin(45 * Math.PI / 180),
-                    y: -this._movementSpeed * Math.sin(45 * Math.PI / 180)
-                }
-                break
-        }
-
-        const newLocation = {
-            x: this._location.x + newVelocity.x * deltaTime,
-            y: this._location.y + newVelocity.y * deltaTime
-        }
+        const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
+        const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)
 
         this._oldLocation = this._location
         this._location = newLocation
