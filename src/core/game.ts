@@ -7,7 +7,7 @@ export class Game {
     private _activeRoom: Room
     private readonly _player: Player
     private readonly _enemies: Enemy[] = []
-    private _lastTime: number = Date.now()
+    private _lastTime: number = 0
 
     constructor(canvas: HTMLCanvasElement) {
         this._screen = new MyScreen(canvas)
@@ -19,7 +19,7 @@ export class Game {
         }, this._screen)
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + 40
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
         }, this._screen))
 
         this._screen.clearScreen()
@@ -28,18 +28,39 @@ export class Game {
     public updateTick(time: number): void {
         const roomCollisionShapes = this._activeRoom.getCollisionShapes()
         const playerCollisionShapes = this._player.getCollisionShapes()
-        const collidingShapes = playerCollisionShapes[0].isCollidingWithShapes(roomCollisionShapes)
-        if (collidingShapes && collidingShapes.length > 0) {
-            this._player.collisionStarted(collidingShapes)
+        const enemyCollisionShapes = this._enemies[0].getCollisionShapes()
+
+        const roomCollisions = playerCollisionShapes[0].isCollidingWithShapes(roomCollisionShapes)
+        const enemyCollisions = playerCollisionShapes[0].isCollidingWithShapes(enemyCollisionShapes)
+        if (roomCollisions && roomCollisions.length > 0) {
+            this._player.collisionStarted(roomCollisions)
             this._activeRoom.collisionStarted(playerCollisionShapes)
         }
         else {
-            this._player.collisionEnded()
             this._activeRoom.collisionEnded()
         }
 
+        if (enemyCollisions && enemyCollisions.length > 0) {
+            this._player.collisionStarted(enemyCollisions)
+            this._enemies[0].collisionStarted(playerCollisionShapes)
+        }
+        else {
+            this._enemies[0].collisionEnded()
+        }
+
+        if ((!roomCollisions || roomCollisions.length < 1) && (!enemyCollisions || enemyCollisions.length < 1)) {
+            this._player.collisionEnded()
+        }
+
+        this._enemies.forEach(enemy => {
+            enemy.clearOld()
+        })
+        this._player.clearOld()
+        this._rooms[0].clearOld()
+
         this._player.update((time - this._lastTime) / 1000.0)
         this._enemies.forEach(enemy => {
+            enemy.aiTick(this._player)
             enemy.update((time - this._lastTime) / 1000.0)
         })
         this._rooms[0].update()

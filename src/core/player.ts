@@ -41,7 +41,7 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
         this._radius = radius
     }
 
-    public draw(): void {
+    public clearOld(): void {
         // clear collision rectangle while I figure out circle vs rectangle collision
         this._myScreen.drawRect({
             x: this._collisionCircle.getOldLocation().x - this._collisionCircle.getRadius() - 2,
@@ -52,96 +52,36 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
         }, Colors.White, Colors.White)
         // clear character circle
         this._myScreen.drawArc(this._oldLocation, this._radius + 2, 0, 360, Colors.White, Colors.White)
+    }
+
+    public draw(): void {
         // draw character circle
-        this._myScreen.drawArc(
-            this._location,
-            this._radius,
-            0,
-            360,
-            this._mainColor,
-            this._mainColor
-        )
+        this._myScreen.drawArc(this._location, this._radius, 0, 360, this._mainColor, this._mainColor)
         // draw character direction arc
         switch (this._direction) {
             case Direction.Up:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    45,
-                    135,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, 45, 135, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.Right:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    -45,
-                    45,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, -45, 45, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.Down:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    225,
-                    315,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, 225, 315, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.Left:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    135,
-                    225,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, 135, 225, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.UpRight:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    0,
-                    90,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, 0, 90, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.DownRight:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    -90,
-                    0,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, -90, 0, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.DownLeft:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    180,
-                    270,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, 180, 270, this._secondaryColor, this._secondaryColor)
                 break
             case Direction.UpLeft:
-                this._myScreen.drawArc(
-                    this._location,
-                    this._radius,
-                    90,
-                    180,
-                    this._secondaryColor,
-                    this._secondaryColor
-                )
+                this._myScreen.drawArc(this._location, this._radius, 90, 180, this._secondaryColor, this._secondaryColor)
                 break
         }
         // draw collision rectangle while I figure out circle vs rectangle collision

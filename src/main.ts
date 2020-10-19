@@ -14,4 +14,5 @@ function updateTick(time: number) {
     game.updateTick(time)
     window.requestAnimationFrame(updateTick)
 }
+
 window.requestAnimationFrame(updateTick)

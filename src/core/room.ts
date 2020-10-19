@@ -62,6 +62,10 @@ export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
         return this._size
     }
 
+    public clearOld(): void {
+
+    }
+
     public draw(): void {
         this._myScreen.drawRect(this.getLocation(), this.getSize(), this._mainColor)
 
