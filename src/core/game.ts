@@ -1,8 +1,5 @@
-import { Enemy } from './enemy'
-import { MyScreen } from './myScreen'
-import { Player } from './player'
-import { Room } from './room'
-import { Keycode } from '../gui/keycode.enum'
+import { Enemy, MyScreen, Player, Room } from '.'
+import { Keycode } from '../gui'
 
 export class Game {
     private readonly _screen: MyScreen
@@ -26,10 +23,11 @@ export class Game {
         }, this._screen))
 
         this._screen.clearScreen()
-        this._enemies[0].draw()
     }
 
     public updateTick(time: number): void {
+        this._screen.clearScreen()
+
         const roomCollisionShapes = this._activeRoom.getCollisionShapes()
         const playerCollisionShapes = this._player.getCollisionShapes()
         const enemyCollisionShapes = this._enemies[0].getCollisionShapes()
@@ -55,12 +53,6 @@ export class Game {
         if ((!roomCollisions || roomCollisions.length < 1) && (!enemyCollisions || enemyCollisions.length < 1)) {
             this._player.collisionEnded()
         }
-
-        this._enemies.forEach(enemy => {
-            enemy.clearOld()
-        })
-        this._player.clearOld()
-        this._rooms[0].clearOld()
 
         this._player.update((time - this._lastTime) / 1000.0)
         this._enemies.forEach(enemy => {

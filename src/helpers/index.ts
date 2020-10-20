@@ -1,5 +1,4 @@
 export * from './calculationHelpers'
-export * from './clearHelpers'
 export * from './directionHelpers'
 export * from './drawHelpers'
 export * from './pointHelpers'

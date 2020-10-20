@@ -1,4 +1,4 @@
-import { Player } from './player'
+import { Player } from '.'
 
 export interface IHasAI {
     aiTick(player: Player): void

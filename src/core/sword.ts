@@ -1,10 +1,5 @@
-import { IMyScreen } from './myScreen.h'
-import { IWeapon } from './weapon.h'
-import { Player } from './player'
-import { WeaponState } from './weaponState.enum'
-import { Colors } from '../gui/colors'
-import { IPoint } from '../gui/point.h'
-import { Direction } from './direction.enum'
+import { Direction, IMyScreen, IWeapon, Player, WeaponState } from '.'
+import { Colors, IPoint } from '../gui'
 
 export class Sword implements IWeapon {
     private readonly _myScreen: IMyScreen
@@ -29,13 +24,6 @@ export class Sword implements IWeapon {
 
     public getState(): WeaponState {
         return this._state
-    }
-
-    clearOld(): void {
-        const pLoc = this._character.getOldLocation()
-        const pRad = this._character.getRadius()
-
-        this._myScreen.drawArc(pLoc, pRad + this._offset + this._swordLength + 1, 0, 360, Colors.White, Colors.White)
     }
 
     draw(): void {
@@ -65,49 +53,49 @@ export class Sword implements IWeapon {
         const pRad = this._character.getRadius()
         const direction = this._character.getMostRecentDirection()
 
-        if(direction === Direction.Up) {
+        if (direction === Direction.Up) {
             return {
                 x: pLoc.x + pRad + this._offset,
                 y: pLoc.y
             }
         }
 
-        if(direction === Direction.UpRight) {
+        if (direction === Direction.UpRight) {
             return {
                 x: pLoc.x + (pRad + this._offset) * Math.cos(Math.PI / 4),
                 y: pLoc.y + (pRad + this._offset) * Math.sin(Math.PI / 4),
             }
         }
 
-        if(direction === Direction.Right) {
+        if (direction === Direction.Right) {
             return {
                 x: pLoc.x,
                 y: pLoc.y + pRad + this._offset
             }
         }
 
-        if(direction === Direction.DownRight) {
+        if (direction === Direction.DownRight) {
             return {
                 x: pLoc.x - (pRad + this._offset) * Math.cos(Math.PI / 4),
                 y: pLoc.y + (pRad + this._offset) * Math.sin(Math.PI / 4),
             }
         }
 
-        if(direction === Direction.Down) {
+        if (direction === Direction.Down) {
             return {
                 x: pLoc.x - pRad - this._offset,
                 y: pLoc.y
             }
         }
 
-        if(direction === Direction.DownLeft) {
+        if (direction === Direction.DownLeft) {
             return {
                 x: pLoc.x - (pRad + this._offset) * Math.cos(Math.PI / 4),
                 y: pLoc.y - (pRad + this._offset) * Math.sin(Math.PI / 4),
             }
         }
 
-        if(direction === Direction.Left) {
+        if (direction === Direction.Left) {
             return {
                 x: pLoc.x,
                 y: pLoc.y - pRad - this._offset
@@ -126,7 +114,7 @@ export class Sword implements IWeapon {
     }
 
     attack(): void {
-        if(this._acceptingAttacks) {
+        if (this._acceptingAttacks) {
             this._state = WeaponState.Swinging
             this._acceptingAttacks = false
         }
@@ -134,33 +122,33 @@ export class Sword implements IWeapon {
 
     updateSword(deltaTime: number) {
         const characterDirection = this._character.getMostRecentDirection()
-        if(characterDirection === Direction.Down) {
+        if (characterDirection === Direction.Down) {
             this._startAngle = -90 + 22.5
         }
-        else if(characterDirection === Direction.DownLeft) {
+        else if (characterDirection === Direction.DownLeft) {
             this._startAngle = -135 + 22.5
         }
-        else if(characterDirection == Direction.Left) {
+        else if (characterDirection == Direction.Left) {
             this._startAngle = 180 + 22.5
         }
-        else if(characterDirection === Direction.UpLeft) {
+        else if (characterDirection === Direction.UpLeft) {
             this._startAngle = 135 + 22.5
         }
-        else if(characterDirection === Direction.Up) {
+        else if (characterDirection === Direction.Up) {
             this._startAngle = 90 + 22.5
         }
-        else if(characterDirection === Direction.UpRight) {
+        else if (characterDirection === Direction.UpRight) {
             this._startAngle = 45 + 22.5
         }
-        else if(characterDirection === Direction.Right) {
+        else if (characterDirection === Direction.Right) {
             this._startAngle = 0 + 22.5
         }
-        else if(characterDirection === Direction.DownRight) {
+        else if (characterDirection === Direction.DownRight) {
             this._startAngle = -45 + 22.5
         }
 
-        if(this._state === WeaponState.Swinging) {
-            if(this._angleMoved >= this._arcOfSwing) {
+        if (this._state === WeaponState.Swinging) {
+            if (this._angleMoved >= this._arcOfSwing) {
                 this._state = WeaponState.ReturnSwinging
                 return
             }
@@ -168,8 +156,8 @@ export class Sword implements IWeapon {
             const newAngle = Math.min(this._angleMoved + this._attackingAngleChangeRate * deltaTime, this._arcOfSwing)
             this._angleMoved = newAngle
         }
-        else if(this._state === WeaponState.ReturnSwinging) {
-            if(this._angleMoved <= 0) {
+        else if (this._state === WeaponState.ReturnSwinging) {
+            if (this._angleMoved <= 0) {
                 this._state = WeaponState.Resting
                 this._acceptingAttacks = true
                 return

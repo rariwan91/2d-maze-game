@@ -1,20 +1,7 @@
-import { Direction } from './direction.enum'
-import { IHasAI } from './hasAI.h'
-import { IHasHealth } from './hasHealth.h'
-import { IMyScreen } from './myScreen.h'
-import { IUpdatable } from './updatable.h'
-import { Player } from './player'
-import { Colors } from '../gui/colors'
-import { IColor } from '../gui/color.h'
-import { IDrawable } from '../gui/drawable.h'
-import { IPoint } from '../gui/point.h'
-import { calculateNewPosition, calculateVelocity } from '../helpers/calculationHelpers'
-import { clearOldCharacter, clearOldCollision, clearOldHealthBar } from '../helpers/clearHelpers'
-import { drawCharacter, drawCollision, drawHealthBar } from '../helpers/drawHelpers'
-import { EnemyCollision } from './collision/enemyCollision'
-import { ICollidable } from './collision/collidable.h'
-import { IHasCollisions } from './collision/hasCollisions.h'
-import { WallCollision } from './collision/wallCollision'
+import { Direction, IHasAI, IHasHealth, IMyScreen, IUpdatable, Player } from '.'
+import { Colors, IColor, IDrawable, IPoint } from '../gui'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
+import { EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
 
 export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
@@ -46,12 +33,6 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHa
 
     public setLocation(location: IPoint) {
         this._location = location
-    }
-
-    public clearOld(): void {
-        clearOldCollision(this._myScreen, this._collisionShape.getOldLocation(), this._collisionShape.getRadius())
-        clearOldCharacter(this._myScreen, this._oldLocation, this._radius)
-        clearOldHealthBar(this._myScreen, this._oldLocation, this._radius)
     }
 
     public draw(): void {

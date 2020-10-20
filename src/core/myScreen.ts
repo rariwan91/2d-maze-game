@@ -1,7 +1,5 @@
-import { IMyScreen } from './myScreen.h'
-import { IColor } from '../gui/color.h'
-import { IPoint } from '../gui/point.h'
-import { ISize } from '../gui/size.h'
+import { IMyScreen } from '.'
+import { IColor, IPoint, ISize } from '../gui'
 
 export class MyScreen implements IMyScreen {
     private readonly _canvas: HTMLCanvasElement

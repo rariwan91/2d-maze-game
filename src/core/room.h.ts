@@ -1,5 +1,4 @@
-import { IPoint } from '../gui/point.h'
-import { ISize } from '../gui/size.h'
+import { IPoint, ISize } from '../gui'
 
 export interface IRoom {
     getLocation(): IPoint

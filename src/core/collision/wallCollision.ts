@@ -1,6 +1,5 @@
-import { IPoint } from '../../gui/point.h'
-import { ISize } from '../../gui/size.h'
-import { BoxCollision } from './'
+import { IPoint, ISize } from '../../gui'
+import { BoxCollision } from './boxCollision'
 
 export class WallCollision extends BoxCollision {
     constructor(location: IPoint, size: ISize) {

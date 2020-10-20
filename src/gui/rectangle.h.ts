@@ -1,5 +1,4 @@
-import { IPoint } from './point.h'
-import { ISize } from './size.h'
+import { IPoint, ISize } from '.'
 
 export interface IRectangle {
     location: IPoint

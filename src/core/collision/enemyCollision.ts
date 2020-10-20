@@ -1,4 +1,4 @@
-import { IPoint, ISize } from '../../gui';
+import { IPoint } from '../../gui'
 import { CircleCollision } from './circleCollision'
 
 export class EnemyCollision extends CircleCollision {

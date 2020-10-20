@@ -1,7 +1,4 @@
-import { IpcNetConnectOpts } from 'net';
-import { IColor } from '../gui/color.h'
-import { IPoint } from '../gui/point.h'
-import { ISize } from '../gui/size.h'
+import { IColor, IPoint, ISize } from '../gui';
 
 export interface IMyScreen {
     drawRect(point: IPoint, size: ISize, borderColor?: IColor, fillColor?: IColor): void

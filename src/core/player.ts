@@ -1,24 +1,7 @@
-import { Direction } from './direction.enum'
-import { IControllable } from './controllable.h'
-import { IHasHealth } from './hasHealth.h'
-import { IMyScreen } from './myScreen.h'
-import { IUpdatable } from './updatable.h'
-import { IWeapon } from './weapon.h'
-import { Sword } from './sword'
-import { Colors } from '../gui/colors'
-import { IColor } from '../gui/color.h'
-import { IDrawable } from '../gui/drawable.h'
-import { IPoint } from '../gui/point.h'
-import { Keycode } from '../gui/keycode.enum'
-import { calculateNewPosition, calculateVelocity } from '../helpers/calculationHelpers'
-import { clearOldCharacter, clearOldCollision, clearOldHealthBar } from '../helpers/clearHelpers'
-import { getDirection } from '../helpers/directionHelpers'
-import { drawCharacter, drawCollision, drawHealthBar } from '../helpers/drawHelpers'
-import { CircleCollision } from './collision/circleCollision'
-import { EnemyCollision } from './collision/enemyCollision'
-import { ICollidable } from './collision/collidable.h'
-import { IHasCollisions } from './collision/hasCollisions.h'
-import { WallCollision } from './collision/wallCollision'
+import { Direction, IControllable, IHasHealth, IMyScreen, IUpdatable, IWeapon, Sword } from '.'
+import { Colors, IColor, IDrawable, IPoint, Keycode } from '../gui'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../helpers'
+import { CircleCollision, EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
 
 export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisions, IHasHealth {
     private _location: IPoint
@@ -64,20 +47,13 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
     public getMostRecentDirection(): Direction {
         return this._direction
     }
-    
+
     public getDirection(): Direction {
         return getDirection(this._upPressed, this._rightPressed, this._downPressed, this._leftPressed)
     }
 
     public isMoving(): boolean {
         return this.getDirection() !== Direction.None
-    }
-
-    public clearOld(): void {
-        clearOldCollision(this._myScreen, this._collisionCircle.getOldLocation(), this._collisionCircle.getRadius())
-        clearOldCharacter(this._myScreen, this._oldLocation, this._radius)
-        clearOldHealthBar(this._myScreen, this._oldLocation, this._radius)
-        this._weapon.clearOld()
     }
 
     public draw(): void {
@@ -87,37 +63,37 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
     }
 
     public keyPressed(keyCode: Keycode) {
-        if(keyCode === Keycode.Up) {
+        if (keyCode === Keycode.Up) {
             this._upPressed = true
         }
-        else if(keyCode === Keycode.Right) {
+        else if (keyCode === Keycode.Right) {
             this._rightPressed = true
         }
-        else if(keyCode === Keycode.Down) {
+        else if (keyCode === Keycode.Down) {
             this._downPressed = true
         }
-        else if(keyCode === Keycode.Left) {
+        else if (keyCode === Keycode.Left) {
             this._leftPressed = true
         }
-        else if(keyCode === Keycode.SPACE) {
+        else if (keyCode === Keycode.SPACE) {
             this._weapon.attack()
         }
     }
 
     public keyReleased(keyCode: Keycode) {
-        if(keyCode === Keycode.Up) {
+        if (keyCode === Keycode.Up) {
             this._upPressed = false
         }
-        else if(keyCode === Keycode.Right) {
+        else if (keyCode === Keycode.Right) {
             this._rightPressed = false
         }
-        else if(keyCode === Keycode.Down) {
+        else if (keyCode === Keycode.Down) {
             this._downPressed = false
         }
-        else if(keyCode === Keycode.Left) {
+        else if (keyCode === Keycode.Left) {
             this._leftPressed = false
         }
-        if(keyCode === Keycode.SPACE) {
+        if (keyCode === Keycode.SPACE) {
 
         }
     }
@@ -127,18 +103,18 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
         this.calculateLocation(deltaTime)
         this._collisionCircle.setLocation(this._location)
         this.draw()
-        if(this._weapon) {
+        if (this._weapon) {
             this._weapon.update(deltaTime)
         }
     }
 
     private updateDirection(): void {
         const newDirection = this.getDirection()
-        if(newDirection !== Direction.None) {
+        if (newDirection !== Direction.None) {
             this._direction = newDirection
         }
     }
- 
+
     private calculateLocation(deltaTime: number): void {
         if (!this.isMoving()) return
         // if(this._weapon && this._weapon.getState() === WeaponState.Swinging) return
