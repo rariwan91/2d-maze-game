@@ -1,32 +1,39 @@
-import { Enemy, MyScreen, Player, Room } from '.'
+import { Enemy, IPlayer, MyScreen, Player, Room, Sword, IWeapon } from '.'
 import { Keycode } from '../gui'
 
 export class Game {
-    private readonly _screen: MyScreen
+    private readonly _myScreen: MyScreen
     private readonly _rooms: Room[] = []
     private _activeRoom: Room
-    private readonly _player: Player
+    private readonly _player: IPlayer
     private readonly _enemies: Enemy[] = []
+    private readonly _weapons: IWeapon[] = []
     private _lastTime: number = 0
 
     constructor(canvas: HTMLCanvasElement) {
-        this._screen = new MyScreen(canvas)
-        this._rooms.push(new Room(this._screen))
+        this._myScreen = new MyScreen(canvas)
+        this._rooms.push(new Room(this._myScreen))
         this._activeRoom = this._rooms[0]
+
+        this._weapons.push(new Sword(this._myScreen))
+
         this._player = new Player({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
-        }, this._screen)
+        }, this._myScreen)
+
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._screen))
+        }, this._myScreen))
 
-        this._screen.clearScreen()
+        this._weapons[0].attachToPlayer(this._player)
+
+        this._myScreen.clearScreen()
     }
 
     public updateTick(time: number): void {
-        this._screen.clearScreen()
+        this._myScreen.clearScreen()
 
         const roomCollisionShapes = this._activeRoom.getCollisionShapes()
         const playerCollisionShapes = this._player.getCollisionShapes()

@@ -1,4 +1,4 @@
-import { Direction, IHasAI, IHasHealth, IMyScreen, IUpdatable, Player } from '.'
+import { Direction, IHasAI, IHasHealth, IMyScreen, IUpdatable, IPlayer } from '.'
 import { Colors, IColor, IDrawable, IPoint } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
 import { EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
@@ -47,7 +47,7 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHa
         this.draw()
     }
 
-    public aiTick(player: Player): void {
+    public aiTick(player: IPlayer): void {
         const myLoc = this._location
         const pLoc = player.getLocation()
         const deltaY = pLoc.y - myLoc.y

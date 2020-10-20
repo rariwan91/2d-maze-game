@@ -1,9 +1,9 @@
-import { Direction, IControllable, IHasHealth, IMyScreen, IUpdatable, IWeapon, Sword } from '.'
+import { Direction, IHasHealth, IMyScreen, IWeapon, IPlayer } from '.'
 import { Colors, IColor, IDrawable, IPoint, Keycode } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../helpers'
-import { CircleCollision, EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { CircleCollision, EnemyCollision, ICollidable, WallCollision } from './collision'
 
-export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisions, IHasHealth {
+export class Player implements IDrawable, IHasHealth, IPlayer {
     private _location: IPoint
     private _oldLocation: IPoint
     private _radius: number = 25
@@ -29,7 +29,6 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionCircle = new CircleCollision(this._location, this._radius + 3)
-        this._weapon = new Sword(this._myScreen, this)
     }
 
     public getLocation(): IPoint {
@@ -76,7 +75,9 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
             this._leftPressed = true
         }
         else if (keyCode === Keycode.SPACE) {
-            this._weapon.attack()
+            if(this._weapon) {
+                this._weapon.attack()
+            }
         }
     }
 
@@ -117,7 +118,6 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
 
     private calculateLocation(deltaTime: number): void {
         if (!this.isMoving()) return
-        // if(this._weapon && this._weapon.getState() === WeaponState.Swinging) return
 
         const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
         const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)
@@ -161,5 +161,14 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
 
     public takeDamage(amount: number): void {
         this._currentHealth = Math.max(this._currentHealth - amount, 0)
+    }
+
+    public equipWeapon(weapon: IWeapon) {
+        this._weapon = weapon
+    }
+
+    public unequipWeapon(weapon: IWeapon) {
+        weapon
+        this._weapon = null
     }
 }

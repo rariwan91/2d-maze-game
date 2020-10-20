@@ -1,9 +1,10 @@
-import { Direction, IMyScreen, IWeapon, Player, WeaponState } from '.'
+import { Direction, IMyScreen, IWeapon, IPlayer, WeaponState } from '.'
+import { ICollidable, IHasCollisions, CircleCollision, EnemyCollision } from './collision'
 import { Colors, IPoint } from '../gui'
 
-export class Sword implements IWeapon {
+export class Sword implements IWeapon, IHasCollisions {
     private readonly _myScreen: IMyScreen
-    private readonly _character: Player
+    private _character: IPlayer
 
     private readonly _offset = 15
     private readonly _swordLength = 75
@@ -16,10 +17,11 @@ export class Sword implements IWeapon {
     private readonly _returningAngleChangeRate = 500
     private _state = WeaponState.Resting
     private _acceptingAttacks = true
+    private _hitboxes: CircleCollision[] = []
+    private _isColliding = false
 
-    constructor(myScreen: IMyScreen, character: Player) {
+    constructor(myScreen: IMyScreen) {
         this._myScreen = myScreen
-        this._character = character
     }
 
     public getState(): WeaponState {
@@ -109,6 +111,8 @@ export class Sword implements IWeapon {
     }
 
     update(deltaTime: number) {
+        if(!this._character) return
+
         this.updateSword(deltaTime)
         this.draw()
     }
@@ -166,5 +170,30 @@ export class Sword implements IWeapon {
             const newAngleMoved = Math.max(this._angleMoved - this._returningAngleChangeRate * deltaTime, 0)
             this._angleMoved = newAngleMoved
         }
+    }
+
+    public attachToPlayer(player: IPlayer): void {
+        player.equipWeapon(this)
+        this._character = player
+    }
+
+    public detachFromPlayer(): void {
+        if(this._character){
+            this._character.unequipWeapon(this)
+            this._character = null
+        }
+    }
+
+    public getCollisionShapes(): ICollidable[] {
+        return this._hitboxes
+    }
+
+    public collisionStarted(shapes: ICollidable[]): void {
+        shapes
+        this._isColliding = true
+    }
+
+    public collisionEnded(): void {
+        this._isColliding = false
     }
 }
