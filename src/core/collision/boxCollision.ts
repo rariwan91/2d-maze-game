@@ -1,14 +1,21 @@
+import { IPoint, ISize } from '../../gui'
+import { Entity } from '../entity'
 import { CircleCollision } from './circleCollision'
 import { ICollidable } from './collidable.h'
-import { IPoint, ISize } from '../../gui'
 
 export class BoxCollision implements ICollidable {
     protected _location: IPoint
     protected _size: ISize
+    protected readonly _entity: Entity
 
-    constructor(location: IPoint, size: ISize) {
+    constructor(location: IPoint, size: ISize, entity: Entity) {
         this._location = location
         this._size = size
+        this._entity = entity
+    }
+
+    public getEntity(): Entity {
+        return this._entity
     }
 
     public getLocation(): IPoint {

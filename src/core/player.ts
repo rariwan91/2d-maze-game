@@ -1,9 +1,10 @@
-import { Direction, IHasHealth, IMyScreen, IWeapon, IPlayer } from '.'
+import { Direction, IHasHealth, IMyScreen, IPlayer, IWeapon } from '.'
 import { Colors, IColor, IDrawable, IPoint, Keycode } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../helpers'
 import { CircleCollision, EnemyCollision, ICollidable, WallCollision } from './collision'
+import { Entity } from './entity'
 
-export class Player implements IDrawable, IHasHealth, IPlayer {
+export class Player extends Entity implements IDrawable, IHasHealth, IPlayer {
     private _location: IPoint
     private _oldLocation: IPoint
     private _radius: number = 25
@@ -25,10 +26,11 @@ export class Player implements IDrawable, IHasHealth, IPlayer {
     private _direction = Direction.Up
 
     constructor(location: IPoint, myScreen: IMyScreen) {
+        super()
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
-        this._collisionCircle = new CircleCollision(this._location, this._radius + 3)
+        this._collisionCircle = new CircleCollision(this._location, this._radius + 3, this)
     }
 
     public getLocation(): IPoint {
@@ -75,7 +77,7 @@ export class Player implements IDrawable, IHasHealth, IPlayer {
             this._leftPressed = true
         }
         else if (keyCode === Keycode.SPACE) {
-            if(this._weapon) {
+            if (this._weapon) {
                 this._weapon.attack()
             }
         }

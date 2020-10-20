@@ -1,9 +1,10 @@
-import { Direction, IHasAI, IHasHealth, IMyScreen, IUpdatable, IPlayer } from '.'
+import { Direction, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable } from '.'
 import { Colors, IColor, IDrawable, IPoint } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
 import { EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { Entity } from './entity'
 
-export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
+export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
     private _oldLocation: IPoint
     private readonly _radius: number = 25
@@ -21,10 +22,11 @@ export class Enemy implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHa
     private _currentHealth: number = 100
 
     constructor(location: IPoint, myScreen: IMyScreen) {
+        super()
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
-        this._collisionShape = new EnemyCollision(location, this._radius + 3)
+        this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
     }
 
     public getLocation(): IPoint {

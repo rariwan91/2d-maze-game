@@ -1,8 +1,9 @@
-import { Direction, IMyScreen, IWeapon, IPlayer, WeaponState } from '.'
-import { ICollidable, IHasCollisions, CircleCollision, EnemyCollision } from './collision'
-import { Colors, IPoint } from '../gui'
+import { Direction, IMyScreen, IPlayer, IWeapon, WeaponState } from '.'
+import { Colors, IColor, IPoint } from '../gui'
+import { CircleCollision, ICollidable } from './collision'
+import { Entity } from './entity'
 
-export class Sword implements IWeapon, IHasCollisions {
+export class Sword extends Entity implements IWeapon {
     private readonly _myScreen: IMyScreen
     private _character: IPlayer
 
@@ -19,8 +20,11 @@ export class Sword implements IWeapon, IHasCollisions {
     private _acceptingAttacks = true
     private _hitboxes: CircleCollision[] = []
     private _isColliding = false
+    private _noCollisionColor: IColor = Colors.Green
+    private _yesCollisionColor: IColor = Colors.Red
 
     constructor(myScreen: IMyScreen) {
+        super()
         this._myScreen = myScreen
     }
 
@@ -31,6 +35,7 @@ export class Sword implements IWeapon, IHasCollisions {
     draw(): void {
         const startPoint = this.getStartPoint()
 
+        // Draw sword line
         this._myScreen.drawStraightLine(startPoint, {
             x: startPoint.x + this._swordLength * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - this._swordLength * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
@@ -41,6 +46,7 @@ export class Sword implements IWeapon, IHasCollisions {
             y: startPoint.y - this._handleLength * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }
 
+        // Draw sword guard line
         this._myScreen.drawStraightLine({
             x: guardStartPoint.x - (this._guardLength / 2.0) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: guardStartPoint.y - (this._guardLength / 2.0) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0)
@@ -48,6 +54,16 @@ export class Sword implements IWeapon, IHasCollisions {
             x: guardStartPoint.x + (this._guardLength / 2.0) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: guardStartPoint.y + (this._guardLength / 2.0) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, Colors.Black)
+
+        // Draw collision circles
+        this._hitboxes.forEach(hitbox => {
+            if (this._isColliding) {
+                this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._yesCollisionColor)
+            }
+            else {
+                this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._noCollisionColor)
+            }
+        });
     }
 
     private getStartPoint(): IPoint {
@@ -111,7 +127,7 @@ export class Sword implements IWeapon, IHasCollisions {
     }
 
     update(deltaTime: number) {
-        if(!this._character) return
+        if (!this._character) return
 
         this.updateSword(deltaTime)
         this.draw()
@@ -170,17 +186,69 @@ export class Sword implements IWeapon, IHasCollisions {
             const newAngleMoved = Math.max(this._angleMoved - this._returningAngleChangeRate * deltaTime, 0)
             this._angleMoved = newAngleMoved
         }
+
+        const startPoint = this.getStartPoint()
+        this._hitboxes[0].setLocation({
+            x: startPoint.x + this._swordLength * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - this._swordLength * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        })
+        this._hitboxes[1].setLocation({
+            x: startPoint.x + (this._swordLength - 10) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 10) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        })
+        this._hitboxes[2].setLocation({
+            x: startPoint.x + (this._swordLength - 20) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 20) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        })
+        this._hitboxes[3].setLocation({
+            x: startPoint.x + (this._swordLength - 30) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 30) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        })
+        this._hitboxes[4].setLocation({
+            x: startPoint.x + (this._swordLength - 40) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 40) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        })
+        this._hitboxes[5].setLocation({
+            x: startPoint.x + (this._swordLength - 50) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 50) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        })
     }
 
     public attachToPlayer(player: IPlayer): void {
         player.equipWeapon(this)
         this._character = player
+        const startPoint = this.getStartPoint()
+        this._hitboxes.push(new CircleCollision({
+            x: startPoint.x + this._swordLength * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - this._swordLength * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        }, 10, this))
+        this._hitboxes.push(new CircleCollision({
+            x: startPoint.x + (this._swordLength - 10) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 10) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        }, 10, this))
+        this._hitboxes.push(new CircleCollision({
+            x: startPoint.x + (this._swordLength - 20) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 20) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        }, 10, this))
+        this._hitboxes.push(new CircleCollision({
+            x: startPoint.x + (this._swordLength - 30) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 30) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        }, 10, this))
+        this._hitboxes.push(new CircleCollision({
+            x: startPoint.x + (this._swordLength - 40) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 40) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        }, 10, this))
+        this._hitboxes.push(new CircleCollision({
+            x: startPoint.x + (this._swordLength - 50) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
+            y: startPoint.y - (this._swordLength - 50) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
+        }, 10, this))
     }
 
     public detachFromPlayer(): void {
-        if(this._character){
+        if (this._character) {
             this._character.unequipWeapon(this)
             this._character = null
+            this._hitboxes = []
         }
     }
 
@@ -195,5 +263,9 @@ export class Sword implements IWeapon, IHasCollisions {
 
     public collisionEnded(): void {
         this._isColliding = false
+    }
+
+    public getEntity(): Entity {
+        return this
     }
 }

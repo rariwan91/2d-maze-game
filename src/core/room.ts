@@ -1,8 +1,9 @@
 import { IMyScreen, IRoom, IUpdatable } from '.'
 import { Colors, IDrawable, IPoint, ISize } from '../gui'
 import { ICollidable, IHasCollisions, WallCollision } from './collision'
+import { Entity } from './entity'
 
-export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
+export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCollisions {
     private _location: IPoint = { x: 20, y: 20 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
@@ -13,6 +14,7 @@ export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
     private _yesCollisionsColor = Colors.Red
 
     constructor(myScreen: IMyScreen) {
+        super()
         this._myScreen = myScreen
         this._size = {
             width: myScreen.getSize().width - 40,
@@ -25,28 +27,28 @@ export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
             }, {
                 height: 6,
                 width: this._size.width + 6
-            }),
+            }, this),
             new WallCollision({
                 x: this._location.x + this._size.width - 3,
                 y: this._location.y - 3
             }, {
                 height: this._size.height + 6,
                 width: 6
-            }),
+            }, this),
             new WallCollision({
                 x: this._location.x - 3,
                 y: this._location.y + this._size.height - 3
             }, {
                 height: 6,
                 width: this._size.width + 6
-            }),
+            }, this),
             new WallCollision({
                 x: this._location.x - 3,
                 y: this._location.y - 3
             }, {
                 height: this._size.height + 6,
                 width: 6
-            })
+            }, this)
         )
     }
 
@@ -93,5 +95,9 @@ export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
 
     public collisionEnded(): void {
         this._isColliding = false
+    }
+
+    public getEntity(): Entity {
+        return this
     }
 }

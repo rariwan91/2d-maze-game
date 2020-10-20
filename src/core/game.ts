@@ -1,5 +1,6 @@
-import { Enemy, IPlayer, MyScreen, Player, Room, Sword, IWeapon } from '.'
+import { Enemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
+import { ICollidable } from './collision'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -38,9 +39,14 @@ export class Game {
         const roomCollisionShapes = this._activeRoom.getCollisionShapes()
         const playerCollisionShapes = this._player.getCollisionShapes()
         const enemyCollisionShapes = this._enemies[0].getCollisionShapes()
+        const playerWeaponCollisionShapes = this._weapons[0].getCollisionShapes()
 
         const roomCollisions = playerCollisionShapes[0].isCollidingWithShapes(roomCollisionShapes)
-        const enemyCollisions = playerCollisionShapes[0].isCollidingWithShapes(enemyCollisionShapes)
+        const enemiesCollidingWithPlayer = playerCollisionShapes[0].isCollidingWithShapes(enemyCollisionShapes)
+        const enemiesCollidingWithPlayerWeapons: ICollidable[] = []
+        playerWeaponCollisionShapes.forEach((weaponShape) => {
+            const enemiesCollidingWithCurrentPlayerWeapon = weaponShape.isCollidingWithShapes(enemyCollisionShapes)
+        })
         if (roomCollisions && roomCollisions.length > 0) {
             this._player.collisionStarted(roomCollisions)
             this._activeRoom.collisionStarted(playerCollisionShapes)
@@ -49,15 +55,15 @@ export class Game {
             this._activeRoom.collisionEnded()
         }
 
-        if (enemyCollisions && enemyCollisions.length > 0) {
-            this._player.collisionStarted(enemyCollisions)
+        if (enemiesCollidingWithPlayer && enemiesCollidingWithPlayer.length > 0) {
+            this._player.collisionStarted(enemiesCollidingWithPlayer)
             this._enemies[0].collisionStarted(playerCollisionShapes)
         }
         else {
             this._enemies[0].collisionEnded()
         }
 
-        if ((!roomCollisions || roomCollisions.length < 1) && (!enemyCollisions || enemyCollisions.length < 1)) {
+        if ((!roomCollisions || roomCollisions.length < 1) && (!enemiesCollidingWithPlayer || enemiesCollidingWithPlayer.length < 1)) {
             this._player.collisionEnded()
         }
 
