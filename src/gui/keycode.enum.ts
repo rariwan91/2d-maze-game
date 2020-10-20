@@ -1,4 +1,4 @@
-export enum Keycodes {
+export enum Keycode {
     Up = 'ArrowUp',
     Right = 'ArrowRight',
     Down = 'ArrowDown',
@@ -8,5 +8,6 @@ export enum Keycodes {
     S = 's',
     A = 'a',
     Q = 'q',
-    ESC = 'Escape'
+    ESC = 'Escape',
+    SPACE = ' '
 }

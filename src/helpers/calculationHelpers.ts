@@ -1,5 +1,5 @@
-import { Direction } from '../core'
-import { IPoint } from '../gui'
+import { Direction } from '../core/direction.enum'
+import { IPoint } from '../gui/point.h'
 
 export function calculateVelocity(direction: Direction, maxSpeed: number): IPoint {
     if(direction === Direction.Up) {

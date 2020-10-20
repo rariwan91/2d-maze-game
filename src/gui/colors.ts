@@ -1,5 +1,5 @@
 import { constants } from 'buffer'
-import { IColor } from '.'
+import { IColor } from './color.h'
 
 export class Colors {
     public static Red: IColor = { r: 255, g: 0, b: 0 }

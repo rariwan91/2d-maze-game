@@ -1,4 +1,7 @@
-import { ICircle, IPoint, IRectangle, ISize } from '../gui'
+import { ICircle } from '../gui/circle.h'
+import { IPoint } from '../gui/point.h'
+import { IRectangle } from '../gui/rectangle.h'
+import { ISize } from '../gui/size.h'
 
 export function isPointValid(point: IPoint, screenSize: ISize) {
     return point.x >= 0 &&

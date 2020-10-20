@@ -1,5 +1,8 @@
-import { Direction, Enemy, MyScreen, Player, Room } from '.'
-import { Keycodes } from '../gui'
+import { Enemy } from './enemy'
+import { MyScreen } from './myScreen'
+import { Player } from './player'
+import { Room } from './room'
+import { Keycode } from '../gui/keycode.enum'
 
 export class Game {
     private readonly _screen: MyScreen
@@ -70,42 +73,48 @@ export class Game {
 
     public keydown(event: KeyboardEvent): void {
         switch (event.key) {
-            case Keycodes.Up:
-            case Keycodes.W:
-                this._player.directionPressed(Direction.Up)
+            case Keycode.Up:
+            case Keycode.W:
+                this._player.keyPressed(Keycode.Up)
                 break
-            case Keycodes.Right:
-            case Keycodes.D:
-                this._player.directionPressed(Direction.Right)
+            case Keycode.Right:
+            case Keycode.D:
+                this._player.keyPressed(Keycode.Right)
                 break
-            case Keycodes.Down:
-            case Keycodes.S:
-                this._player.directionPressed(Direction.Down)
+            case Keycode.Down:
+            case Keycode.S:
+                this._player.keyPressed(Keycode.Down)
                 break
-            case Keycodes.Left:
-            case Keycodes.A:
-                this._player.directionPressed(Direction.Left)
+            case Keycode.Left:
+            case Keycode.A:
+                this._player.keyPressed(Keycode.Left)
+                break
+            case Keycode.SPACE:
+                this._player.keyPressed(Keycode.SPACE)
                 break
         }
     }
 
     public keyup(event: KeyboardEvent): void {
         switch (event.key) {
-            case Keycodes.Up:
-            case Keycodes.W:
-                this._player.directionReleased(Direction.Up)
+            case Keycode.Up:
+            case Keycode.W:
+                this._player.keyReleased(Keycode.Up)
                 break
-            case Keycodes.Right:
-            case Keycodes.D:
-                this._player.directionReleased(Direction.Right)
+            case Keycode.Right:
+            case Keycode.D:
+                this._player.keyReleased(Keycode.Right)
                 break
-            case Keycodes.Down:
-            case Keycodes.S:
-                this._player.directionReleased(Direction.Down)
+            case Keycode.Down:
+            case Keycode.S:
+                this._player.keyReleased(Keycode.Down)
                 break
-            case Keycodes.Left:
-            case Keycodes.A:
-                this._player.directionReleased(Direction.Left)
+            case Keycode.Left:
+            case Keycode.A:
+                this._player.keyReleased(Keycode.Left)
+                break
+            case Keycode.SPACE:
+                this._player.keyReleased(Keycode.SPACE)
                 break
         }
     }

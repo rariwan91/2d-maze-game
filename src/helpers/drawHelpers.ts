@@ -1,5 +1,8 @@
-import { Direction, IMyScreen } from "../core";
-import { Colors, IColor, IPoint } from "../gui";
+import { Direction } from '../core/direction.enum'
+import { IMyScreen } from '../core/myScreen.h'
+import { Colors } from '../gui/colors'
+import { IColor } from '../gui/color.h'
+import { IPoint } from '../gui/point.h'
 
 export function drawCharacter(screen: IMyScreen, location: IPoint, radius: number, direction: Direction, mainColor: IColor, secondaryColor: IColor) {
     // draw character circle

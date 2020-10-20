@@ -1,6 +1,13 @@
-import { IMyScreen, IRoom, IUpdatable } from '.'
-import { Colors, IDrawable, IPoint, ISize } from '../gui'
-import { ICollidable, IHasCollisions, WallCollision } from './collision'
+import { IMyScreen} from './myScreen.h'
+import { IRoom } from './room.h'
+import { IUpdatable } from './updatable.h'
+import { Colors } from '../gui/colors'
+import { IDrawable } from '../gui/drawable.h'
+import { IPoint } from '../gui/point.h'
+import { ISize } from '../gui/size.h'
+import { ICollidable } from './collision/collidable.h'
+import { IHasCollisions } from './collision/hasCollisions.h'
+import { WallCollision } from './collision/wallCollision'
 
 export class Room implements IDrawable, IRoom, IUpdatable, IHasCollisions {
     private _location: IPoint = { x: 20, y: 20 }

@@ -1,5 +1,6 @@
-import { BoxCollision, ICollidable } from '.'
-import { IPoint } from '../../gui'
+import { BoxCollision } from './boxCollision'
+import { ICollidable } from './collidable.h'
+import { IPoint } from '../../gui/point.h'
 
 export class CircleCollision implements ICollidable {
     private _location: IPoint

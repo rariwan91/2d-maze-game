@@ -1,5 +1,6 @@
-import { IMyScreen } from "../core";
-import { Colors, IPoint } from "../gui";
+import { IMyScreen } from '../core/myScreen.h'
+import { Colors } from '../gui/colors'
+import { IPoint } from '../gui/point.h'
 
 export function clearOldCollision(screen: IMyScreen, oldCollisionLocation: IPoint, collisionRadius: number) {
     screen.drawRect({

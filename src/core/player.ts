@@ -1,14 +1,29 @@
-import { Direction, IControllable, IHasHealth, IMyScreen, IUpdatable } from '.'
-import { Colors, IColor, IDrawable, IPoint } from '../gui'
-import { calculateNewPosition, calculateVelocity, clearOldCharacter, clearOldCollision, clearOldHealthBar, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
-import { CircleCollision, EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { Direction } from './direction.enum'
+import { IControllable } from './controllable.h'
+import { IHasHealth } from './hasHealth.h'
+import { IMyScreen } from './myScreen.h'
+import { IUpdatable } from './updatable.h'
+import { IWeapon } from './weapon.h'
+import { Sword } from './sword'
+import { Colors } from '../gui/colors'
+import { IColor } from '../gui/color.h'
+import { IDrawable } from '../gui/drawable.h'
+import { IPoint } from '../gui/point.h'
+import { Keycode } from '../gui/keycode.enum'
+import { calculateNewPosition, calculateVelocity } from '../helpers/calculationHelpers'
+import { clearOldCharacter, clearOldCollision, clearOldHealthBar } from '../helpers/clearHelpers'
+import { getDirection } from '../helpers/directionHelpers'
+import { drawCharacter, drawCollision, drawHealthBar } from '../helpers/drawHelpers'
+import { CircleCollision } from './collision/circleCollision'
+import { EnemyCollision } from './collision/enemyCollision'
+import { ICollidable } from './collision/collidable.h'
+import { IHasCollisions } from './collision/hasCollisions.h'
+import { WallCollision } from './collision/wallCollision'
 
 export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisions, IHasHealth {
     private _location: IPoint
     private _oldLocation: IPoint
     private _radius: number = 25
-    private _direction: Direction = Direction.Up
-    private _isMoving: boolean = false
     private readonly _myScreen: IMyScreen
     private readonly _movementSpeed = 200
     private _collisionCircle: CircleCollision
@@ -19,34 +34,50 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
     private _yesCollisionColor: IColor = Colors.Red
     private _maxHealth: number = 100
     private _currentHealth: number = 100
+    private _weapon: IWeapon
+    private _upPressed = false
+    private _rightPressed = false
+    private _downPressed = false
+    private _leftPressed = false
+    private _direction = Direction.Up
 
     constructor(location: IPoint, myScreen: IMyScreen) {
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionCircle = new CircleCollision(this._location, this._radius + 3)
+        this._weapon = new Sword(this._myScreen, this)
     }
 
     public getLocation(): IPoint {
         return this._location
     }
 
-    public setLocation(location: IPoint) {
-        this._location = location
+    public getOldLocation(): IPoint {
+        return this._oldLocation
     }
 
     public getRadius(): number {
         return this._radius
     }
 
-    public setRadius(radius: number) {
-        this._radius = radius
+    public getMostRecentDirection(): Direction {
+        return this._direction
+    }
+    
+    public getDirection(): Direction {
+        return getDirection(this._upPressed, this._rightPressed, this._downPressed, this._leftPressed)
+    }
+
+    public isMoving(): boolean {
+        return this.getDirection() !== Direction.None
     }
 
     public clearOld(): void {
         clearOldCollision(this._myScreen, this._collisionCircle.getOldLocation(), this._collisionCircle.getRadius())
         clearOldCharacter(this._myScreen, this._oldLocation, this._radius)
         clearOldHealthBar(this._myScreen, this._oldLocation, this._radius)
+        this._weapon.clearOld()
     }
 
     public draw(): void {
@@ -55,129 +86,62 @@ export class Player implements IDrawable, IControllable, IUpdatable, IHasCollisi
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
 
-    public directionPressed(direction: Direction): void {
-        if (!this._isMoving) {
-            this._direction = direction
-            this._isMoving = true
-            return
+    public keyPressed(keyCode: Keycode) {
+        if(keyCode === Keycode.Up) {
+            this._upPressed = true
         }
-        switch (direction) {
-            case Direction.Up:
-                if (this._direction === Direction.Right) {
-                    this._direction = Direction.UpRight
-                }
-                else if (this._direction === Direction.Left) {
-                    this._direction = Direction.UpLeft
-                }
-                else {
-                    this._direction = Direction.Up
-                }
-                this._isMoving = true
-                break;
-            case Direction.Right:
-                if (this._direction === Direction.Up) {
-                    this._direction = Direction.UpRight
-                }
-                else if (this._direction === Direction.Down) {
-                    this._direction = Direction.DownRight
-                }
-                else {
-                    this._direction = Direction.Right
-                }
-                this._isMoving = true
-                break;
-            case Direction.Down:
-                if (this._direction === Direction.Right) {
-                    this._direction = Direction.DownRight
-                }
-                else if (this._direction === Direction.Left) {
-                    this._direction = Direction.DownLeft
-                }
-                else {
-                    this._direction = Direction.Down
-                }
-                this._isMoving = true
-                break;
-            case Direction.Left:
-                if (this._direction === Direction.Up) {
-                    this._direction = Direction.UpLeft
-                }
-                else if (this._direction === Direction.DownLeft) {
-                    this._direction = Direction.DownLeft
-                }
-                else {
-                    this._direction = Direction.Left
-                }
-                this._isMoving = true
-                break
+        else if(keyCode === Keycode.Right) {
+            this._rightPressed = true
+        }
+        else if(keyCode === Keycode.Down) {
+            this._downPressed = true
+        }
+        else if(keyCode === Keycode.Left) {
+            this._leftPressed = true
+        }
+        else if(keyCode === Keycode.SPACE) {
+            this._weapon.attack()
         }
     }
 
-    public directionReleased(direction: Direction): void {
-        switch (direction) {
-            case Direction.Up:
-                if (this._direction === Direction.UpRight) {
-                    this._direction = Direction.Right
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.UpLeft) {
-                    this._direction = Direction.Left
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.Up) {
-                    this._isMoving = false
-                }
-                break;
-            case Direction.Right:
-                if (this._direction === Direction.UpRight) {
-                    this._direction = Direction.Up
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.DownRight) {
-                    this._direction = Direction.DownRight
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.Right) {
-                    this._isMoving = false
-                }
-                break;
-            case Direction.Down:
-                if (this._direction === Direction.DownRight) {
-                    this._direction = Direction.Right
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.DownLeft) {
-                    this._direction = Direction.Left
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.Down) {
-                    this._isMoving = false
-                }
-                break;
-            case Direction.Left:
-                if (this._direction === Direction.UpLeft) {
-                    this._direction = Direction.Up
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.DownLeft) {
-                    this._direction = Direction.Down
-                    this._isMoving = true
-                }
-                else if (this._direction === Direction.Left) {
-                    this._isMoving = false
-                }
-                break;
+    public keyReleased(keyCode: Keycode) {
+        if(keyCode === Keycode.Up) {
+            this._upPressed = false
+        }
+        else if(keyCode === Keycode.Right) {
+            this._rightPressed = false
+        }
+        else if(keyCode === Keycode.Down) {
+            this._downPressed = false
+        }
+        else if(keyCode === Keycode.Left) {
+            this._leftPressed = false
+        }
+        if(keyCode === Keycode.SPACE) {
+
         }
     }
 
     public update(deltaTime: number): void {
+        this.updateDirection()
         this.calculateLocation(deltaTime)
         this._collisionCircle.setLocation(this._location)
         this.draw()
+        if(this._weapon) {
+            this._weapon.update(deltaTime)
+        }
     }
 
+    private updateDirection(): void {
+        const newDirection = this.getDirection()
+        if(newDirection !== Direction.None) {
+            this._direction = newDirection
+        }
+    }
+ 
     private calculateLocation(deltaTime: number): void {
-        if (!this._isMoving) return
+        if (!this.isMoving()) return
+        // if(this._weapon && this._weapon.getState() === WeaponState.Swinging) return
 
         const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
         const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)

@@ -1,6 +1,4 @@
-import { Direction } from './direction.enum';
-
 export interface IControllable {
-    directionPressed(direction: Direction): void
-    directionReleased(direction: Direction): void
+    keyPressed(key: string): void
+    keyReleased(key: string): void
 }
