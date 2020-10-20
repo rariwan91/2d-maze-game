@@ -1,9 +1,10 @@
-import { Direction, IMyScreen, IPlayer, IWeapon, WeaponState } from '.'
+import { Direction, IMyScreen, IPlayer, WeaponState } from '.'
 import { Colors, IColor, IPoint } from '../gui'
-import { CircleCollision, ICollidable } from './collision'
+import { ICollidable, PlayerWeaponCollision } from './collision'
 import { Entity } from './entity'
+import { Weapon } from './weapon'
 
-export class Sword extends Entity implements IWeapon {
+export class Sword extends Weapon {
     private readonly _myScreen: IMyScreen
     private _character: IPlayer
 
@@ -18,7 +19,7 @@ export class Sword extends Entity implements IWeapon {
     private readonly _returningAngleChangeRate = 500
     private _state = WeaponState.Resting
     private _acceptingAttacks = true
-    private _hitboxes: CircleCollision[] = []
+    private _hitboxes: PlayerWeaponCollision[] = []
     private _isColliding = false
     private _noCollisionColor: IColor = Colors.Green
     private _yesCollisionColor: IColor = Colors.Red
@@ -218,27 +219,27 @@ export class Sword extends Entity implements IWeapon {
         player.equipWeapon(this)
         this._character = player
         const startPoint = this.getStartPoint()
-        this._hitboxes.push(new CircleCollision({
+        this._hitboxes.push(new PlayerWeaponCollision({
             x: startPoint.x + this._swordLength * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - this._swordLength * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, 10, this))
-        this._hitboxes.push(new CircleCollision({
+        this._hitboxes.push(new PlayerWeaponCollision({
             x: startPoint.x + (this._swordLength - 10) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - (this._swordLength - 10) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, 10, this))
-        this._hitboxes.push(new CircleCollision({
+        this._hitboxes.push(new PlayerWeaponCollision({
             x: startPoint.x + (this._swordLength - 20) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - (this._swordLength - 20) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, 10, this))
-        this._hitboxes.push(new CircleCollision({
+        this._hitboxes.push(new PlayerWeaponCollision({
             x: startPoint.x + (this._swordLength - 30) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - (this._swordLength - 30) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, 10, this))
-        this._hitboxes.push(new CircleCollision({
+        this._hitboxes.push(new PlayerWeaponCollision({
             x: startPoint.x + (this._swordLength - 40) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - (this._swordLength - 40) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, 10, this))
-        this._hitboxes.push(new CircleCollision({
+        this._hitboxes.push(new PlayerWeaponCollision({
             x: startPoint.x + (this._swordLength - 50) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - (this._swordLength - 50) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, 10, this))

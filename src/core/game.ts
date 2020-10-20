@@ -1,6 +1,7 @@
 import { Enemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
+import { Entity } from './entity'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -43,10 +44,24 @@ export class Game {
 
         const roomCollisions = playerCollisionShapes[0].isCollidingWithShapes(roomCollisionShapes)
         const enemiesCollidingWithPlayer = playerCollisionShapes[0].isCollidingWithShapes(enemyCollisionShapes)
-        const enemiesCollidingWithPlayerWeapons: ICollidable[] = []
+        const enemiesCollidingWithPlayerWeapons = new Map<Entity, ICollidable>()
         playerWeaponCollisionShapes.forEach((weaponShape) => {
             const enemiesCollidingWithCurrentPlayerWeapon = weaponShape.isCollidingWithShapes(enemyCollisionShapes)
+            enemiesCollidingWithCurrentPlayerWeapon.forEach(enemyShape => {
+                if(!enemiesCollidingWithPlayerWeapons.has(enemyShape.getEntity())) {
+                    enemiesCollidingWithPlayerWeapons.set(enemyShape.getEntity(), weaponShape)
+                }
+            })
         })
+        if(enemiesCollidingWithPlayerWeapons.size > 0) {
+            console.log('informing enemy and weapon of collision')
+            this._enemies[0].collisionStarted(playerWeaponCollisionShapes)
+            this._weapons[0].collisionStarted(enemyCollisionShapes)
+        }
+        else {
+            this._weapons[0].collisionEnded()
+        }
+
         if (roomCollisions && roomCollisions.length > 0) {
             this._player.collisionStarted(roomCollisions)
             this._activeRoom.collisionStarted(playerCollisionShapes)
@@ -59,7 +74,8 @@ export class Game {
             this._player.collisionStarted(enemiesCollidingWithPlayer)
             this._enemies[0].collisionStarted(playerCollisionShapes)
         }
-        else {
+
+        if(enemiesCollidingWithPlayerWeapons.size < 1 && (!enemiesCollidingWithPlayer || enemiesCollidingWithPlayer.length < 1)) {
             this._enemies[0].collisionEnded()
         }
 

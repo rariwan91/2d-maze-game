@@ -1,8 +1,10 @@
 import { Direction, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable } from '.'
 import { Colors, IColor, IDrawable, IPoint } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
-import { EnemyCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { EnemyCollision, ICollidable, IHasCollisions, PlayerWeaponCollision, WallCollision } from './collision'
 import { Entity } from './entity'
+import { Sword } from './sword'
+import { IWeapon } from './weapon.h'
 
 export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
@@ -132,12 +134,21 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
         return [this._collisionShape]
     }
 
+    private _lastTookDamage: number
     public collisionStarted(shapes: ICollidable[]): void {
         this._isColliding = true
 
         shapes.forEach(shape => {
             if (shape instanceof WallCollision) {
                 this._location = this._oldLocation
+            }
+            else if(shape instanceof PlayerWeaponCollision) {
+                const weapon = shape.getEntity() as Sword
+
+                if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+                    this.takeDamage(10)
+                    this._lastTookDamage = Date.now()
+                }
             }
         })
     }
