@@ -22,11 +22,14 @@ export class Game {
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
         }, this._myScreen)
 
+        // This enemy will chase you down. This is annoying when I'm trying to test
+        // something other than that.
         // this._enemies.push(new Enemy({
         //     x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
         //     y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
         // }, this._myScreen, this._player))
 
+        // This enemy will just stand there.
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2

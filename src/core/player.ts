@@ -1,7 +1,7 @@
-import { Direction, IMyScreen, IPlayer, IWeapon, PlayerState } from '.'
+import { Direction, Enemy, IMyScreen, IPlayer, IWeapon, PlayerState, Room } from '.'
 import { Colors, IPoint, Keycode } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../helpers'
-import { CircleCollision, EnemyCollision, ICollidable, WallCollision } from './collision'
+import { CircleCollision, ICollidable } from './collision'
 import { Entity } from './entity'
 
 export class Player extends Entity implements IPlayer {
@@ -26,6 +26,7 @@ export class Player extends Entity implements IPlayer {
     private _direction = Direction.Up
     private _state = PlayerState.Normal
     private _entitiesCollidingWithMe: Entity[] = []
+    private _lastTookDamage: number
 
     constructor(location: IPoint, myScreen: IMyScreen) {
         super()
@@ -109,9 +110,23 @@ export class Player extends Entity implements IPlayer {
     }
 
     public update(deltaTime: number): void {
+        this._entitiesCollidingWithMe.forEach(entity => {
+            if (entity instanceof Room) {
+                this._location = this._oldLocation
+            }
+            else if (entity instanceof Enemy) {
+                if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+                    this.takeDamage(10)
+                    this._lastTookDamage = Date.now()
+                    this._state = PlayerState.InvincibleDueToDamage
+                }
+            }
+        })
+
         if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
             this._state = PlayerState.Normal
         }
+
         this.updateDirection()
         this.calculateLocation(deltaTime)
         this._collisionCircle.setLocation(this._location)
@@ -143,22 +158,6 @@ export class Player extends Entity implements IPlayer {
 
     private isColliding(): boolean {
         return this._entitiesCollidingWithMe.length > 0
-    }
-
-    private _lastTookDamage: number
-    public collisionStarted(shapes: ICollidable[]): void {
-        shapes.forEach(shape => {
-            if (shape instanceof WallCollision) {
-                this._location = this._oldLocation
-            }
-            else if (shape instanceof EnemyCollision) {
-                if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
-                    this.takeDamage(10)
-                    this._lastTookDamage = Date.now()
-                    this._state = PlayerState.InvincibleDueToDamage
-                }
-            }
-        })
     }
 
     public checkForCollisionsWith(shapes: ICollidable[]): void {
