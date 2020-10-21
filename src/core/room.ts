@@ -1,6 +1,6 @@
 import { IMyScreen, IRoom, IUpdatable } from '.'
 import { Colors, IDrawable, IPoint, ISize } from '../gui'
-import { ICollidable, IHasCollisions, WallCollision } from './collision'
+import { CollisionConfig, ICollidable, IHasCollisions, WallCollision } from './collision'
 import { Entity } from './entity'
 
 export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCollisions {
@@ -71,16 +71,17 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
     public draw(): void {
         this._myScreen.drawRect(this.getLocation(), this.getSize(), this._mainColor)
 
-        // draw collision boxes
-        if (this.isColliding()) {
-            this._walls.forEach(collisionBox => {
-                this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._yesCollisionsColor)
-            })
-        }
-        else {
-            this._walls.forEach(collisionBox => {
-                this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._noCollisionsColor)
-            })
+        if(CollisionConfig && CollisionConfig.Rooms.ShowCollisionBoxes) {
+            if (this.isColliding()) {
+                this._walls.forEach(collisionBox => {
+                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._yesCollisionsColor)
+                })
+            }
+            else {
+                this._walls.forEach(collisionBox => {
+                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._noCollisionsColor)
+                })
+            }
         }
     }
 

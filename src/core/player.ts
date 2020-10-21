@@ -1,7 +1,7 @@
 import { Direction, Enemy, IMyScreen, IPlayer, IWeapon, PlayerState, Room } from '.'
 import { Colors, IPoint, Keycode } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../helpers'
-import { CircleCollision, ICollidable } from './collision'
+import { CircleCollision, CollisionConfig, ICollidable } from './collision'
 import { Entity } from './entity'
 
 export class Player extends Entity implements IPlayer {
@@ -62,12 +62,16 @@ export class Player extends Entity implements IPlayer {
 
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
-        if(this._state === PlayerState.InvincibleDueToDamage) {
-            drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+
+        if(CollisionConfig && CollisionConfig.Players.ShowCollisionBoxes) {
+            if(this._state === PlayerState.InvincibleDueToDamage) {
+                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+            }
+            else {
+                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+            }
         }
-        else {
-            drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
-        }
+
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
 

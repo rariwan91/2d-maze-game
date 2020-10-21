@@ -1,5 +1,6 @@
 import { Enemy, EnemyState, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
+import { ICollidable } from './collision'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -22,18 +23,12 @@ export class Game {
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
         }, this._myScreen)
 
-        // This enemy will chase you down. This is annoying when I'm trying to test
+        // These enemies will chase you down. This is annoying when I'm trying to test
         // something other than that.
-        // this._enemies.push(new Enemy({
-        //     x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-        //     y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        // }, this._myScreen, this._player))
+        // this.createEnemies()
 
-        // This enemy will just stand there.
-        this._enemies.push(new Enemy({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player, EnemyState.TargetDummy))
+        // These enemies will just stand there.
+        this.createEnemies(EnemyState.TargetDummy)
 
         this._weapons[0].attachToPlayer(this._player)
 
@@ -45,15 +40,37 @@ export class Game {
 
         const roomCollidables = this._activeRoom.getCollisionShapes()
         const playerCollidables = this._player.getCollisionShapes()
-        const enemyCollidables = this._enemies[0].getCollisionShapes()
-        const playerWeaponCollidables = this._weapons[0].getCollisionShapes()
+
+        const enemyCollidables: ICollidable[] = []
+        const playerWeaponCollidables: ICollidable[] = []
+
+        this._enemies.forEach(enemy => {
+            const enemyCollisions = enemy.getCollisionShapes()
+            enemyCollisions.forEach(collision => {
+                enemyCollidables.push(collision)
+            });
+        });
+
+        this._weapons.forEach(weapon => {
+            const weaponCollisions = weapon.getCollisionShapes()
+            weaponCollisions.forEach(collision => {
+                playerWeaponCollidables.push(collision)
+            })
+        })
 
         // Have player check for collisions with room and enemies
         this._player.checkForCollisionsWith(roomCollidables.concat(enemyCollidables))
+
         // Have enemies check for collisions with room, player, and player weapons
-        this._enemies[0].checkForCollisionsWith(roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables))
+        const enemyConcerns = roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables)
+        this._enemies.forEach(enemy => {
+            enemy.checkForCollisionsWith(enemyConcerns)
+        })
+
         // Have player weapons check for collisions with enemies
-        this._weapons[0].checkForCollisionsWith(enemyCollidables)
+        this._weapons.forEach(weapon => {
+            weapon.checkForCollisionsWith(enemyCollidables)
+        })
 
         this._player.update((time - this._lastTime) / 1000.0)
         this._enemies.forEach(enemy => {
@@ -110,5 +127,28 @@ export class Game {
                 this._player.keyReleased(Keycode.SPACE)
                 break
         }
+    }
+
+    private createEnemies(initialEnemyState = EnemyState.Moving) {
+        this._enemies.push(new Enemy({
+            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
+        }, this._myScreen, this._player, initialEnemyState))
+        this._enemies.push(new Enemy({
+            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 - 75,
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
+        }, this._myScreen, this._player, initialEnemyState))
+        this._enemies.push(new Enemy({
+            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 - 150,
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
+        }, this._myScreen, this._player, initialEnemyState))
+        this._enemies.push(new Enemy({
+            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 + 75,
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
+        }, this._myScreen, this._player, initialEnemyState))
+        this._enemies.push(new Enemy({
+            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 + 150,
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
+        }, this._myScreen, this._player, initialEnemyState))
     }
 }

@@ -1,9 +1,10 @@
 import { Direction, EnemyState, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable, Room } from '.'
 import { Colors, IDrawable, IPoint } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
-import { EnemyCollision, ICollidable, IHasCollisions, PlayerWeaponCollision, WallCollision } from './collision'
+import { CollisionConfig, EnemyCollision, ICollidable, IHasCollisions } from './collision'
 import { Entity } from './entity'
 import { Weapon } from './weapon'
+import { WeaponState } from './weaponState.enum'
 
 export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
@@ -49,12 +50,16 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
-        if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy) {
-            drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+
+        if(CollisionConfig && CollisionConfig.Enemies.ShowCollisionBoxes) {
+            if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy) {
+                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+            }
+            else if(this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
+                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+            }
         }
-        else if(this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
-            drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
-        }
+
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
 
@@ -64,7 +69,7 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
                 this._location = this._oldLocation
             }
             else if(entity instanceof Weapon) {
-                if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy) {
+                if((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy)) {
                     this.takeDamage(10)
                     this._lastTookDamage = Date.now()
                     const theirLoc = this._player.getLocation()

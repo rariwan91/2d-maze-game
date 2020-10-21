@@ -1,6 +1,6 @@
 import { Direction, IMyScreen, IPlayer, WeaponState } from '.'
 import { Colors, IColor, IPoint } from '../gui'
-import { ICollidable, PlayerWeaponCollision } from './collision'
+import { CollisionConfig, ICollidable, PlayerWeaponCollision } from './collision'
 import { Entity } from './entity'
 import { Weapon } from './weapon'
 
@@ -57,15 +57,16 @@ export class Sword extends Weapon {
             y: guardStartPoint.y + (this._guardLength / 2.0) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, Colors.Black)
 
-        // Draw collision circles
-        this._hitboxes.forEach(hitbox => {
-            if (this.isColliding()) {
-                this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._yesCollisionColor)
-            }
-            else {
-                this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._noCollisionColor)
-            }
-        });
+        if(CollisionConfig && CollisionConfig.Weapons.ShowCollisionBoxes) {
+            this._hitboxes.forEach(hitbox => {
+                if (this.isColliding()) {
+                    this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._yesCollisionColor)
+                }
+                else {
+                    this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._noCollisionColor)
+                }
+            })
+        }
     }
 
     private getStartPoint(): IPoint {
