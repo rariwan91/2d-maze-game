@@ -1,7 +1,5 @@
 import { Enemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
-import { ICollidable } from './collision'
-import { Entity } from './entity'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -27,7 +25,7 @@ export class Game {
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen))
+        }, this._myScreen, this._player))
 
         this._weapons[0].attachToPlayer(this._player)
 
@@ -37,55 +35,21 @@ export class Game {
     public updateTick(time: number): void {
         this._myScreen.clearScreen()
 
-        const roomCollisionShapes = this._activeRoom.getCollisionShapes()
-        const playerCollisionShapes = this._player.getCollisionShapes()
-        const enemyCollisionShapes = this._enemies[0].getCollisionShapes()
-        const playerWeaponCollisionShapes = this._weapons[0].getCollisionShapes()
+        const roomCollidables = this._activeRoom.getCollisionShapes()
+        const playerCollidables = this._player.getCollisionShapes()
+        const enemyCollidables = this._enemies[0].getCollisionShapes()
+        const playerWeaponCollidables = this._weapons[0].getCollisionShapes()
 
-        const roomCollisions = playerCollisionShapes[0].isCollidingWithShapes(roomCollisionShapes)
-        const enemiesCollidingWithPlayer = playerCollisionShapes[0].isCollidingWithShapes(enemyCollisionShapes)
-        const enemiesCollidingWithPlayerWeapons = new Map<Entity, ICollidable>()
-        playerWeaponCollisionShapes.forEach((weaponShape) => {
-            const enemiesCollidingWithCurrentPlayerWeapon = weaponShape.isCollidingWithShapes(enemyCollisionShapes)
-            enemiesCollidingWithCurrentPlayerWeapon.forEach(enemyShape => {
-                if(!enemiesCollidingWithPlayerWeapons.has(enemyShape.getEntity())) {
-                    enemiesCollidingWithPlayerWeapons.set(enemyShape.getEntity(), weaponShape)
-                }
-            })
-        })
-        if(enemiesCollidingWithPlayerWeapons.size > 0) {
-            console.log('informing enemy and weapon of collision')
-            this._enemies[0].collisionStarted(playerWeaponCollisionShapes)
-            this._weapons[0].collisionStarted(enemyCollisionShapes)
-        }
-        else {
-            this._weapons[0].collisionEnded()
-        }
-
-        if (roomCollisions && roomCollisions.length > 0) {
-            this._player.collisionStarted(roomCollisions)
-            this._activeRoom.collisionStarted(playerCollisionShapes)
-        }
-        else {
-            this._activeRoom.collisionEnded()
-        }
-
-        if (enemiesCollidingWithPlayer && enemiesCollidingWithPlayer.length > 0) {
-            this._player.collisionStarted(enemiesCollidingWithPlayer)
-            this._enemies[0].collisionStarted(playerCollisionShapes)
-        }
-
-        if(enemiesCollidingWithPlayerWeapons.size < 1 && (!enemiesCollidingWithPlayer || enemiesCollidingWithPlayer.length < 1)) {
-            this._enemies[0].collisionEnded()
-        }
-
-        if ((!roomCollisions || roomCollisions.length < 1) && (!enemiesCollidingWithPlayer || enemiesCollidingWithPlayer.length < 1)) {
-            this._player.collisionEnded()
-        }
+        // Have player check for collisions with room and enemies
+        this._player.checkForCollisionsWith(roomCollidables.concat(enemyCollidables))
+        // Have enemies check for collisions with room, player, and player weapons
+        this._enemies[0].checkForCollisionsWith(roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables))
+        // Have player weapons check for collisions with enemies
+        this._weapons[0].checkForCollisionsWith(enemyCollidables)
 
         this._player.update((time - this._lastTime) / 1000.0)
         this._enemies.forEach(enemy => {
-            enemy.aiTick(this._player)
+            enemy.aiTick()
             enemy.update((time - this._lastTime) / 1000.0)
         })
         this._rooms[0].update()

@@ -7,11 +7,11 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
     private _location: IPoint = { x: 20, y: 20 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
-    private readonly _collisionBoxes: WallCollision[] = []
-    private _isColliding = false
+    private readonly _walls: WallCollision[] = []
     private _mainColor = Colors.Black
     private _noCollisionsColor = Colors.Green
     private _yesCollisionsColor = Colors.Red
+    private _entitiesCollidingWithMe: Entity[] = []
 
     constructor(myScreen: IMyScreen) {
         super()
@@ -20,7 +20,7 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
             width: myScreen.getSize().width - 40,
             height: myScreen.getSize().height - 40
         }
-        this._collisionBoxes.push(
+        this._walls.push(
             new WallCollision({
                 x: this._location.x - 3,
                 y: this._location.y - 3
@@ -64,17 +64,21 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
         return this._size
     }
 
+    private isColliding(): boolean {
+        return this._entitiesCollidingWithMe.length > 0
+    }
+
     public draw(): void {
         this._myScreen.drawRect(this.getLocation(), this.getSize(), this._mainColor)
 
         // draw collision boxes
-        if (this._isColliding) {
-            this._collisionBoxes.forEach(collisionBox => {
+        if (this.isColliding()) {
+            this._walls.forEach(collisionBox => {
                 this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._yesCollisionsColor)
             })
         }
         else {
-            this._collisionBoxes.forEach(collisionBox => {
+            this._walls.forEach(collisionBox => {
                 this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._noCollisionsColor)
             })
         }
@@ -85,16 +89,23 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
     }
 
     public getCollisionShapes(): ICollidable[] {
-        return this._collisionBoxes
+        return this._walls
     }
 
-    public collisionStarted(shapes: ICollidable[]): void {
-        shapes
-        this._isColliding = true
-    }
+    public checkForCollisionsWith(collidables: ICollidable[]): void {
+        const entities: Entity[] = []
 
-    public collisionEnded(): void {
-        this._isColliding = false
+        collidables.forEach(collidable => {
+            const result = collidable.isCollidingWithShapes(this._walls)
+            if(!result || result.length > 0) {
+                const entity = collidable.getEntity()
+                if(!entities.includes(entity)) {
+                    entities.push(entity)
+                }
+            }
+        })
+
+        this._entitiesCollidingWithMe = entities
     }
 
     public getEntity(): Entity {

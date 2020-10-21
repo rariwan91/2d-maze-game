@@ -1,10 +1,8 @@
-import { Direction, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable } from '.'
-import { Colors, IColor, IDrawable, IPoint } from '../gui'
+import { Direction, EnemyState, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable } from '.'
+import { Colors, IDrawable, IPoint } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
 import { EnemyCollision, ICollidable, IHasCollisions, PlayerWeaponCollision, WallCollision } from './collision'
 import { Entity } from './entity'
-import { Sword } from './sword'
-import { IWeapon } from './weapon.h'
 
 export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
@@ -12,23 +10,28 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
     private readonly _radius: number = 25
     private _direction = Direction.Down
     private readonly _myScreen: IMyScreen
-    private _isColliding = false
     private _collisionShape: EnemyCollision
-    private _mainColor: IColor = Colors.Red
-    private _secondaryColor: IColor = Colors.Green
-    private _yesCollisionColor: IColor = Colors.Red
-    private _noCollisionColor: IColor = Colors.Green
+    private readonly _mainColor = Colors.Red
+    private readonly _secondaryColor = Colors.Green
+    private readonly _yesCollisionColor= Colors.Red
+    private readonly _noCollisionColor = Colors.Green
+    private readonly _invincibleColor = Colors.Blue
     private readonly _movementSpeed = 50
-    private _isMoving = false
+    private readonly _knockbackSpeed = 200
     private _maxHealth: number = 100
     private _currentHealth: number = 100
+    private _state = EnemyState.Stopped
+    private _knockbackAngle: number
+    private readonly _player: IPlayer
+    private _entitiesCollidingWithMe: Entity[] = []
 
-    constructor(location: IPoint, myScreen: IMyScreen) {
+    constructor(location: IPoint, myScreen: IMyScreen, player: IPlayer) {
         super()
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
+        this._player = player
     }
 
     public getLocation(): IPoint {
@@ -41,7 +44,12 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
-        drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this._isColliding)
+        if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped) {
+            drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+        }
+        else if(this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
+            drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+        }
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
 
@@ -51,9 +59,23 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
         this.draw()
     }
 
-    public aiTick(player: IPlayer): void {
+    public aiTick(): void {
+        if(this._state === EnemyState.KnockbackFromDamage) {
+            if(!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.25) {
+                this._state = EnemyState.InvincibleDueToDamage
+            }
+            return
+        }
+
+        if(this._state === EnemyState.InvincibleDueToDamage) {
+            if(!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.5) {
+                this._state = EnemyState.Moving
+            }
+            return
+        }
+
         const myLoc = this._location
-        const pLoc = player.getLocation()
+        const pLoc = this._player.getLocation()
         const deltaY = pLoc.y - myLoc.y
         const deltaX = pLoc.x - myLoc.x
         let angle = Math.atan(-deltaY / deltaX) * 180 / Math.PI
@@ -112,22 +134,42 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
             this._direction = Direction.DownRight
         }
 
-        // if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + player.getRadius(), 2)) {
-        //     this._isMoving = false
+        // if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._player.getRadius(), 2)) {
+        //     this._state = EnemyState.Stopped
         // }
         // else {
-        //     this._isMoving = true
+        //     this._state = EnemyState.Moving
         // }
     }
 
     private calculateLocation(deltaTime: number): void {
-        if (!this._isMoving) return
+        if(this._state === EnemyState.Moving) {
+            const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
+            const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)
+            this._oldLocation = this._location
+            this._location = newLocation
+        }
+        else if(this._state === EnemyState.KnockbackFromDamage) {
+            const theirLoc = this._player.getLocation()
+            const myLoc = this._location
+            const deltaX = myLoc.x - theirLoc.x
 
-        const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
-        const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)
+            let newVelocity: IPoint = {
+                x: this._knockbackSpeed * Math.cos(this._knockbackAngle * Math.PI / 180.0),
+                y: this._knockbackSpeed * Math.sin(this._knockbackAngle * Math.PI / 180.0)
+            }
+            let newLocation: IPoint = {
+                x: myLoc.x + newVelocity.x * deltaTime,
+                y: myLoc.y - newVelocity.y * deltaTime
+            }
 
-        this._oldLocation = this._location
-        this._location = newLocation
+            this._oldLocation = this._location
+            this._location = newLocation
+        }
+    }
+
+    private isColliding(): boolean {
+        return this._entitiesCollidingWithMe.length > 0
     }
 
     public getCollisionShapes(): ICollidable[] {
@@ -136,25 +178,44 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
     private _lastTookDamage: number
     public collisionStarted(shapes: ICollidable[]): void {
-        this._isColliding = true
-
         shapes.forEach(shape => {
             if (shape instanceof WallCollision) {
                 this._location = this._oldLocation
             }
             else if(shape instanceof PlayerWeaponCollision) {
-                const weapon = shape.getEntity() as Sword
-
-                if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+                if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped) {
                     this.takeDamage(10)
                     this._lastTookDamage = Date.now()
+                    const theirLoc = this._player.getLocation()
+                    const myLoc = this._location
+                    const deltaX = myLoc.x - theirLoc.x
+                    const deltaY = myLoc.y - theirLoc.y
+
+                    let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
+                    if(deltaX < 0 && deltaY < 0) {
+                        angle = 180 + angle
+                    }
+                    else if(deltaX < 0 && deltaY > 0) {
+                        angle = angle - 180
+                    }
+
+                    this._state = EnemyState.KnockbackFromDamage
+                    this._knockbackAngle = angle
                 }
             }
         })
     }
 
-    public collisionEnded(): void {
-        this._isColliding = false
+    public checkForCollisionsWith(shapes: ICollidable[]): void {
+        const collidingShapes = this._collisionShape.isCollidingWithShapes(shapes)
+        const collidingEntities: Entity[] = []
+        collidingShapes.forEach(collidable => {
+            const entity = collidable.getEntity()
+            if(!collidingEntities.includes(entity)) {
+                collidingEntities.push(entity)
+            }
+        })
+        this._entitiesCollidingWithMe = collidingEntities
     }
 
     public getMaxHealth(): number {

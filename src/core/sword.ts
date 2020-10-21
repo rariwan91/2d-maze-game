@@ -9,20 +9,21 @@ export class Sword extends Weapon {
     private _character: IPlayer
 
     private readonly _offset = 15
+    private readonly _secondOffset = 30
     private readonly _swordLength = 75
     private readonly _handleLength = 15
     private readonly _guardLength = 20
     private _startAngle = 90 + 22.5
     private _arcOfSwing = 90 + 45
     private _angleMoved = 0
-    private readonly _attackingAngleChangeRate = 500
-    private readonly _returningAngleChangeRate = 500
+    private readonly _attackingAngleChangeRate = 700
+    private readonly _returningAngleChangeRate = 700
     private _state = WeaponState.Resting
     private _acceptingAttacks = true
     private _hitboxes: PlayerWeaponCollision[] = []
-    private _isColliding = false
     private _noCollisionColor: IColor = Colors.Green
     private _yesCollisionColor: IColor = Colors.Red
+    private _entitiesCollidingWithMe: Entity[] = []
 
     constructor(myScreen: IMyScreen) {
         super()
@@ -58,7 +59,7 @@ export class Sword extends Weapon {
 
         // Draw collision circles
         this._hitboxes.forEach(hitbox => {
-            if (this._isColliding) {
+            if (this.isColliding()) {
                 this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._yesCollisionColor)
             }
             else {
@@ -74,56 +75,57 @@ export class Sword extends Weapon {
 
         if (direction === Direction.Up) {
             return {
-                x: pLoc.x + pRad + this._offset,
-                y: pLoc.y
+                x: pLoc.x + (pRad + this._offset) * Math.cos(Math.PI / 4),
+                y: pLoc.y - (pRad + this._offset) * Math.sin(Math.PI / 4) - this._secondOffset,
             }
         }
 
         if (direction === Direction.UpRight) {
             return {
-                x: pLoc.x + (pRad + this._offset) * Math.cos(Math.PI / 4),
-                y: pLoc.y + (pRad + this._offset) * Math.sin(Math.PI / 4),
+                x: pLoc.x + pRad + this._offset + this._secondOffset * Math.cos(Math.PI / 4),
+                y: pLoc.y - this._secondOffset * Math.sin(Math.PI / 4)
             }
         }
 
         if (direction === Direction.Right) {
             return {
-                x: pLoc.x,
-                y: pLoc.y + pRad + this._offset
+                x: pLoc.x + (pRad + this._offset) * Math.cos(Math.PI / 4) + this._secondOffset,
+                y: pLoc.y + (pRad + this._offset) * Math.sin(Math.PI / 4),
             }
         }
 
         if (direction === Direction.DownRight) {
             return {
-                x: pLoc.x - (pRad + this._offset) * Math.cos(Math.PI / 4),
-                y: pLoc.y + (pRad + this._offset) * Math.sin(Math.PI / 4),
+                x: pLoc.x + this._secondOffset * Math.cos(Math.PI / 4),
+                y: pLoc.y + pRad + this._offset + this._secondOffset * Math.sin(Math.PI / 4)
             }
         }
 
         if (direction === Direction.Down) {
             return {
-                x: pLoc.x - pRad - this._offset,
-                y: pLoc.y
+                x: pLoc.x - (pRad + this._offset) * Math.cos(Math.PI / 4),
+                y: pLoc.y + (pRad + this._offset) * Math.sin(Math.PI / 4) + this._secondOffset,
             }
         }
 
         if (direction === Direction.DownLeft) {
             return {
-                x: pLoc.x - (pRad + this._offset) * Math.cos(Math.PI / 4),
-                y: pLoc.y - (pRad + this._offset) * Math.sin(Math.PI / 4),
+                x: pLoc.x - pRad - this._offset - this._secondOffset * Math.cos(Math.PI / 4),
+                y: pLoc.y + this._secondOffset * Math.sin(Math.PI / 4)
             }
         }
 
         if (direction === Direction.Left) {
             return {
-                x: pLoc.x,
-                y: pLoc.y - pRad - this._offset
+                x: pLoc.x - (pRad + this._offset) * Math.cos(Math.PI / 4) - this._secondOffset,
+                y: pLoc.y - (pRad + this._offset) * Math.sin(Math.PI / 4),
             }
         }
 
+        // Direction.UpLeft
         return {
-            x: pLoc.x + (pRad + this._offset) * Math.cos(Math.PI / 4),
-            y: pLoc.y - (pRad + this._offset) * Math.sin(Math.PI / 4),
+            x: pLoc.x  - this._secondOffset * Math.cos(Math.PI / 4),
+            y: pLoc.y - pRad - this._offset - this._secondOffset * Math.sin(Math.PI / 4)
         }
     }
 
@@ -144,28 +146,28 @@ export class Sword extends Weapon {
     updateSword(deltaTime: number) {
         const characterDirection = this._character.getMostRecentDirection()
         if (characterDirection === Direction.Down) {
-            this._startAngle = -90 + 22.5
+            this._startAngle = -90 + 90
         }
         else if (characterDirection === Direction.DownLeft) {
-            this._startAngle = -135 + 22.5
+            this._startAngle = -135 + 90
         }
         else if (characterDirection == Direction.Left) {
-            this._startAngle = 180 + 22.5
+            this._startAngle = 180 + 90
         }
         else if (characterDirection === Direction.UpLeft) {
-            this._startAngle = 135 + 22.5
+            this._startAngle = 135 + 90
         }
         else if (characterDirection === Direction.Up) {
-            this._startAngle = 90 + 22.5
+            this._startAngle = 90 + 90
         }
         else if (characterDirection === Direction.UpRight) {
-            this._startAngle = 45 + 22.5
+            this._startAngle = 45 + 90
         }
         else if (characterDirection === Direction.Right) {
-            this._startAngle = 0 + 22.5
+            this._startAngle = 0 + 90
         }
         else if (characterDirection === Direction.DownRight) {
-            this._startAngle = -45 + 22.5
+            this._startAngle = -45 + 90
         }
 
         if (this._state === WeaponState.Swinging) {
@@ -253,17 +255,28 @@ export class Sword extends Weapon {
         }
     }
 
+    private isColliding(): boolean {
+        return this._entitiesCollidingWithMe.length > 0
+    }
+
     public getCollisionShapes(): ICollidable[] {
         return this._hitboxes
     }
 
-    public collisionStarted(shapes: ICollidable[]): void {
-        shapes
-        this._isColliding = true
-    }
+    public checkForCollisionsWith(collidables: ICollidable[]): void {
+        const entities: Entity[] = []
 
-    public collisionEnded(): void {
-        this._isColliding = false
+        collidables.forEach(collidable => {
+            const result = collidable.isCollidingWithShapes(this._hitboxes)
+            if(!result || result.length > 0) {
+                const entity = collidable.getEntity()
+                if(!entities.includes(entity)) {
+                    entities.push(entity)
+                }
+            }
+        })
+
+        this._entitiesCollidingWithMe = entities
     }
 
     public getEntity(): Entity {

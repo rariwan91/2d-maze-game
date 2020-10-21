@@ -1,7 +1,7 @@
 import { Entity } from '../entity'
 
 export interface ICollidable {
-    isColliding(shape: ICollidable): boolean
-    isCollidingWithShapes(shapes: ICollidable[]): ICollidable[]
+    isColliding(collidable: ICollidable): boolean
+    isCollidingWithShapes(collidables: ICollidable[]): ICollidable[]
     getEntity(): Entity
 }

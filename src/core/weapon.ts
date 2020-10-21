@@ -28,12 +28,8 @@ export abstract class Weapon extends Entity implements IWeapon {
     getCollisionShapes(): ICollidable[] {
         throw new Error("Method not implemented.");
     }
-    collisionStarted(shapes: ICollidable[]): void {
+    checkForCollisionsWith(shapes: ICollidable[]): void {
         shapes
         throw new Error("Method not implemented.");
     }
-    collisionEnded(): void {
-        throw new Error("Method not implemented.");
-    }
-
 }
