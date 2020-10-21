@@ -1,8 +1,9 @@
-import { Direction, EnemyState, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable } from '.'
+import { Direction, EnemyState, IHasAI, IHasHealth, IMyScreen, IPlayer, IUpdatable, Room } from '.'
 import { Colors, IDrawable, IPoint } from '../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
 import { EnemyCollision, ICollidable, IHasCollisions, PlayerWeaponCollision, WallCollision } from './collision'
 import { Entity } from './entity'
+import { Weapon } from './weapon'
 
 export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
     private _location: IPoint
@@ -20,18 +21,22 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
     private readonly _knockbackSpeed = 200
     private _maxHealth: number = 100
     private _currentHealth: number = 100
-    private _state = EnemyState.Stopped
+    private _state = EnemyState.TargetDummy
+    private _oldState = EnemyState.TargetDummy
     private _knockbackAngle: number
     private readonly _player: IPlayer
     private _entitiesCollidingWithMe: Entity[] = []
+    private _lastTookDamage: number
 
-    constructor(location: IPoint, myScreen: IMyScreen, player: IPlayer) {
+    constructor(location: IPoint, myScreen: IMyScreen, player: IPlayer, initialState: EnemyState = EnemyState.Moving) {
         super()
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
         this._player = player
+        this._state = initialState
+        this._oldState = initialState
     }
 
     public getLocation(): IPoint {
@@ -44,7 +49,7 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
-        if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped) {
+        if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy) {
             drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
         }
         else if(this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
@@ -54,6 +59,34 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
     }
 
     public update(deltaTime: number): void {
+        this._entitiesCollidingWithMe.forEach(entity => {
+            if (entity instanceof Room) {
+                this._location = this._oldLocation
+            }
+            else if(entity instanceof Weapon) {
+                if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy) {
+                    this.takeDamage(10)
+                    this._lastTookDamage = Date.now()
+                    const theirLoc = this._player.getLocation()
+                    const myLoc = this._location
+                    const deltaX = myLoc.x - theirLoc.x
+                    const deltaY = myLoc.y - theirLoc.y
+
+                    let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
+                    if(deltaX < 0 && deltaY < 0) {
+                        angle = 180 + angle
+                    }
+                    else if(deltaX < 0 && deltaY > 0) {
+                        angle = angle - 180
+                    }
+
+                    this._oldState = this._state
+                    this._state = EnemyState.KnockbackFromDamage
+                    this._knockbackAngle = angle
+                }
+            }
+        })
+
         this.calculateLocation(deltaTime)
         this._collisionShape.setLocation(this._location)
         this.draw()
@@ -69,7 +102,7 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
         if(this._state === EnemyState.InvincibleDueToDamage) {
             if(!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.5) {
-                this._state = EnemyState.Moving
+                this._state = this._oldState
             }
             return
         }
@@ -150,9 +183,7 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
             this._location = newLocation
         }
         else if(this._state === EnemyState.KnockbackFromDamage) {
-            const theirLoc = this._player.getLocation()
             const myLoc = this._location
-            const deltaX = myLoc.x - theirLoc.x
 
             let newVelocity: IPoint = {
                 x: this._knockbackSpeed * Math.cos(this._knockbackAngle * Math.PI / 180.0),
@@ -174,36 +205,6 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
     public getCollisionShapes(): ICollidable[] {
         return [this._collisionShape]
-    }
-
-    private _lastTookDamage: number
-    public collisionStarted(shapes: ICollidable[]): void {
-        shapes.forEach(shape => {
-            if (shape instanceof WallCollision) {
-                this._location = this._oldLocation
-            }
-            else if(shape instanceof PlayerWeaponCollision) {
-                if(this._state === EnemyState.Moving || this._state === EnemyState.Stopped) {
-                    this.takeDamage(10)
-                    this._lastTookDamage = Date.now()
-                    const theirLoc = this._player.getLocation()
-                    const myLoc = this._location
-                    const deltaX = myLoc.x - theirLoc.x
-                    const deltaY = myLoc.y - theirLoc.y
-
-                    let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
-                    if(deltaX < 0 && deltaY < 0) {
-                        angle = 180 + angle
-                    }
-                    else if(deltaX < 0 && deltaY > 0) {
-                        angle = angle - 180
-                    }
-
-                    this._state = EnemyState.KnockbackFromDamage
-                    this._knockbackAngle = angle
-                }
-            }
-        })
     }
 
     public checkForCollisionsWith(shapes: ICollidable[]): void {

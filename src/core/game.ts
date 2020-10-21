@@ -1,4 +1,4 @@
-import { Enemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
+import { Enemy, EnemyState, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
 
 export class Game {
@@ -22,10 +22,15 @@ export class Game {
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
         }, this._myScreen)
 
+        // this._enemies.push(new Enemy({
+        //     x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
+        //     y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
+        // }, this._myScreen, this._player))
+
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player))
+        }, this._myScreen, this._player, EnemyState.TargetDummy))
 
         this._weapons[0].attachToPlayer(this._player)
 
