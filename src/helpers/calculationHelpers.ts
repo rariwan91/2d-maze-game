@@ -63,3 +63,60 @@ export function calculateNewPosition(currentLocation: IPoint, currentVelocity: I
         y: currentLocation.y + currentVelocity.y * deltaTime
     }
 }
+
+export function calculateSwordStartPoint(playerLocation: IPoint, playerDirection: Direction, playerRadius: number, offset1: number, offset2: number): IPoint {
+    if (playerDirection === Direction.Up) {
+        return {
+            x: playerLocation.x + (playerRadius + offset1) * Math.cos(Math.PI / 4),
+            y: playerLocation.y - (playerRadius + offset1) * Math.sin(Math.PI / 4) - offset2,
+        }
+    }
+
+    if (playerDirection === Direction.UpRight) {
+        return {
+            x: playerLocation.x + playerRadius + offset1 + offset2 * Math.cos(Math.PI / 4),
+            y: playerLocation.y - offset2 * Math.sin(Math.PI / 4)
+        }
+    }
+
+    if (playerDirection === Direction.Right) {
+        return {
+            x: playerLocation.x + (playerRadius + offset1) * Math.cos(Math.PI / 4) + offset2,
+            y: playerLocation.y + (playerRadius + offset1) * Math.sin(Math.PI / 4),
+        }
+    }
+
+    if (playerDirection === Direction.DownRight) {
+        return {
+            x: playerLocation.x + offset2 * Math.cos(Math.PI / 4),
+            y: playerLocation.y + playerRadius + offset1 + offset2 * Math.sin(Math.PI / 4)
+        }
+    }
+
+    if (playerDirection === Direction.Down) {
+        return {
+            x: playerLocation.x - (playerRadius + offset1) * Math.cos(Math.PI / 4),
+            y: playerLocation.y + (playerRadius + offset1) * Math.sin(Math.PI / 4) + offset2,
+        }
+    }
+
+    if (playerDirection === Direction.DownLeft) {
+        return {
+            x: playerLocation.x - playerRadius - offset1 - offset2 * Math.cos(Math.PI / 4),
+            y: playerLocation.y + offset2 * Math.sin(Math.PI / 4)
+        }
+    }
+
+    if (playerDirection === Direction.Left) {
+        return {
+            x: playerLocation.x - (playerRadius + offset1) * Math.cos(Math.PI / 4) - offset2,
+            y: playerLocation.y - (playerRadius + offset1) * Math.sin(Math.PI / 4),
+        }
+    }
+
+    // Direction.UpLeft
+    return {
+        x: playerLocation.x  - offset2 * Math.cos(Math.PI / 4),
+        y: playerLocation.y - playerRadius - offset1 - offset2 * Math.sin(Math.PI / 4)
+    }
+}

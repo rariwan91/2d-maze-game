@@ -40,13 +40,9 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
         this._oldState = initialState
     }
 
-    public getLocation(): IPoint {
-        return this._location
-    }
-
-    public setLocation(location: IPoint) {
-        this._location = location
-    }
+    // ----------------------------------------
+    //              IDrawable
+    // ----------------------------------------
 
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
@@ -62,6 +58,10 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
+
+    // ----------------------------------------
+    //              IUpdatable
+    // ----------------------------------------
 
     public update(deltaTime: number): void {
         this._entitiesCollidingWithMe.forEach(entity => {
@@ -96,6 +96,30 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
         this._collisionShape.setLocation(this._location)
         this.draw()
     }
+
+    // ----------------------------------------
+    //              IHasCollisions
+    // ----------------------------------------
+
+    public getCollisionShapes(): ICollidable[] {
+        return [this._collisionShape]
+    }
+
+    public checkForCollisionsWith(shapes: ICollidable[]): void {
+        const collidingShapes = this._collisionShape.isCollidingWithShapes(shapes)
+        const collidingEntities: Entity[] = []
+        collidingShapes.forEach(collidable => {
+            const entity = collidable.getEntity()
+            if(!collidingEntities.includes(entity)) {
+                collidingEntities.push(entity)
+            }
+        })
+        this._entitiesCollidingWithMe = collidingEntities
+    }
+
+    // ----------------------------------------
+    //              IHasAI
+    // ----------------------------------------
 
     public aiTick(): void {
         if(this._state === EnemyState.KnockbackFromDamage) {
@@ -180,6 +204,38 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
         // }
     }
 
+    // ----------------------------------------
+    //              IHasHealth
+    // ----------------------------------------
+
+    public getMaxHealth(): number {
+        return this._maxHealth
+    }
+
+    public getCurrentHealth(): number {
+        return this._currentHealth
+    }
+
+    public takeDamage(amount: number): void {
+        this._currentHealth = Math.max(this._currentHealth - amount, 0)
+    }
+
+    // ----------------------------------------
+    //              public
+    // ----------------------------------------
+
+    public getLocation(): IPoint {
+        return this._location
+    }
+
+    public setLocation(location: IPoint) {
+        this._location = location
+    }
+
+    // ----------------------------------------
+    //              private
+    // ----------------------------------------
+
     private calculateLocation(deltaTime: number): void {
         if(this._state === EnemyState.Moving) {
             const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
@@ -206,33 +262,5 @@ export class Enemy extends Entity implements IDrawable, IUpdatable, IHasCollisio
 
     private isColliding(): boolean {
         return this._entitiesCollidingWithMe.length > 0
-    }
-
-    public getCollisionShapes(): ICollidable[] {
-        return [this._collisionShape]
-    }
-
-    public checkForCollisionsWith(shapes: ICollidable[]): void {
-        const collidingShapes = this._collisionShape.isCollidingWithShapes(shapes)
-        const collidingEntities: Entity[] = []
-        collidingShapes.forEach(collidable => {
-            const entity = collidable.getEntity()
-            if(!collidingEntities.includes(entity)) {
-                collidingEntities.push(entity)
-            }
-        })
-        this._entitiesCollidingWithMe = collidingEntities
-    }
-
-    public getMaxHealth(): number {
-        return this._maxHealth
-    }
-
-    public getCurrentHealth(): number {
-        return this._currentHealth
-    }
-
-    public takeDamage(amount: number): void {
-        this._currentHealth = Math.max(this._currentHealth - amount, 0)
     }
 }

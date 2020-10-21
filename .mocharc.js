@@ -1,5 +1,5 @@
 //.mocharc.js
-const {colors, symbols} = require('mocha/lib/reporters/base');
+const { colors } = require('mocha/lib/reporters/base');
 colors.pass = 32;
 
 // example config from Mocha repo       
@@ -11,5 +11,5 @@ module.exports = {
     slow: 75,
     timeout: 2000,
     ui: 'bdd',
-    'watch-files': ['src/**/*.ts','test/**/*.ts']
-};
+    'watch-files': ['src/**/*.ts', 'test/**/*.ts']
+}

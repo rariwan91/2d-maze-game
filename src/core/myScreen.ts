@@ -18,9 +18,9 @@ export class MyScreen implements IMyScreen {
         }
     }
 
-    public clearScreen(): void {
-        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-    }
+    // ----------------------------------------
+    //              IMyScreen
+    // ----------------------------------------
 
     public drawRect(point: IPoint, size: ISize, borderColor: IColor, fillColor?: IColor): void {
         // if (!isPointValid(point, this.getSize())) return
@@ -76,5 +76,13 @@ export class MyScreen implements IMyScreen {
             width: this._canvas.width,
             height: this._canvas.height
         }
+    }
+
+    // ----------------------------------------
+    //              public
+    // ----------------------------------------
+
+    public clearScreen(): void {
+        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
     }
 }

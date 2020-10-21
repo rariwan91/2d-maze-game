@@ -36,6 +36,10 @@ export class Player extends Entity implements IPlayer {
         this._collisionCircle = new CircleCollision(this._location, this._radius + 3, this)
     }
 
+    // ----------------------------------------
+    //              IPlayer
+    // ----------------------------------------
+
     public getLocation(): IPoint {
         return this._location
     }
@@ -52,28 +56,69 @@ export class Player extends Entity implements IPlayer {
         return this._direction
     }
 
-    public getDirection(): Direction {
-        return getDirection(this._upPressed, this._rightPressed, this._downPressed, this._leftPressed)
+    public equipWeapon(weapon: IWeapon) {
+        this._weapon = weapon
     }
 
-    public isMoving(): boolean {
-        return this.getDirection() !== Direction.None
+    public unequipWeapon(weapon: IWeapon) {
+        weapon
+        this._weapon = null
     }
 
-    public draw(): void {
-        drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
+    // ----------------------------------------
+    //              IHasCollisions
+    // ----------------------------------------
 
-        if(CollisionConfig && CollisionConfig.Players.ShowCollisionBoxes) {
-            if(this._state === PlayerState.InvincibleDueToDamage) {
-                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+    public getCollisionShapes(): ICollidable[] {
+        return [this._collisionCircle]
+    }
+
+    public checkForCollisionsWith(shapes: ICollidable[]): void {
+        const collidingShapes = this._collisionCircle.isCollidingWithShapes(shapes)
+        const collidingEntities: Entity[] = []
+        collidingShapes.forEach(collidable => {
+            const entity = collidable.getEntity()
+            if(!collidingEntities.includes(entity)) {
+                collidingEntities.push(entity)
             }
-            else {
-                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+        })
+        this._entitiesCollidingWithMe = collidingEntities
+    }
+
+    // ----------------------------------------
+    //              IUpdatable
+    // ----------------------------------------
+
+    public update(deltaTime: number): void {
+        this._entitiesCollidingWithMe.forEach(entity => {
+            if (entity instanceof Room) {
+                this._location = this._oldLocation
             }
+            else if (entity instanceof Enemy) {
+                if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+                    this.takeDamage(10)
+                    this._lastTookDamage = Date.now()
+                    this._state = PlayerState.InvincibleDueToDamage
+                }
+            }
+        })
+
+        if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+            this._state = PlayerState.Normal
         }
 
-        drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
+        this.updateDirection()
+        this.calculateLocation(deltaTime)
+        this._collisionCircle.setLocation(this._location)
+        this.draw()
+        if (this._weapon) {
+            this._weapon.update(deltaTime)
+        }
     }
+
+    // ----------------------------------------
+    //              IControllable
+    // ----------------------------------------
 
     public keyPressed(keyCode: Keycode) {
         if (keyCode === Keycode.Up) {
@@ -113,31 +158,47 @@ export class Player extends Entity implements IPlayer {
         }
     }
 
-    public update(deltaTime: number): void {
-        this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Room) {
-                this._location = this._oldLocation
-            }
-            else if (entity instanceof Enemy) {
-                if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
-                    this.takeDamage(10)
-                    this._lastTookDamage = Date.now()
-                    this._state = PlayerState.InvincibleDueToDamage
-                }
-            }
-        })
+    // ----------------------------------------
+    //              IDrawable
+    // ----------------------------------------
 
-        if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
-            this._state = PlayerState.Normal
+    public draw(): void {
+        drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
+
+        if(CollisionConfig && CollisionConfig.Players.ShowCollisionBoxes) {
+            if(this._state === PlayerState.InvincibleDueToDamage) {
+                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+            }
+            else {
+                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+            }
         }
 
-        this.updateDirection()
-        this.calculateLocation(deltaTime)
-        this._collisionCircle.setLocation(this._location)
-        this.draw()
-        if (this._weapon) {
-            this._weapon.update(deltaTime)
-        }
+        drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
+    }
+
+    // ----------------------------------------
+    //              IHasHealth
+    // ----------------------------------------
+
+    public getMaxHealth(): number {
+        return this._maxHealth
+    }
+
+    public getCurrentHealth(): number {
+        return this._currentHealth
+    }
+
+    public takeDamage(amount: number): void {
+        this._currentHealth = Math.max(this._currentHealth - amount, 0)
+    }
+
+    // ----------------------------------------
+    //              private
+    // ----------------------------------------
+
+    private getDirection(): Direction {
+        return getDirection(this._upPressed, this._rightPressed, this._downPressed, this._leftPressed)
     }
 
     private updateDirection(): void {
@@ -156,44 +217,7 @@ export class Player extends Entity implements IPlayer {
         this._location = newLocation
     }
 
-    public getCollisionShapes(): ICollidable[] {
-        return [this._collisionCircle]
-    }
-
     private isColliding(): boolean {
         return this._entitiesCollidingWithMe.length > 0
-    }
-
-    public checkForCollisionsWith(shapes: ICollidable[]): void {
-        const collidingShapes = this._collisionCircle.isCollidingWithShapes(shapes)
-        const collidingEntities: Entity[] = []
-        collidingShapes.forEach(collidable => {
-            const entity = collidable.getEntity()
-            if(!collidingEntities.includes(entity)) {
-                collidingEntities.push(entity)
-            }
-        })
-        this._entitiesCollidingWithMe = collidingEntities
-    }
-
-    public getMaxHealth(): number {
-        return this._maxHealth
-    }
-
-    public getCurrentHealth(): number {
-        return this._currentHealth
-    }
-
-    public takeDamage(amount: number): void {
-        this._currentHealth = Math.max(this._currentHealth - amount, 0)
-    }
-
-    public equipWeapon(weapon: IWeapon) {
-        this._weapon = weapon
-    }
-
-    public unequipWeapon(weapon: IWeapon) {
-        weapon
-        this._weapon = null
     }
 }

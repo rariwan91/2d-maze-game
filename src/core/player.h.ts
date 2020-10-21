@@ -4,6 +4,7 @@ import { IHasCollisions } from './collision'
 
 export interface IPlayer extends IHasCollisions, IUpdatable, IControllable, IDrawable, IHasHealth {
     getLocation(): IPoint
+    getOldLocation(): IPoint
     getRadius(): number
     getMostRecentDirection(): Direction
     equipWeapon(weapon: IWeapon): void

@@ -3,7 +3,7 @@ import { Colors, IDrawable, IPoint, ISize } from '../gui'
 import { CollisionConfig, ICollidable, IHasCollisions, WallCollision } from './collision'
 import { Entity } from './entity'
 
-export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCollisions {
+export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCollisions {
     private _location: IPoint = { x: 20, y: 20 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
@@ -52,21 +52,21 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
         )
     }
 
+    // ----------------------------------------
+    //              IRoom
+    // ----------------------------------------
+
     public getLocation(): IPoint {
         return this._location
-    }
-
-    public setLocation(location: IPoint) {
-        this._location = location
     }
 
     public getSize(): ISize {
         return this._size
     }
 
-    private isColliding(): boolean {
-        return this._entitiesCollidingWithMe.length > 0
-    }
+    // ----------------------------------------
+    //              IDrawable
+    // ----------------------------------------
 
     public draw(): void {
         this._myScreen.drawRect(this.getLocation(), this.getSize(), this._mainColor)
@@ -85,9 +85,17 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
         }
     }
 
+    // ----------------------------------------
+    //              IUpdatable
+    // ----------------------------------------
+
     public update(): void {
         this.draw()
     }
+
+    // ----------------------------------------
+    //              IHasCollisions
+    // ----------------------------------------
 
     public getCollisionShapes(): ICollidable[] {
         return this._walls
@@ -109,7 +117,11 @@ export class Room extends Entity implements IDrawable, IRoom, IUpdatable, IHasCo
         this._entitiesCollidingWithMe = entities
     }
 
-    public getEntity(): Entity {
-        return this
+    // ----------------------------------------
+    //              private
+    // ----------------------------------------
+
+    private isColliding(): boolean {
+        return this._entitiesCollidingWithMe.length > 0
     }
 }

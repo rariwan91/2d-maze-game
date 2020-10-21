@@ -5,37 +5,18 @@ import { ICollidable } from './collidable.h'
 
 export class CircleCollision implements ICollidable {
     private _location: IPoint
-    private _oldLocation: IPoint
     private readonly _radius: number
     protected readonly _entity: Entity
 
     constructor(location: IPoint, radius: number, entity: Entity) {
         this._location = location
-        this._oldLocation = location
         this._radius = radius
         this._entity = entity
     }
 
-    public getEntity(): Entity {
-        return this._entity
-    }
-
-    public getLocation(): IPoint {
-        return this._location
-    }
-
-    public getOldLocation(): IPoint {
-        return this._oldLocation
-    }
-
-    public setLocation(location: IPoint): void {
-        this._oldLocation = this._location
-        this._location = location
-    }
-
-    public getRadius(): number {
-        return this._radius
-    }
+    // ----------------------------------------
+    //              ICollidable
+    // ----------------------------------------
 
     isColliding(shape: ICollidable): boolean {
         // If the circles' centers are within their combined radius of each other then we have collision
@@ -71,5 +52,25 @@ export class CircleCollision implements ICollidable {
             return this.isColliding(shape)
         })
         return collidingShapes
+    }
+
+    public getEntity(): Entity {
+        return this._entity
+    }
+
+    // ----------------------------------------
+    //              public
+    // ----------------------------------------
+
+    public getLocation(): IPoint {
+        return this._location
+    }
+
+    public setLocation(location: IPoint): void {
+        this._location = location
+    }
+
+    public getRadius(): number {
+        return this._radius
     }
 }

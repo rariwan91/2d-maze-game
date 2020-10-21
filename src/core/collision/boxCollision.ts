@@ -14,17 +14,9 @@ export class BoxCollision implements ICollidable {
         this._entity = entity
     }
 
-    public getEntity(): Entity {
-        return this._entity
-    }
-
-    public getLocation(): IPoint {
-        return this._location
-    }
-
-    public getSize(): ISize {
-        return this._size
-    }
+    // ----------------------------------------
+    //              ICollidable
+    // ----------------------------------------
 
     public isColliding(shape: ICollidable): boolean {
         // Doing rectangle vs rectangle check for now while I figure out how to
@@ -71,5 +63,21 @@ export class BoxCollision implements ICollidable {
             return this.isColliding(shape)
         })
         return collidingShapes
+    }
+
+    public getEntity(): Entity {
+        return this._entity
+    }
+
+    // ----------------------------------------
+    //              public
+    // ----------------------------------------
+
+    public getLocation(): IPoint {
+        return this._location
+    }
+
+    public getSize(): ISize {
+        return this._size
     }
 }
