@@ -71,7 +71,7 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
     public draw(): void {
         this._myScreen.drawRect(this.getLocation(), this.getSize(), this._mainColor)
 
-        if(CollisionConfig && CollisionConfig.Rooms.ShowCollisionBoxes) {
+        if (CollisionConfig && CollisionConfig.Rooms.ShowCollisionBoxes) {
             if (this.isColliding()) {
                 this._walls.forEach(collisionBox => {
                     this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._yesCollisionsColor)
@@ -106,9 +106,9 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
 
         collidables.forEach(collidable => {
             const result = collidable.isCollidingWithShapes(this._walls)
-            if(!result || result.length > 0) {
+            if (!result || result.length > 0) {
                 const entity = collidable.getEntity()
-                if(!entities.includes(entity)) {
+                if (!entities.includes(entity)) {
                     entities.push(entity)
                 }
             }

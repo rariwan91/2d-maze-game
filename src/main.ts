@@ -11,8 +11,13 @@ window.addEventListener('keyup', (event: KeyboardEvent) => {
 })
 
 function updateTick(time: number) {
-    game.updateTick(time)
-    window.requestAnimationFrame(updateTick)
+    const keepGoing = game.updateTick(time)
+    if(keepGoing) {
+        animationFrame = window.requestAnimationFrame(updateTick)
+    }
+    else {
+        window.cancelAnimationFrame(animationFrame)
+    }
 }
 
-window.requestAnimationFrame(updateTick)
+let animationFrame = window.requestAnimationFrame(updateTick)

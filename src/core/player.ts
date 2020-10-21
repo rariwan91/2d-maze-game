@@ -27,6 +27,7 @@ export class Player extends Entity implements IPlayer {
     private _state = PlayerState.Normal
     private _entitiesCollidingWithMe: Entity[] = []
     private _lastTookDamage: number
+    private readonly _deathEventListeners: ((entity: Entity) => void)[] = []
 
     constructor(location: IPoint, myScreen: IMyScreen) {
         super()
@@ -78,7 +79,7 @@ export class Player extends Entity implements IPlayer {
         const collidingEntities: Entity[] = []
         collidingShapes.forEach(collidable => {
             const entity = collidable.getEntity()
-            if(!collidingEntities.includes(entity)) {
+            if (!collidingEntities.includes(entity)) {
                 collidingEntities.push(entity)
             }
         })
@@ -165,8 +166,8 @@ export class Player extends Entity implements IPlayer {
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
 
-        if(CollisionConfig && CollisionConfig.Players.ShowCollisionBoxes) {
-            if(this._state === PlayerState.InvincibleDueToDamage) {
+        if (CollisionConfig && CollisionConfig.Players.ShowCollisionBoxes) {
+            if (this._state === PlayerState.InvincibleDueToDamage) {
                 drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
             }
             else {
@@ -191,6 +192,20 @@ export class Player extends Entity implements IPlayer {
 
     public takeDamage(amount: number): void {
         this._currentHealth = Math.max(this._currentHealth - amount, 0)
+        if (this._currentHealth <= 0) {
+            this._deathEventListeners.forEach(callback => callback(this))
+        }
+    }
+
+    public registerOnDeathEvent(callback: (entity: Entity) => void): void {
+        this._deathEventListeners.push(callback)
+    }
+
+    public unregisterOnDeathEvent(callback: (entity: Entity) => void): void {
+        if (this._deathEventListeners.includes(callback)) {
+            const index = this._deathEventListeners.indexOf(callback)
+            this._deathEventListeners.splice(index)
+        }
     }
 
     // ----------------------------------------
@@ -209,7 +224,7 @@ export class Player extends Entity implements IPlayer {
     }
 
     private calculateLocation(deltaTime: number): void {
-        if(this.getDirection() === Direction.None) return
+        if (this.getDirection() === Direction.None) return
 
         const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
         const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)

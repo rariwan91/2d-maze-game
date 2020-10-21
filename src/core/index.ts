@@ -1,6 +1,7 @@
 export * from './controllable.h'
 export * from './direction.enum'
 export * from './enemy'
+export * from './enemy.h'
 export * from './enemyState.enum'
 export * from './game'
 export * from './hasAI.h'

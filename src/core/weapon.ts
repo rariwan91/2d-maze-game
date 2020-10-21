@@ -1,5 +1,5 @@
-import { ICollidable } from './collision/collidable.h'
-import { Entity } from './entity'
+import { ICollidable } from './collision/collidable.h';
+import { Entity } from './entity';
 import { IPlayer } from './player.h';
 import { IWeapon } from './weapon.h';
 import { WeaponState } from './weaponState.enum';

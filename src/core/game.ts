@@ -1,15 +1,17 @@
-import { Enemy, EnemyState, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
+import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
+import { Entity } from './entity'
 
 export class Game {
     private readonly _myScreen: MyScreen
     private readonly _rooms: Room[] = []
     private _activeRoom: Room
     private readonly _player: IPlayer
-    private readonly _enemies: Enemy[] = []
+    private readonly _enemies: IEnemy[] = []
     private readonly _weapons: IWeapon[] = []
     private _lastTime: number = 0
+    private _gameOver = false
 
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
@@ -23,21 +25,35 @@ export class Game {
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
         }, this._myScreen)
 
+        this._player.registerOnDeathEvent((entity: Entity): void => {
+            this.entityDied(entity)
+        })
+
         // These enemies will chase you down. This is annoying when I'm trying to test
         // something other than that.
-        // this.createEnemies()
+        this.createEnemies()
 
         // These enemies will just stand there.
-        this.createEnemies(EnemyState.TargetDummy)
+        // this.createEnemies(EnemyState.TargetDummy)
 
         this._weapons[0].attachToPlayer(this._player)
 
         this._myScreen.clearScreen()
     }
 
-    public updateTick(time: number): void {
+    public updateTick(time: number): boolean {
+        if(this._gameOver) {
+            alert('Poor Man\'s Game Over')
+            return false
+        }
         this._myScreen.clearScreen()
+        this.updateEntities(time)
 
+        this._lastTime = time
+        return true
+    }
+
+    private updateEntities(time: number): void {
         const roomCollidables = this._activeRoom.getCollisionShapes()
         const playerCollidables = this._player.getCollisionShapes()
 
@@ -72,13 +88,13 @@ export class Game {
             weapon.checkForCollisionsWith(enemyCollidables)
         })
 
+        // Have the entities update now that collision has been updated
         this._player.update((time - this._lastTime) / 1000.0)
         this._enemies.forEach(enemy => {
             enemy.aiTick()
             enemy.update((time - this._lastTime) / 1000.0)
         })
         this._rooms[0].update()
-        this._lastTime = time
     }
 
     public keydown(event: KeyboardEvent): void {
@@ -129,7 +145,7 @@ export class Game {
         }
     }
 
-    private createEnemies(initialEnemyState = EnemyState.Moving) {
+    private createEnemies(initialEnemyState = EnemyState.Moving): void {
         this._enemies.push(new Enemy({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
@@ -150,5 +166,39 @@ export class Game {
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 + 150,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
         }, this._myScreen, this._player, initialEnemyState))
+
+        this._enemies[0].registerOnDeathEvent((entity: Entity): void => {
+            this.entityDied(entity)
+        })
+
+        this._enemies[1].registerOnDeathEvent((entity: Entity): void => {
+            this.entityDied(entity)
+        })
+
+        this._enemies[2].registerOnDeathEvent((entity: Entity): void => {
+            this.entityDied(entity)
+        })
+
+        this._enemies[3].registerOnDeathEvent((entity: Entity): void => {
+            this.entityDied(entity)
+        })
+
+        this._enemies[4].registerOnDeathEvent((entity: Entity): void => {
+            this.entityDied(entity)
+        })
+    }
+
+    private entityDied(entity: Entity): void {
+        if(entity instanceof Player) {
+            this._gameOver = true
+        }
+        else if(entity instanceof Enemy) {
+            const index = this._enemies.indexOf(entity)
+            this._enemies.splice(index, 1)
+        }
+    }
+
+    public gameOver(): void {
+        this._gameOver = true
     }
 }
