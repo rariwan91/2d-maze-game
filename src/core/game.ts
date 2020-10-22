@@ -1,6 +1,7 @@
 import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
+import { Direction } from './direction.enum'
 import { Entity } from './entity'
 
 export class Game {
@@ -15,7 +16,17 @@ export class Game {
 
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
-        this._rooms.push(new Room(this._myScreen))
+        const roomCenter = new Room(this._myScreen)
+        const roomUp = new Room(this._myScreen)
+        const roomRight = new Room(this._myScreen)
+        const roomDown = new Room(this._myScreen)
+        const roomLeft = new Room(this._myScreen)
+        roomCenter.pairWithRoom(Direction.Up, roomUp)
+        roomCenter.pairWithRoom(Direction.Down, roomDown)
+        roomCenter.pairWithRoom(Direction.Left, roomLeft)
+        roomCenter.pairWithRoom(Direction.Right, roomRight)
+
+        this._rooms.push(roomCenter, roomUp, roomRight, roomDown, roomLeft)
         this._activeRoom = this._rooms[0]
 
         this._weapons.push(new Sword(this._myScreen))
@@ -31,10 +42,10 @@ export class Game {
 
         // These enemies will chase you down. This is annoying when I'm trying to test
         // something other than that.
-        this.createEnemies()
+        // this.createEnemies()
 
         // These enemies will just stand there.
-        // this.createEnemies(EnemyState.TargetDummy)
+        this.createEnemies(EnemyState.TargetDummy)
 
         this._weapons[0].attachToPlayer(this._player)
 
@@ -94,7 +105,7 @@ export class Game {
             enemy.aiTick()
             enemy.update((time - this._lastTime) / 1000.0)
         })
-        this._rooms[0].update()
+        this._activeRoom.update()
     }
 
     public keydown(event: KeyboardEvent): void {
