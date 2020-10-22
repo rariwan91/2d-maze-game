@@ -81,6 +81,7 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
     public draw(): void {
         if (this._roomToNorth) {
             this._myScreen.drawStraightLine(this._location, { x: this._location.x + 0.4 * this._size.width, y: this._location.y }, this._mainColor)
+            this._myScreen.drawRect({ x: this._location.x + 0.4 * this._size.width, y: this._location.y - 10 }, { width: 0.2 * this._size.width, height: 20 }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y }, this._mainColor)
         }
         else {
@@ -89,6 +90,7 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
 
         if (this._roomToRight) {
             this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + 0.4 * this._size.height }, this._mainColor)
+            this._myScreen.drawRect({ x: this._location.x - 10 + this._size.width, y: this._location.y + 0.4 * this._size.height }, { width: 20, height: 0.2 * this._size.height }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
         }
         else {
@@ -97,6 +99,7 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
 
         if (this._roomToSouth) {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawRect({ x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 }, { width: 0.2 * this._size.width, height: 20 }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
         }
         else {
@@ -105,6 +108,7 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
 
         if (this._roomToLeft) {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + 0.4 * this._size.height }, this._mainColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + 0.4 * this._size.height }, { width: 20, height: 0.2 * this._size.height }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x, y: this._location.y + this._size.height }, this._mainColor)
         }
         else {

@@ -1,14 +1,14 @@
 export const CollisionConfig = {
     Players: {
-        ShowCollisionBoxes: true
+        ShowCollisionBoxes: false
     },
     Enemies: {
-        ShowCollisionBoxes: true
+        ShowCollisionBoxes: false
     },
     Weapons: {
-        ShowCollisionBoxes: true
+        ShowCollisionBoxes: false
     },
     Rooms: {
-        ShowCollisionBoxes: true
+        ShowCollisionBoxes: false
     }
 }
