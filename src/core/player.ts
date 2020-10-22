@@ -94,6 +94,7 @@ export class Player extends Entity implements IPlayer {
         this._entitiesCollidingWithMe.forEach(entity => {
             if (entity instanceof Room) {
                 this._location = this._oldLocation
+                this._collisionCircle.setLocation(this._location)
             }
             else if (entity instanceof Enemy) {
                 if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {

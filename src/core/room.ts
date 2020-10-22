@@ -1,6 +1,6 @@
 import { IMyScreen, IRoom, IUpdatable } from '.'
 import { Colors, IDrawable, IPoint, ISize } from '../gui'
-import { CollisionConfig, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { CollisionConfig, DoorCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
 import { Direction } from './direction.enum'
 import { Entity } from './entity'
 
@@ -9,6 +9,7 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
     private _walls: WallCollision[] = []
+    private _doors: DoorCollision[] = []
     private _mainColor = Colors.Black
     private _noCollisionsColor = Colors.Green
     private _yesCollisionsColor = Colors.Red
@@ -115,15 +116,16 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + this._size.height }, this._mainColor)
         }
 
-        if (CollisionConfig && CollisionConfig.Rooms.ShowCollisionBoxes) {
-            if (this.isColliding()) {
+        if (CollisionConfig) {
+            const isColliding = this.isColliding()
+            if (CollisionConfig.Rooms.ShowWallCollisionBoxes) {
                 this._walls.forEach(collisionBox => {
-                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._yesCollisionsColor)
+                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
                 })
             }
-            else {
-                this._walls.forEach(collisionBox => {
-                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), this._noCollisionsColor)
+            if (CollisionConfig.Rooms.ShowDoorCollisionBoxes) {
+                this._doors.forEach(collisionBox => {
+                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
                 })
             }
         }
@@ -142,17 +144,17 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
     // ----------------------------------------
 
     public getCollisionShapes(): ICollidable[] {
-        return this._walls
+        return this._walls.concat(this._doors)
     }
 
     public checkForCollisionsWith(collidables: ICollidable[]): void {
         const entities: Entity[] = []
 
         collidables.forEach(collidable => {
-            const result = collidable.isCollidingWithShapes(this._walls)
+            const result = collidable.isCollidingWithShapes(this._walls.concat(this._doors))
             if (!result || result.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entities.includes(entity)) {
+                if (!entities.includes(entity) && entity !== this as Entity) {
                     entities.push(entity)
                 }
             }
@@ -171,21 +173,19 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
 
     private createWallCollisions(): void {
         this._walls = []
+        this._doors = []
         if (this._roomToNorth) {
             this._walls.push(
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this),
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
             )
+            this._doors.push(
+                new DoorCollision({ x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
+            )
         }
         else {
             this._walls.push(
-                new WallCollision({
-                    x: this._location.x - 3,
-                    y: this._location.y - 3
-                }, {
-                    height: 6,
-                    width: this._size.width + 6
-                }, this)
+                new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 6, width: this._size.width + 6 }, this)
             )
         }
 
@@ -193,6 +193,9 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
             this._walls.push(
                 new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 }, { height: 0.4 * this._size.height + 6, width: 6 }, this),
                 new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
+            )
+            this._doors.push(
+                new DoorCollision({ x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
             )
         }
         else {
@@ -206,6 +209,9 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
                 new WallCollision({ x: this._location.x - 3, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this),
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
             )
+            this._doors.push(
+                new DoorCollision({ x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
+            )
         }
         else {
             this._walls.push(
@@ -217,6 +223,9 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
             this._walls.push(
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 0.4 * this._size.height + 6, width: 6 }, this),
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
+            )
+            this._doors.push(
+                new DoorCollision({ x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
             )
         }
         else {

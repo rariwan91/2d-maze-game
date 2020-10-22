@@ -94,6 +94,10 @@ export class Game {
             enemy.checkForCollisionsWith(enemyConcerns)
         })
 
+        // Have rooms check for collisions with players and enemies
+        const roomConcerns = playerCollidables.concat(enemyCollidables)
+        this._activeRoom.checkForCollisionsWith(roomConcerns)
+
         // Have player weapons check for collisions with enemies
         this._weapons.forEach(weapon => {
             weapon.checkForCollisionsWith(enemyCollidables)
