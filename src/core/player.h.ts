@@ -1,8 +1,8 @@
-import { Direction, IControllable, IHasHealth, IUpdatable, IWeapon } from '.'
+import { Direction, IHasHealth, IRespondsToInput, IUpdatable, IWeapon } from '.'
 import { IDrawable, IPoint } from '../gui'
 import { IHasCollisions } from './collision'
 
-export interface IPlayer extends IHasCollisions, IUpdatable, IControllable, IDrawable, IHasHealth {
+export interface IPlayer extends IHasCollisions, IUpdatable, IRespondsToInput, IDrawable, IHasHealth {
     getLocation(): IPoint
     getOldLocation(): IPoint
     getRadius(): number

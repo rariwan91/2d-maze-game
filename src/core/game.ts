@@ -1,4 +1,4 @@
-import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
+import { Enemy, EnemyState, IEnemy, IRespondsToInput, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
 import { Direction } from './direction.enum'
@@ -11,16 +11,19 @@ export class Game {
     private readonly _player: IPlayer
     private readonly _enemies: IEnemy[] = []
     private readonly _weapons: IWeapon[] = []
+    private readonly _respondsToInput: IRespondsToInput[] = []
     private _lastTime: number = 0
     private _gameOver = false
 
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
+
         const roomCenter = new Room(this._myScreen)
         const roomUp = new Room(this._myScreen)
         const roomRight = new Room(this._myScreen)
         const roomDown = new Room(this._myScreen)
         const roomLeft = new Room(this._myScreen)
+
         roomCenter.pairWithRoom(Direction.Up, roomUp)
         roomCenter.pairWithRoom(Direction.Down, roomDown)
         roomCenter.pairWithRoom(Direction.Left, roomLeft)
@@ -39,6 +42,8 @@ export class Game {
         this._player.registerOnDeathEvent((entity: Entity): void => {
             this.entityDied(entity)
         })
+
+        this._respondsToInput.push(this._player, this._activeRoom)
 
         // These enemies will chase you down. This is annoying when I'm trying to test
         // something other than that.
@@ -113,51 +118,58 @@ export class Game {
     }
 
     public keydown(event: KeyboardEvent): void {
-        switch (event.key) {
-            case Keycode.Up:
-            case Keycode.W:
-                this._player.keyPressed(Keycode.Up)
-                break
-            case Keycode.Right:
-            case Keycode.D:
-                this._player.keyPressed(Keycode.Right)
-                break
-            case Keycode.Down:
-            case Keycode.S:
-                this._player.keyPressed(Keycode.Down)
-                break
-            case Keycode.Left:
-            case Keycode.A:
-                this._player.keyPressed(Keycode.Left)
-                break
-            case Keycode.SPACE:
-                this._player.keyPressed(Keycode.SPACE)
-                break
-        }
+        this._respondsToInput.forEach(responder => {
+            switch (event.key) {
+                case Keycode.Up:
+                case Keycode.W:
+                    responder.keyPressed(Keycode.Up)
+                    break
+                case Keycode.Right:
+                case Keycode.D:
+                    responder.keyPressed(Keycode.Right)
+                    break
+                case Keycode.Down:
+                case Keycode.S:
+                    responder.keyPressed(Keycode.Down)
+                    break
+                case Keycode.Left:
+                case Keycode.A:
+                    responder.keyPressed(Keycode.Left)
+                    break
+                case Keycode.SPACE:
+                    responder.keyPressed(Keycode.SPACE)
+                    break
+                case Keycode.ENTER:
+                    responder.keyPressed(Keycode.ENTER)
+                    break
+            }  
+        })
     }
 
     public keyup(event: KeyboardEvent): void {
-        switch (event.key) {
-            case Keycode.Up:
-            case Keycode.W:
-                this._player.keyReleased(Keycode.Up)
-                break
-            case Keycode.Right:
-            case Keycode.D:
-                this._player.keyReleased(Keycode.Right)
-                break
-            case Keycode.Down:
-            case Keycode.S:
-                this._player.keyReleased(Keycode.Down)
-                break
-            case Keycode.Left:
-            case Keycode.A:
-                this._player.keyReleased(Keycode.Left)
-                break
-            case Keycode.SPACE:
-                this._player.keyReleased(Keycode.SPACE)
-                break
-        }
+        this._respondsToInput.forEach(responder => {
+            switch (event.key) {
+                case Keycode.Up:
+                case Keycode.W:
+                    responder.keyReleased(Keycode.Up)
+                    break
+                case Keycode.Right:
+                case Keycode.D:
+                    responder.keyReleased(Keycode.Right)
+                    break
+                case Keycode.Down:
+                case Keycode.S:
+                    responder.keyReleased(Keycode.Down)
+                    break
+                case Keycode.Left:
+                case Keycode.A:
+                    responder.keyReleased(Keycode.Left)
+                    break
+                case Keycode.SPACE:
+                    responder.keyReleased(Keycode.SPACE)
+                    break
+            }
+        })
     }
 
     private createEnemies(initialEnemyState = EnemyState.Moving): void {

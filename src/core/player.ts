@@ -119,7 +119,7 @@ export class Player extends Entity implements IPlayer {
     }
 
     // ----------------------------------------
-    //              IControllable
+    //              IRespondsToInput
     // ----------------------------------------
 
     public keyPressed(keyCode: Keycode) {

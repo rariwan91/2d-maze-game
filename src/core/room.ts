@@ -1,10 +1,12 @@
-import { IMyScreen, IRoom, IUpdatable } from '.'
-import { Colors, IDrawable, IPoint, ISize } from '../gui'
-import { CollisionConfig, DoorCollision, ICollidable, IHasCollisions, WallCollision } from './collision'
+import { IMyScreen, IRoom } from '.'
+import { Colors, IPoint, ISize, Keycode } from '../gui'
+import { getDistanceBetween } from '../helpers'
+import { CollisionConfig, DoorCollision, ICollidable, WallCollision } from './collision'
 import { Direction } from './direction.enum'
 import { Entity } from './entity'
+import { IPlayer } from './player.h'
 
-export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCollisions {
+export class Room extends Entity implements IRoom {
     private _location: IPoint = { x: 50, y: 50 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
@@ -161,6 +163,22 @@ export class Room extends Entity implements IRoom, IDrawable, IUpdatable, IHasCo
         })
 
         this._entitiesCollidingWithMe = entities
+    }
+
+    // ----------------------------------------
+    //              IRespondsToInput
+    // ----------------------------------------
+
+    public keyPressed(keyCode: Keycode) {
+        if (keyCode === Keycode.ENTER) {
+            console.log('player pressed enter and the door saw it')
+        }
+    }
+
+    public keyReleased(keyCode: Keycode) {
+        if (keyCode === Keycode.ENTER) {
+
+        }
     }
 
     // ----------------------------------------
