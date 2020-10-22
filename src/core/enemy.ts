@@ -1,8 +1,9 @@
 import { Direction, EnemyState, IEnemy, IMyScreen, IPlayer, Room, WeaponState } from '.'
 import { Colors, IPoint } from '../gui'
-import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../helpers'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../helpers'
 import { CollisionConfig, EnemyCollision, ICollidable } from './collision'
 import { Entity } from './entity'
+import { Player } from './player'
 import { Weapon } from './weapon'
 
 export class Enemy extends Entity implements IEnemy {
@@ -26,6 +27,7 @@ export class Enemy extends Entity implements IEnemy {
     private _knockbackAngle: number
     private readonly _player: IPlayer
     private _entitiesCollidingWithMe: Entity[] = []
+    private _shapesCollidingWithMe: ICollidable[] = []
     private _lastTookDamage: number
     private readonly _deathEventListeners: ((entity: Entity) => void)[] = []
 
@@ -41,6 +43,30 @@ export class Enemy extends Entity implements IEnemy {
     }
 
     // ----------------------------------------
+    //              IEnemy
+    // ----------------------------------------
+    public getLocation(): IPoint {
+        return this._location
+    }
+
+    public setLocation(newLocation: IPoint): void {
+        this._location = newLocation
+        this._collisionShape.setLocation(newLocation)
+    }
+
+    public getOldLocation(): IPoint {
+        return this._oldLocation
+    }
+
+    public setOldLocation(newOldLocation: IPoint): void {
+        this._oldLocation = newOldLocation
+    }
+
+    public getDirection(): Direction {
+        return this._direction
+    }
+
+    // ----------------------------------------
     //              IDrawable
     // ----------------------------------------
 
@@ -48,11 +74,11 @@ export class Enemy extends Entity implements IEnemy {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
 
         if (CollisionConfig && CollisionConfig.Enemies.ShowCollisionBoxes) {
-            if (this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy) {
-                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
-            }
-            else if (this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
+            if (this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
                 drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+            }
+            else {
+                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
             }
         }
 
@@ -64,12 +90,13 @@ export class Enemy extends Entity implements IEnemy {
     // ----------------------------------------
 
     public update(deltaTime: number): void {
+        const enemiesCollidingWithMe: Enemy[] = []
         this._entitiesCollidingWithMe.forEach(entity => {
             if (entity instanceof Room) {
                 this._location = this._oldLocation
             }
             else if (entity instanceof Weapon) {
-                if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.Stopped || this._state === EnemyState.TargetDummy)) {
+                if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy)) {
                     this.takeDamage(10)
                     this._lastTookDamage = Date.now()
                     const theirLoc = this._player.getLocation()
@@ -90,11 +117,55 @@ export class Enemy extends Entity implements IEnemy {
                     this._knockbackAngle = angle
                 }
             }
+            else if (entity instanceof Enemy && entity !== this as Entity) {
+                enemiesCollidingWithMe.push(entity)
+            }
+            else if (entity instanceof Player) {
+                this._location = this._oldLocation
+            }
         })
 
-        this.calculateLocation(deltaTime)
-        this._collisionShape.setLocation(this._location)
+        if (enemiesCollidingWithMe.length > 0) {
+            this.nudge(this, enemiesCollidingWithMe)
+            this.checkForCollisionsWith(this._shapesCollidingWithMe)
+        }
+        else {
+            this.calculateLocation(deltaTime)
+            this._collisionShape.setLocation(this._location)
+        }
+
         this.draw()
+    }
+
+    private nudge(me: IEnemy, them: IEnemy[]): void {
+        const myLoc = this._location
+        const myOldLoc = this._oldLocation
+        const distance: IPoint = {
+            x: myLoc.x - myOldLoc.x,
+            y: myLoc.y - myOldLoc.y
+        }
+
+        const combinedDifference: IPoint = {
+            x: 0,
+            y: 0
+        }
+        them.forEach(enemy => {
+            const loc = enemy.getLocation()
+            combinedDifference.x += (myLoc.x - loc.x)
+            combinedDifference.y += (myLoc.y - loc.y)
+        })
+
+        const distanceMoved = getMagnitude(distance)
+        const combinedLength = getMagnitude(combinedDifference)
+        const unitCombinedDifference: IPoint = {
+            x: combinedDifference.x / combinedLength,
+            y: combinedDifference.y / combinedLength
+        }
+        me.setOldLocation(myLoc)
+        me.setLocation({
+            x: myLoc.x + unitCombinedDifference.x * distanceMoved,
+            y: myLoc.y + unitCombinedDifference.y * distanceMoved
+        })
     }
 
     // ----------------------------------------
@@ -110,11 +181,12 @@ export class Enemy extends Entity implements IEnemy {
         const collidingEntities: Entity[] = []
         collidingShapes.forEach(collidable => {
             const entity = collidable.getEntity()
-            if (!collidingEntities.includes(entity)) {
+            if (!collidingEntities.includes(entity) && entity !== (this as Entity)) {
                 collidingEntities.push(entity)
             }
         })
         this._entitiesCollidingWithMe = collidingEntities
+        this._shapesCollidingWithMe = collidingShapes
     }
 
     // ----------------------------------------
@@ -198,7 +270,7 @@ export class Enemy extends Entity implements IEnemy {
 
         if (this._state !== EnemyState.TargetDummy) {
             if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._player.getRadius(), 2)) {
-                this._state = EnemyState.Stopped
+                this._state = EnemyState.CollidingWithPlayer
             }
             else {
                 this._state = EnemyState.Moving

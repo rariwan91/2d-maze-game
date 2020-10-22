@@ -42,7 +42,7 @@ export class Game {
     }
 
     public updateTick(time: number): boolean {
-        if(this._gameOver) {
+        if (this._gameOver) {
             alert('Poor Man\'s Game Over')
             return false
         }
@@ -77,8 +77,8 @@ export class Game {
         // Have player check for collisions with room and enemies
         this._player.checkForCollisionsWith(roomCollidables.concat(enemyCollidables))
 
-        // Have enemies check for collisions with room, player, and player weapons
-        const enemyConcerns = roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables)
+        // Have enemies check for collisions with room, player, player weapons, and other enemies
+        const enemyConcerns = roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables).concat(enemyCollidables)
         this._enemies.forEach(enemy => {
             enemy.checkForCollisionsWith(enemyConcerns)
         })
@@ -189,10 +189,10 @@ export class Game {
     }
 
     private entityDied(entity: Entity): void {
-        if(entity instanceof Player) {
+        if (entity instanceof Player) {
             this._gameOver = true
         }
-        else if(entity instanceof Enemy) {
+        else if (entity instanceof Enemy) {
             const index = this._enemies.indexOf(entity)
             this._enemies.splice(index, 1)
         }

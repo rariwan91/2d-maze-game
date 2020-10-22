@@ -45,23 +45,23 @@ export function drawCharacter(screen: IMyScreen, location: IPoint, radius: numbe
 
 export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, collisionRadius: number, yesColor: IColor, noColor: IColor, isColliding: boolean) {
     if (isColliding) {
-        screen.drawRect({
-            x: collisionLocation.x - collisionRadius,
-            y: collisionLocation.y - collisionRadius
-        }, {
-            width: 2 * collisionRadius,
-            height: 2 * collisionRadius
-        }, yesColor)
+        // screen.drawRect({
+        //     x: collisionLocation.x - collisionRadius,
+        //     y: collisionLocation.y - collisionRadius
+        // }, {
+        //     width: 2 * collisionRadius,
+        //     height: 2 * collisionRadius
+        // }, yesColor)
         screen.drawArc(collisionLocation, collisionRadius, 0, 360, yesColor)
     }
     else {
-        screen.drawRect({
-            x: collisionLocation.x - collisionRadius,
-            y: collisionLocation.y - collisionRadius
-        }, {
-            width: 2 * collisionRadius,
-            height: 2 * collisionRadius
-        }, noColor)
+        // screen.drawRect({
+        //     x: collisionLocation.x - collisionRadius,
+        //     y: collisionLocation.y - collisionRadius
+        // }, {
+        //     width: 2 * collisionRadius,
+        //     height: 2 * collisionRadius
+        // }, noColor)
         screen.drawArc(collisionLocation, collisionRadius, 0, 360, noColor)
     }
 }

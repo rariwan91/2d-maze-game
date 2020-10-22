@@ -116,7 +116,15 @@ export function calculateSwordStartPoint(playerLocation: IPoint, playerDirection
 
     // Direction.UpLeft
     return {
-        x: playerLocation.x  - offset2 * Math.cos(Math.PI / 4),
+        x: playerLocation.x - offset2 * Math.cos(Math.PI / 4),
         y: playerLocation.y - playerRadius - offset1 - offset2 * Math.sin(Math.PI / 4)
     }
+}
+
+export function getDistanceBetween(point1: IPoint, point2: IPoint): number {
+    return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2))
+}
+
+export function getMagnitude(point1: IPoint): number {
+    return Math.sqrt(Math.pow(point1.x, 2) + Math.pow(point1.y, 2))
 }
