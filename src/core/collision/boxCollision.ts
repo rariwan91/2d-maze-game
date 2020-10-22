@@ -1,4 +1,5 @@
 import { IPoint, ISize } from '../../gui'
+import { getDistanceBetween } from '../../helpers'
 import { Entity } from '../entity'
 import { CircleCollision } from './circleCollision'
 import { ICollidable } from './collidable.h'
@@ -22,28 +23,31 @@ export class BoxCollision implements ICollidable {
         // Doing rectangle vs rectangle check for now while I figure out how to
         // actually do circle vs rectangle.
         if (shape instanceof CircleCollision) {
-            // const aLoc = this._location
-            // const aSize = this._size
-            // const aRect: IRectangle = { location: aLoc, size: aSize }
-            // const bLoc = shape.getLocation()
-            // const bRadius = shape.getRadius()
-            // const bRect: IRectangle = {
-            //     location: {
-            //         x: bLoc.x - bRadius,
-            //         y: bLoc.y - bRadius
-            //     },
-            //     size: {
-            //         height: 2 * bRadius,
-            //         width: 2 * bRadius
-            //     }
-            // }
+            const aLoc = this._location
+            const aSize = this._size
+            const bLoc = {
+                x: shape.getLocation().x - shape.getRadius(),
+                y: shape.getLocation().y - shape.getRadius()
+            }
+            const bSize = {
+                width: 2 * shape.getRadius(),
+                height: 2 * shape.getRadius()
+            }
 
-            // return (
-            //     isPointInRectangle({ x: bRect.location.x, y: bRect.location.y }, aRect) ||
-            //     isPointInRectangle({ x: bRect.location.x + bRect.size.width, y: bRect.location.y }, aRect) ||
-            //     isPointInRectangle({ x: bRect.location.x, y: bRect.location.y + bRect.size.height }, aRect) ||
-            //     isPointInRectangle({ x: bRect.location.x + bRect.size.width, y: bRect.location.y + bRect.size.height }, aRect)
-            // )
+            if (aLoc.x + aSize.width < bLoc.x || bLoc.x + bSize.width < aLoc.x) return false
+            if (aLoc.y + aSize.height < bLoc.y || bLoc.y + bSize.height < aLoc.y) return false
+
+            // If the center of the circle is beyond the bounds of the rectangle do a
+            // check to see if the corner of the rectangle is within the circle
+            if (this._location.x > bLoc.x + bSize.width || this._location.x < bLoc.x) {
+                const shortestDistance = Math.min(
+                    getDistanceBetween(this._location, bLoc),
+                    getDistanceBetween(this._location, { x: bLoc.x + bSize.width, y: bLoc.y }),
+                    getDistanceBetween(this._location, { x: bLoc.x + bSize.width, y: bLoc.y + bSize.height }),
+                    getDistanceBetween(this._location, { x: bLoc.x, y: bLoc.y + bSize.height })
+                )
+                if (shortestDistance < shape.getRadius()) return true
+            }
         }
         else if (shape instanceof BoxCollision) {
             const aLoc = this._location

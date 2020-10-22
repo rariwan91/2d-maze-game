@@ -1,4 +1,5 @@
 import { IPoint } from '../../gui'
+import { getDistanceBetween } from '../../helpers/calculationHelpers'
 import { Entity } from '../entity'
 import { BoxCollision } from './boxCollision'
 import { ICollidable } from './collidable.h'
@@ -26,8 +27,7 @@ export class CircleCollision implements ICollidable {
             const totalRadius = shape.getRadius() + this._radius
             return (Math.pow(deltaX, 2) + Math.pow(deltaY, 2)) <= Math.pow(totalRadius, 2)
         }
-        // Doing rectangle vs rectangle check for now while I figure out how to
-        // actually do circle vs rectangle.
+        // Doing rectangle vs rectangle check and then a rectangle vs circle check
         else if (shape instanceof BoxCollision) {
             const aLoc = {
                 x: this._location.x - this._radius,
@@ -42,6 +42,19 @@ export class CircleCollision implements ICollidable {
 
             if (aLoc.x + aSize.width < bLoc.x || bLoc.x + bSize.width < aLoc.x) return false
             if (aLoc.y + aSize.height < bLoc.y || bLoc.y + bSize.height < aLoc.y) return false
+
+            // If the center of the circle is beyond the bounds of the rectangle do a
+            // check to see if the corner of the rectangle is within the circle
+            if (this._location.x > bLoc.x + bSize.width || this._location.x < bLoc.x) {
+                const shortestDistance = Math.min(
+                    getDistanceBetween(this._location, bLoc),
+                    getDistanceBetween(this._location, { x: bLoc.x + bSize.width, y: bLoc.y }),
+                    getDistanceBetween(this._location, { x: bLoc.x + bSize.width, y: bLoc.y + bSize.height }),
+                    getDistanceBetween(this._location, { x: bLoc.x, y: bLoc.y + bSize.height })
+                )
+                if (shortestDistance < this._radius) return true
+            }
+
             return true
         }
         return false

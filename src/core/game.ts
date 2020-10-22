@@ -33,7 +33,7 @@ export class Game {
 
         this._player = new Player({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 40
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 50
         }, this._myScreen)
 
         this._player.registerOnDeathEvent((entity: Entity): void => {
@@ -104,12 +104,12 @@ export class Game {
         })
 
         // Have the entities update now that collision has been updated
-        this._player.update((time - this._lastTime) / 1000.0)
+        this._activeRoom.update()
         this._enemies.forEach(enemy => {
             enemy.aiTick()
             enemy.update((time - this._lastTime) / 1000.0)
         })
-        this._activeRoom.update()
+        this._player.update((time - this._lastTime) / 1000.0)
     }
 
     public keydown(event: KeyboardEvent): void {
