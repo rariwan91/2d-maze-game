@@ -1,7 +1,7 @@
 import { Door, EnemyState, IEnemy, IPlayer, Player, Room, Weapon, WeaponState } from '.'
 import { Entity } from './entity'
 import { Direction,IMyScreen } from '../'
-import { Colors, IPoint } from '../../gui'
+import { IPoint } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
 import { EnemyCollision, ICollidable } from '../collision'
 import { Config } from '../../config'
@@ -13,11 +13,6 @@ export class Enemy extends Entity implements IEnemy {
     private _direction = Direction.Down
     private readonly _myScreen: IMyScreen
     private _collisionShape: EnemyCollision
-    private readonly _mainColor = Colors.Red
-    private readonly _secondaryColor = Colors.Green
-    private readonly _yesCollisionColor = Colors.Red
-    private readonly _noCollisionColor = Colors.Green
-    private readonly _invincibleColor = Colors.Blue
     private readonly _movementSpeed = 50
     private readonly _knockbackSpeed = 200
     private _maxHealth = 100
@@ -71,14 +66,14 @@ export class Enemy extends Entity implements IEnemy {
     // ----------------------------------------
 
     public draw(): void {
-        drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
+        drawCharacter(this._myScreen, this._location, this._radius, this._direction, Config.Enemies.MainColor, Config.Enemies.SecondaryColor)
 
         if (Config.Enemies.ShowCollisionBoxes) {
             if (this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
-                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), Config.Enemies.InvincibleColor, Config.Enemies.InvincibleColor, this.isColliding())
             }
             else {
-                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+                drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isColliding())
             }
         }
 

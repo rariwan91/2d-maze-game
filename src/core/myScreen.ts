@@ -1,5 +1,6 @@
 import { IMyScreen } from '.'
 import { IColor, IPoint, ISize } from '../gui'
+import { Config } from '../config'
 
 export class MyScreen implements IMyScreen {
     private readonly _canvas: HTMLCanvasElement
@@ -7,7 +8,7 @@ export class MyScreen implements IMyScreen {
 
     constructor(canvas: HTMLCanvasElement) {
         this._canvas = canvas
-        let context = canvas.getContext("2d")
+        const context = canvas.getContext("2d")
         if (context) {
             this._context = context
             this._context.lineWidth = 2
@@ -24,6 +25,7 @@ export class MyScreen implements IMyScreen {
 
     public clearScreen(): void {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+        this.drawRect({ x: 0, y: 0}, { width: this._canvas.width, height: this._canvas.height }, Config.MyScreen.BackgroundColor, Config.MyScreen.BackgroundColor)
     }
 
     public getSize(): ISize {
@@ -64,7 +66,7 @@ export class MyScreen implements IMyScreen {
         this._context.restore()
     }
 
-    public drawStraightLine(start: IPoint, end: IPoint, color: IColor) {
+    public drawStraightLine(start: IPoint, end: IPoint, color: IColor): void {
         this._context.save()
         this._context.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
         this._context.lineWidth = 2

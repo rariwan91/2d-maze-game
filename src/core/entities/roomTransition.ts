@@ -1,7 +1,7 @@
 import { IRoom, IRoomTransition, Player } from '.'
 import { IMyScreen } from '../'
 import { Config } from '../../config'
-import { Colors, IPoint, ISize } from '../../gui'
+import { IPoint, ISize } from '../../gui'
 import { BoxCollision, ICollidable } from '../collision'
 import { Entity } from './entity'
 
@@ -9,8 +9,6 @@ export class RoomTransition extends Entity implements IRoomTransition {
     private readonly _location: IPoint
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
-    private readonly _noCollisionsColor = Colors.Blue
-    private readonly _yesCollisionsColor = Colors.Yellow
     private _entitiesCollidingWithMe: Entity[] = []
     private _transitionBox: BoxCollision
     private _targetRoom: IRoom
@@ -29,9 +27,11 @@ export class RoomTransition extends Entity implements IRoomTransition {
     // ----------------------------------------
 
     public draw(): void {
-        if (Config.Transitions.ShowTransitionBoxes) {
-            const color = this.isColliding() ? this._yesCollisionsColor : this._noCollisionsColor
-            this._myScreen.drawRect(this._transitionBox.getLocation(), this._transitionBox.getSize(), color, color)
+        this._myScreen.drawRect(this._location, this._size, Config.Transitions.Color, Config.Transitions.Color)
+
+        if (Config.Transitions.ShowCollisionBoxes) {
+            const color = this.isColliding() ? Config.Collisions.YesCollisionColor : Config.Collisions.NoCollisionColor
+            this._myScreen.drawRect(this._transitionBox.getLocation(), this._transitionBox.getSize(), color)
         }
     }
 

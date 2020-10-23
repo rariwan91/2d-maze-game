@@ -1,7 +1,7 @@
 import { Door, IDoor, IRoom } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
-import { Colors, IPoint, ISize } from '../../gui'
+import { IPoint, ISize } from '../../gui'
 import { ICollidable, WallCollision } from './../collision'
 import { Entity } from './entity'
 import { RoomTransition } from './roomTransition'
@@ -14,9 +14,6 @@ export class Room extends Entity implements IRoom {
     private _walls: WallCollision[] = []
     private _doors: IDoor[] = []
     private _roomTransitions: IRoomTransition[] = []
-    private readonly _mainColor = Colors.Black
-    private readonly _noCollisionsColor = Colors.Green
-    private readonly _yesCollisionsColor = Colors.Red
     private _entitiesCollidingWithMe: Entity[] = []
     private _roomToNorth: IRoom
     private _roomToRight: IRoom
@@ -102,41 +99,41 @@ export class Room extends Entity implements IRoom {
 
     public draw(): void {
         if (this._roomToNorth) {
-            this._myScreen.drawStraightLine(this._location, { x: this._location.x + 0.4 * this._size.width, y: this._location.y }, this._mainColor)
-            this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y }, this._mainColor)
+            this._myScreen.drawStraightLine(this._location, { x: this._location.x + 0.4 * this._size.width, y: this._location.y }, Config.Rooms.WallColor)
+            this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y }, Config.Rooms.WallColor)
         }
         else {
-            this._myScreen.drawStraightLine(this._location, { x: this._location.x + this._size.width, y: this._location.y }, this._mainColor)
+            this._myScreen.drawStraightLine(this._location, { x: this._location.x + this._size.width, y: this._location.y }, Config.Rooms.WallColor)
         }
 
         if (this._roomToRight) {
-            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + 0.4 * this._size.height }, this._mainColor)
-            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + 0.4 * this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
         }
         else {
-            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
         }
 
         if (this._roomToSouth) {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height }, this._mainColor)
-            this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
         }
         else {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
         }
 
         if (this._roomToLeft) {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + 0.4 * this._size.height }, this._mainColor)
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + 0.4 * this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
         }
         else {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + this._size.height }, this._mainColor)
+            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
         }
 
         if (Config.Rooms.ShowWallCollisionBoxes) {
             const isColliding = this.isColliding()
             this._walls.forEach(collisionBox => {
-                this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
+                this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? Config.Collisions.YesCollisionColor : Config.Collisions.NoCollisionColor)
             })
         }
     }

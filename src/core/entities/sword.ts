@@ -1,7 +1,7 @@
 import { IPlayer, Weapon, WeaponState } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
-import { Colors, IColor, IPoint } from '../../gui'
+import { IPoint } from '../../gui'
 import { calculateSwordStartPoint } from '../../helpers/calculationHelpers'
 import { ICollidable, PlayerWeaponCollision } from '../collision'
 import { Entity } from './entity'
@@ -23,8 +23,6 @@ export class Sword extends Weapon {
     private _state = WeaponState.Resting
     private _acceptingAttacks = true
     private _hitboxes: PlayerWeaponCollision[] = []
-    private _noCollisionColor: IColor = Colors.Green
-    private _yesCollisionColor: IColor = Colors.Red
     private _entitiesCollidingWithMe: Entity[] = []
 
     constructor(myScreen: IMyScreen) {
@@ -72,7 +70,7 @@ export class Sword extends Weapon {
         this._myScreen.drawStraightLine(startPoint, {
             x: startPoint.x + this._swordLength * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: startPoint.y - this._swordLength * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0)
-        }, Colors.Black)
+        }, Config.Weapons.Color)
 
         const guardStartPoint: IPoint = {
             x: startPoint.x + this._handleLength * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0),
@@ -86,15 +84,15 @@ export class Sword extends Weapon {
         }, {
             x: guardStartPoint.x + (this._guardLength / 2.0) * Math.sin((this._startAngle - this._angleMoved) * Math.PI / 180.0),
             y: guardStartPoint.y + (this._guardLength / 2.0) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0)
-        }, Colors.Black)
+        }, Config.Weapons.Color)
 
         if (Config.Weapons.ShowCollisionBoxes) {
             this._hitboxes.forEach(hitbox => {
                 if (this.isColliding()) {
-                    this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._yesCollisionColor)
+                    this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, Config.Collisions.YesCollisionColor)
                 }
                 else {
-                    this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._noCollisionColor)
+                    this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, Config.Collisions.NoCollisionColor)
                 }
             })
         }

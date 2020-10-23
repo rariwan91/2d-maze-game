@@ -1,7 +1,7 @@
 import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
-import { Colors, IPoint, Keycode } from '../../gui'
+import { IPoint, Keycode } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../../helpers'
 import { CircleCollision, ICollidable } from '../collision'
 import { Entity } from './entity'
@@ -13,11 +13,6 @@ export class Player extends Entity implements IPlayer {
     private readonly _myScreen: IMyScreen
     private readonly _movementSpeed = 200
     private _collisionCircle: CircleCollision
-    private readonly _mainColor = Colors.Blue
-    private readonly _secondaryColor = Colors.Green
-    private readonly _noCollisionColor = Colors.Green
-    private readonly _yesCollisionColor = Colors.Red
-    private readonly _invincibleColor = Colors.Blue
     private _maxHealth = 100
     private _currentHealth = 100
     private _weapon: IWeapon
@@ -164,14 +159,14 @@ export class Player extends Entity implements IPlayer {
     // ----------------------------------------
 
     public draw(): void {
-        drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
+        drawCharacter(this._myScreen, this._location, this._radius, this._direction, Config.Players.MainColor, Config.Players.SecondaryColor)
 
         if (Config.Players.ShowCollisionBoxes) {
             if (this._state === PlayerState.InvincibleDueToDamage) {
-                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
+                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), Config.Players.InvincibleColor, Config.Players.InvincibleColor, this.isColliding())
             }
             else {
-                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._yesCollisionColor, this._noCollisionColor, this.isColliding())
+                drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isColliding())
             }
         }
 

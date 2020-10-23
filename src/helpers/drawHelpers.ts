@@ -1,7 +1,7 @@
 import { Direction, IMyScreen } from '../core'
 import { Colors, IColor, IPoint } from '../gui'
 
-export function drawCharacter(screen: IMyScreen, location: IPoint, radius: number, direction: Direction, mainColor: IColor, secondaryColor: IColor) {
+export function drawCharacter(screen: IMyScreen, location: IPoint, radius: number, direction: Direction, mainColor: IColor, secondaryColor: IColor): void {
     // draw character circle
     screen.drawArc(location, radius, 0, 360, mainColor, mainColor)
 
@@ -43,7 +43,7 @@ export function drawCharacter(screen: IMyScreen, location: IPoint, radius: numbe
     screen.drawArc(location, radius, startAngle, endAngle, secondaryColor, secondaryColor)
 }
 
-export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, collisionRadius: number, yesColor: IColor, noColor: IColor, isColliding: boolean) {
+export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, collisionRadius: number, yesColor: IColor, noColor: IColor, isColliding: boolean): void {
     if (isColliding) {
         // screen.drawRect({
         //     x: collisionLocation.x - collisionRadius,
@@ -66,7 +66,7 @@ export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, coll
     }
 }
 
-export function drawHealthBar(screen: IMyScreen, characterLocation: IPoint, characterRadius: number, characterMaxHealth: number, characterCurrentHealth: number) {
+export function drawHealthBar(screen: IMyScreen, characterLocation: IPoint, characterRadius: number, characterMaxHealth: number, characterCurrentHealth: number): void {
     screen.drawRect({
         x: characterLocation.x - characterRadius,
         y: characterLocation.y - characterRadius - 20
