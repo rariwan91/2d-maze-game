@@ -22,9 +22,18 @@ export class MyScreen implements IMyScreen {
     //              IMyScreen
     // ----------------------------------------
 
-    public drawRect(point: IPoint, size: ISize, borderColor: IColor, fillColor?: IColor): void {
-        // if (!isPointValid(point, this.getSize())) return
+    public clearScreen(): void {
+        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+    }
 
+    public getSize(): ISize {
+        return {
+            width: this._canvas.width,
+            height: this._canvas.height
+        }
+    }
+
+    public drawRect(point: IPoint, size: ISize, borderColor: IColor, fillColor?: IColor): void {
         this._context.save()
         this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
         if (fillColor) {
@@ -36,8 +45,6 @@ export class MyScreen implements IMyScreen {
     }
 
     public drawArc(point: IPoint, radius: number, startAngleDegrees: number, endAngleDegrees: number, borderColor: IColor, fillColor?: IColor): void {
-        // if (!isPointValid(point, this.getSize())) return
-
         this._context.save()
         this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
         if (fillColor) {
@@ -58,8 +65,6 @@ export class MyScreen implements IMyScreen {
     }
 
     public drawStraightLine(start: IPoint, end: IPoint, color: IColor) {
-        // if(!isPointValid(start, this.getSize()) || !isPointValid(end, this.getSize())) return
-
         this._context.save()
         this._context.strokeStyle = `rgb(${color.r}, ${color.g}, ${color.b})`
         this._context.lineWidth = 2
@@ -71,18 +76,32 @@ export class MyScreen implements IMyScreen {
         this._context.restore()
     }
 
-    public getSize(): ISize {
-        return {
-            width: this._canvas.width,
-            height: this._canvas.height
+    public drawEquilateralTriange(center: IPoint, sideLength: number, borderColor: IColor, fillColor?: IColor): void {
+        const bottomLeftPoint: IPoint = {
+            x: center.x - sideLength / Math.sqrt(2),
+            y: center.y + sideLength / Math.sqrt(3)
         }
-    }
-
-    // ----------------------------------------
-    //              public
-    // ----------------------------------------
-
-    public clearScreen(): void {
-        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
+        const topPoint: IPoint = {
+            x: center.x,
+            y: center.y - sideLength / (2 * Math.sqrt(3))
+        }
+        const bottomRightPoint: IPoint = {
+            x: center.x + sideLength / Math.sqrt(2),
+            y: center.y + sideLength / Math.sqrt(3)
+        }
+        this._context.save()
+        this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
+        this._context.lineWidth = 2
+        this._context.beginPath()
+        this._context.moveTo(bottomLeftPoint.x, bottomLeftPoint.y)
+        this._context.lineTo(topPoint.x, topPoint.y)
+        this._context.lineTo(bottomRightPoint.x, bottomRightPoint.y)
+        this._context.closePath()
+        this._context.stroke()
+        if(fillColor) {
+            this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
+            this._context.fill()
+        }
+        this._context.restore()
     }
 }

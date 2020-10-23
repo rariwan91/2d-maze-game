@@ -39,7 +39,8 @@ export class Door extends Entity implements IDoor {
         if (!this._opened) {
             this._myScreen.drawRect(this._location, this._size, this._mainColor, this._mainColor)
             if(this._locked) {
-                this._myScreen.drawRect({ x: this._location.x + this._size.width / 2 - 5, y: this._location.x + this._size.height / 2  -5 }, { width: 10, height: 10 }, this._secondaryColor, this._secondaryColor)
+                this._myScreen.drawRect({ x: this._location.x + this._size.width / 2 - 5, y: this._location.y + this._size.height / 2  - 6 }, { width: 10, height: 10 }, this._secondaryColor, this._secondaryColor)
+                this._myScreen.drawEquilateralTriange({ x: this._location.x + this._size.width / 2, y: this._location.y + this._size.height / 2 + 5 }, 7, this._secondaryColor, this._secondaryColor)
             }
         }
 

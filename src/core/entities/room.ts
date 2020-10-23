@@ -85,7 +85,6 @@ export class Room extends Entity implements IRoom {
         if(index !== -1) {
             this._doors.splice(index, 1)
         }
-        console.dir(this._doors)
     }
 
     // ----------------------------------------
