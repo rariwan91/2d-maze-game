@@ -1,7 +1,6 @@
-import { IRespondsToInput, MyScreen } from '.'
+import { Direction, IRespondsToInput, MyScreen } from '.'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
-import { Direction } from './direction.enum'
 import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, Player, Room } from './entities'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
