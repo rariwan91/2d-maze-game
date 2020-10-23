@@ -10,5 +10,5 @@ export enum Keycode {
     Q = 'q',
     ESC = 'Escape',
     SPACE = ' ',
-    ENTER = 'Enter'
+    E = 'e'
 }

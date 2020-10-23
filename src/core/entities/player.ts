@@ -156,9 +156,6 @@ export class Player extends Entity implements IPlayer {
         else if (keyCode === Keycode.Left) {
             this._leftPressed = false
         }
-        if (keyCode === Keycode.SPACE) {
-            console.log('space released')
-        }
     }
 
     // ----------------------------------------

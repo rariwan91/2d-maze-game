@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { IDoor } from '.'
 import { Direction, IUpdatable } from '../'
 import { IDrawable, IPoint, ISize } from '../../gui'
@@ -10,4 +9,5 @@ export interface IRoom extends IDrawable, IUpdatable, IHasCollisions {
     pairWithRoom(myExitDirection: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom): void
     setRoomExit(direction: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom): void
     getDoors(): IDoor[]
+    doorOpened(door: IDoor): void
 }

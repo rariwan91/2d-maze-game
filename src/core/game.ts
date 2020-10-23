@@ -46,6 +46,8 @@ export class Game {
         })
 
         this._respondsToInput.push(this._player)
+        const doors = this._activeRoom.getDoors()
+        doors.forEach(d => this._respondsToInput.push(d))
 
         // These enemies will chase you down. This is annoying when I'm trying to test
         // something other than that.
@@ -152,8 +154,8 @@ export class Game {
                 case Keycode.SPACE:
                     responder.keyPressed(Keycode.SPACE)
                     break
-                case Keycode.ENTER:
-                    responder.keyPressed(Keycode.ENTER)
+                case Keycode.E:
+                    responder.keyPressed(Keycode.E)
                     break
             }  
         })
@@ -180,6 +182,9 @@ export class Game {
                     break
                 case Keycode.SPACE:
                     responder.keyReleased(Keycode.SPACE)
+                    break
+                case Keycode.E:
+                    responder.keyReleased(Keycode.E)
                     break
             }
         })

@@ -1,11 +1,12 @@
 import { IMyScreen } from '../'
-import { IDoor } from '.'
+import { IDoor, IRoom } from '.'
 import { Entity } from './entity'
 import { Colors, IPoint, ISize, Keycode } from '../../gui'
 import { BoxCollision, CollisionConfig, DoorCollision, ICollidable } from './../collision'
 import { Player } from './player'
 
 export class Door extends Entity implements IDoor {
+    private readonly _room: IRoom
     private readonly _location: IPoint
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
@@ -20,11 +21,12 @@ export class Door extends Entity implements IDoor {
     private _opened = false
     private _locked = false
 
-    constructor(myScreen: IMyScreen, location: IPoint, size: ISize) {
+    constructor(myScreen: IMyScreen, location: IPoint, size: ISize, room: IRoom) {
         super()
         this._myScreen = myScreen
         this._size = size
         this._location = location
+        this._room = room
         this._doorCollision = new DoorCollision(this._location, this._size, this)
         this._activationBox = new BoxCollision({ x: this._location.x - 25, y: this._location.y - 25 }, { width: this._size.width + 50, height: this._size.height + 50 }, this)
     }
@@ -101,15 +103,18 @@ export class Door extends Entity implements IDoor {
     // ----------------------------------------
 
     public keyPressed(keyCode: Keycode) {
-        if (keyCode === Keycode.ENTER) {
-            console.log('player pressed enter and the door saw it')
+        if(!this.isActivated()) return
+
+        if (keyCode === Keycode.E) {
+            if(!this._locked) {
+                this._opened = true
+                this._room.doorOpened(this)
+            }
         }
     }
 
     public keyReleased(keyCode: Keycode) {
-        if (keyCode === Keycode.ENTER) {
-            console.log('enter released')
-        }
+        keyCode
     }
 
     // ----------------------------------------

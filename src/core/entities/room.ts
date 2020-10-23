@@ -80,6 +80,14 @@ export class Room extends Entity implements IRoom {
         return this._doors
     }
 
+    public doorOpened(door: IDoor): void {
+        const index = this._doors.indexOf(door)
+        if(index !== -1) {
+            this._doors.splice(index, 1)
+        }
+        console.dir(this._doors)
+    }
+
     // ----------------------------------------
     //              IDrawable
     // ----------------------------------------
@@ -176,7 +184,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
             )
             this._doors.push(
-                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 })
+                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
             )
         }
         else {
@@ -191,7 +199,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
             )
             this._doors.push(
-                new Door(this._myScreen, { x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 })
+                new Door(this._myScreen, { x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
             )
         }
         else {
@@ -206,7 +214,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
             )
             this._doors.push(
-                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 })
+                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
             )
         }
         else {
@@ -221,7 +229,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
             )
             this._doors.push(
-                new Door(this._myScreen, { x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 })
+                new Door(this._myScreen, { x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
             )
         }
         else {
