@@ -1,8 +1,7 @@
 import { IPoint } from '../../gui'
 import { getDistanceBetween } from '../../helpers/calculationHelpers'
-import { Entity } from '../entity'
-import { BoxCollision } from './boxCollision'
-import { ICollidable } from './collidable.h'
+import { Entity } from '../entities/entity'
+import { BoxCollision, ICollidable } from '.'
 
 export class CircleCollision implements ICollidable {
     private _location: IPoint

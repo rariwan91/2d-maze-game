@@ -1,8 +1,6 @@
-import { ICollidable } from './collision/collidable.h';
-import { Entity } from './entity';
-import { IPlayer } from './player.h';
-import { IWeapon } from './weapon.h';
-import { WeaponState } from './weaponState.enum';
+import { ICollidable } from '../collision/collidable.h'
+import { IPlayer, IWeapon, WeaponState } from '.'
+import { Entity } from './entity'
 
 export abstract class Weapon extends Entity implements IWeapon {
     attack(): void {

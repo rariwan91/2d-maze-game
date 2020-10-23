@@ -1,10 +1,8 @@
-import { IMyScreen, IRoom } from '.'
-import { Colors, IPoint, ISize, Keycode } from '../gui'
-import { getDistanceBetween } from '../helpers'
-import { CollisionConfig, DoorCollision, ICollidable, WallCollision } from './collision'
-import { Direction } from './direction.enum'
+import { Direction, IMyScreen } from '../'
+import { IRoom } from '.'
 import { Entity } from './entity'
-import { IPlayer } from './player.h'
+import { Colors, IPoint, ISize, Keycode } from '../../gui'
+import { CollisionConfig, DoorCollision, ICollidable, WallCollision } from './../collision'
 
 export class Room extends Entity implements IRoom {
     private _location: IPoint = { x: 50, y: 50 }

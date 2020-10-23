@@ -1,8 +1,8 @@
 import * as mocha from 'mocha'
 import * as chai from 'chai'
 
-import { getDirection } from '../src/helpers/directionHelpers'
-import { Direction } from '../src/core/direction.enum'
+import { getDirection } from '../src/helpers'
+import { Direction } from '../src/core'
 
 describe('>>> Direction Calculation', () => {
     describe('>>> One Direction', () => {

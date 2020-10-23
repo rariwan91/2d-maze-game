@@ -1,10 +1,9 @@
-import { Direction, EnemyState, IEnemy, IMyScreen, IPlayer, Room, WeaponState } from '.'
-import { Colors, IPoint } from '../gui'
-import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../helpers'
-import { CollisionConfig, EnemyCollision, ICollidable } from './collision'
+import { EnemyState, IEnemy, IPlayer, Player, Room, Weapon, WeaponState } from '.'
 import { Entity } from './entity'
-import { Player } from './player'
-import { Weapon } from './weapon'
+import { Direction,IMyScreen } from '../'
+import { Colors, IPoint } from '../../gui'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
+import { CollisionConfig, EnemyCollision, ICollidable } from './../collision'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint

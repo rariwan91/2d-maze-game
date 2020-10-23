@@ -1,8 +1,10 @@
-import { Enemy, EnemyState, IEnemy, IRespondsToInput, IPlayer, IWeapon, MyScreen, Player, Room, Sword } from '.'
+import { IRespondsToInput, MyScreen } from '.'
+import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, Player, Room } from './entities'
+import { Entity } from './entities/entity'
+import { Sword } from './entities/sword'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
 import { Direction } from './direction.enum'
-import { Entity } from './entity'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -18,18 +20,18 @@ export class Game {
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
 
-        const roomCenter = new Room(this._myScreen)
-        const roomUp = new Room(this._myScreen)
-        const roomRight = new Room(this._myScreen)
-        const roomDown = new Room(this._myScreen)
-        const roomLeft = new Room(this._myScreen)
+        const centerRoom = new Room(this._myScreen)
+        const northRoom = new Room(this._myScreen)
+        const eastRoom = new Room(this._myScreen)
+        const southRoom = new Room(this._myScreen)
+        const westRoom = new Room(this._myScreen)
 
-        roomCenter.pairWithRoom(Direction.Up, roomUp)
-        roomCenter.pairWithRoom(Direction.Down, roomDown)
-        roomCenter.pairWithRoom(Direction.Left, roomLeft)
-        roomCenter.pairWithRoom(Direction.Right, roomRight)
+        centerRoom.pairWithRoom(Direction.Up, northRoom)
+        centerRoom.pairWithRoom(Direction.Down, southRoom)
+        centerRoom.pairWithRoom(Direction.Left, westRoom)
+        centerRoom.pairWithRoom(Direction.Right, eastRoom)
 
-        this._rooms.push(roomCenter, roomUp, roomRight, roomDown, roomLeft)
+        this._rooms.push(centerRoom, northRoom, eastRoom, southRoom, westRoom)
         this._activeRoom = this._rooms[0]
 
         this._weapons.push(new Sword(this._myScreen))

@@ -1,9 +1,9 @@
-import { Direction, IMyScreen, IPlayer, WeaponState } from '.'
-import { Colors, IColor, IPoint } from '../gui'
-import { calculateSwordStartPoint } from '../helpers/calculationHelpers'
-import { CollisionConfig, ICollidable, PlayerWeaponCollision } from './collision'
+import { Direction, IMyScreen } from '../'
+import { IPlayer, Weapon, WeaponState } from '.'
 import { Entity } from './entity'
-import { Weapon } from './weapon'
+import { Colors, IColor, IPoint } from '../../gui'
+import { calculateSwordStartPoint } from '../../helpers/calculationHelpers'
+import { CollisionConfig, ICollidable, PlayerWeaponCollision } from './../collision'
 
 export class Sword extends Weapon {
     private readonly _myScreen: IMyScreen

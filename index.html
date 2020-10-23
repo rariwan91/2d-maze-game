@@ -1,12 +1,19 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>2D Maze</title>
+    <meta charset="UTF-8">
+    
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"> -->
+
+    <title>2D Maze Game</title>
 </head>
-
 <body>
-    <canvas id="canvas" width="1024" height="768" style="border: 1px solid black;">
+    <canvas id="canvas" width="1024" height="750" style="border: 1px solid black;">
     </canvas>
-</body>
 
+    <script>
+        if(window.require)
+            require('./dist/src/main.js')
+    </script>
+</body>
 </html>
