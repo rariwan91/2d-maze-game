@@ -3,7 +3,8 @@ import { Entity } from './entity'
 import { Direction,IMyScreen } from '../'
 import { Colors, IPoint } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
-import { CollisionConfig, EnemyCollision, ICollidable } from './../collision'
+import { EnemyCollision, ICollidable } from '../collision'
+import { Config } from '../../config'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
@@ -19,8 +20,8 @@ export class Enemy extends Entity implements IEnemy {
     private readonly _invincibleColor = Colors.Blue
     private readonly _movementSpeed = 50
     private readonly _knockbackSpeed = 200
-    private _maxHealth: number = 100
-    private _currentHealth: number = 100
+    private _maxHealth = 100
+    private _currentHealth= 100
     private _state = EnemyState.TargetDummy
     private _oldState = EnemyState.TargetDummy
     private _knockbackAngle: number
@@ -72,7 +73,7 @@ export class Enemy extends Entity implements IEnemy {
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
 
-        if (CollisionConfig && CollisionConfig.Enemies.ShowCollisionBoxes) {
+        if (Config.Enemies.ShowCollisionBoxes) {
             if (this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
                 drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
             }
@@ -321,11 +322,11 @@ export class Enemy extends Entity implements IEnemy {
         else if (this._state === EnemyState.KnockbackFromDamage) {
             const myLoc = this._location
 
-            let newVelocity: IPoint = {
+            const newVelocity: IPoint = {
                 x: this._knockbackSpeed * Math.cos(this._knockbackAngle * Math.PI / 180.0),
                 y: this._knockbackSpeed * Math.sin(this._knockbackAngle * Math.PI / 180.0)
             }
-            let newLocation: IPoint = {
+            const newLocation: IPoint = {
                 x: myLoc.x + newVelocity.x * deltaTime,
                 y: myLoc.y - newVelocity.y * deltaTime
             }

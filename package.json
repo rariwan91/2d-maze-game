@@ -8,7 +8,7 @@
     "tests": "mocha -r ts-node/register tests/**/*.test.ts",
     "elec-build": "tsc --build",
     "elec-start": "npm run elec-build && electron ./dist/src/electronMain.js",
-    "lint": "eslist .eslistrc.json"
+    "lint": "eslint .eslintrc.json"
   },
   "author": "",
   "license": "ISC",
@@ -25,7 +25,6 @@
     "copy-webpack-plugin": "^5.1.1",
     "electron": "^10.1.4",
     "eslint": "^7.11.0",
-    "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.1",
     "html-webpack-plugin": "^4.5.0",
     "mocha": "^8.2.0",

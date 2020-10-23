@@ -1,10 +1,10 @@
 import { IRespondsToInput, MyScreen } from '.'
-import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, Player, Room } from './entities'
-import { Entity } from './entities/entity'
-import { Sword } from './entities/sword'
 import { Keycode } from '../gui'
 import { ICollidable } from './collision'
 import { Direction } from './direction.enum'
+import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, Player, Room } from './entities'
+import { Entity } from './entities/entity'
+import { Sword } from './entities/sword'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -14,7 +14,7 @@ export class Game {
     private readonly _enemies: IEnemy[] = []
     private readonly _weapons: IWeapon[] = []
     private readonly _respondsToInput: IRespondsToInput[] = []
-    private _lastTime: number = 0
+    private _lastTime = 0
     private _gameOver = false
 
     constructor(canvas: HTMLCanvasElement) {
@@ -157,7 +157,7 @@ export class Game {
                 case Keycode.E:
                     responder.keyPressed(Keycode.E)
                     break
-            }  
+            }
         })
     }
 

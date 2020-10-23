@@ -1,8 +1,9 @@
-import { IMyScreen } from '../'
 import { IDoor, IRoom } from '.'
-import { Entity } from './entity'
+import { IMyScreen } from '../'
+import { Config } from '../../config'
 import { Colors, IPoint, ISize, Keycode } from '../../gui'
-import { BoxCollision, CollisionConfig, DoorCollision, ICollidable } from './../collision'
+import { BoxCollision, DoorCollision, ICollidable } from './../collision'
+import { Entity } from './entity'
 import { Player } from './player'
 
 export class Door extends Entity implements IDoor {
@@ -38,19 +39,20 @@ export class Door extends Entity implements IDoor {
     public draw(): void {
         if (!this._opened) {
             this._myScreen.drawRect(this._location, this._size, this._mainColor, this._mainColor)
-            if(this._locked) {
-                this._myScreen.drawRect({ x: this._location.x + this._size.width / 2 - 5, y: this._location.y + this._size.height / 2  - 6 }, { width: 10, height: 10 }, this._secondaryColor, this._secondaryColor)
+            if (this._locked) {
+                this._myScreen.drawRect({ x: this._location.x + this._size.width / 2 - 5, y: this._location.y + this._size.height / 2 - 6 }, { width: 10, height: 10 }, this._secondaryColor, this._secondaryColor)
                 this._myScreen.drawEquilateralTriange({ x: this._location.x + this._size.width / 2, y: this._location.y + this._size.height / 2 + 5 }, 7, this._secondaryColor, this._secondaryColor)
             }
         }
 
-        if (CollisionConfig) {
-            if (CollisionConfig.Rooms.ShowDoorCollisionBoxes) {
-                const isColliding = this.isColliding()
-                const isActivated = this.isActivated()
-                this._myScreen.drawRect(this._doorCollision.getLocation(), this._doorCollision.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
-                this._myScreen.drawRect(this._activationBox.getLocation(), this._activationBox.getSize(), isActivated ? this._yesCollisionsColor : this._noCollisionsColor)
-            }
+        if (Config.Doors.ShowCollisionBoxes) {
+            const isColliding = this.isColliding()
+            this._myScreen.drawRect(this._doorCollision.getLocation(), this._doorCollision.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
+        }
+
+        if (Config.Doors.ShowActivationBoxes) {
+            const isActivated = this.isActivated()
+            this._myScreen.drawRect(this._activationBox.getLocation(), this._activationBox.getSize(), isActivated ? this._yesCollisionsColor : this._noCollisionsColor)
         }
     }
 
@@ -104,10 +106,10 @@ export class Door extends Entity implements IDoor {
     // ----------------------------------------
 
     public keyPressed(keyCode: Keycode) {
-        if(!this.isActivated()) return
+        if (!this.isActivated()) return
 
         if (keyCode === Keycode.E) {
-            if(!this._locked) {
+            if (!this._locked) {
                 this._opened = true
                 this._room.doorOpened(this)
             }
@@ -125,7 +127,7 @@ export class Door extends Entity implements IDoor {
     private isColliding(): boolean {
         let result = false
         this._entitiesCollidingWithMe.forEach(entity => {
-            if(entity instanceof Player) {
+            if (entity instanceof Player) {
                 result = true
             }
         })
@@ -135,7 +137,7 @@ export class Door extends Entity implements IDoor {
     private isActivated(): boolean {
         let result = false
         this._entitiesActivatingMe.forEach(entity => {
-            if(entity instanceof Player) {
+            if (entity instanceof Player) {
                 result = true
             }
         })

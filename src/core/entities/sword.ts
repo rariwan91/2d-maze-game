@@ -1,9 +1,10 @@
-import { Direction, IMyScreen } from '../'
 import { IPlayer, Weapon, WeaponState } from '.'
-import { Entity } from './entity'
+import { Direction, IMyScreen } from '../'
+import { Config } from '../../config'
 import { Colors, IColor, IPoint } from '../../gui'
 import { calculateSwordStartPoint } from '../../helpers/calculationHelpers'
-import { CollisionConfig, ICollidable, PlayerWeaponCollision } from './../collision'
+import { ICollidable, PlayerWeaponCollision } from '../collision'
+import { Entity } from './entity'
 
 export class Sword extends Weapon {
     private readonly _myScreen: IMyScreen
@@ -87,7 +88,7 @@ export class Sword extends Weapon {
             y: guardStartPoint.y + (this._guardLength / 2.0) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, Colors.Black)
 
-        if (CollisionConfig && CollisionConfig.Weapons.ShowCollisionBoxes) {
+        if (Config.Weapons.ShowCollisionBoxes) {
             this._hitboxes.forEach(hitbox => {
                 if (this.isColliding()) {
                     this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, this._yesCollisionColor)

@@ -1,14 +1,15 @@
 import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room } from '.'
-import { Entity } from './entity'
 import { Direction, IMyScreen } from '../'
+import { Config } from '../../config'
 import { Colors, IPoint, Keycode } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../../helpers'
-import { CircleCollision, CollisionConfig, ICollidable } from './../collision'
+import { CircleCollision, ICollidable } from '../collision'
+import { Entity } from './entity'
 
 export class Player extends Entity implements IPlayer {
     private _location: IPoint
     private _oldLocation: IPoint
-    private _radius: number = 25
+    private _radius = 25
     private readonly _myScreen: IMyScreen
     private readonly _movementSpeed = 200
     private _collisionCircle: CircleCollision
@@ -17,8 +18,8 @@ export class Player extends Entity implements IPlayer {
     private readonly _noCollisionColor = Colors.Green
     private readonly _yesCollisionColor = Colors.Red
     private readonly _invincibleColor = Colors.Blue
-    private _maxHealth: number = 100
-    private _currentHealth: number = 100
+    private _maxHealth = 100
+    private _currentHealth = 100
     private _weapon: IWeapon
     private _upPressed = false
     private _rightPressed = false
@@ -58,11 +59,11 @@ export class Player extends Entity implements IPlayer {
         return this._direction
     }
 
-    public equipWeapon(weapon: IWeapon) {
+    public equipWeapon(weapon: IWeapon): void {
         this._weapon = weapon
     }
 
-    public unequipWeapon(weapon: IWeapon) {
+    public unequipWeapon(weapon: IWeapon): void {
         weapon
         this._weapon = null
     }
@@ -123,7 +124,7 @@ export class Player extends Entity implements IPlayer {
     //              IRespondsToInput
     // ----------------------------------------
 
-    public keyPressed(keyCode: Keycode) {
+    public keyPressed(keyCode: Keycode): void {
         if (keyCode === Keycode.Up) {
             this._upPressed = true
         }
@@ -143,7 +144,7 @@ export class Player extends Entity implements IPlayer {
         }
     }
 
-    public keyReleased(keyCode: Keycode) {
+    public keyReleased(keyCode: Keycode): void {
         if (keyCode === Keycode.Up) {
             this._upPressed = false
         }
@@ -165,7 +166,7 @@ export class Player extends Entity implements IPlayer {
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, this._mainColor, this._secondaryColor)
 
-        if (CollisionConfig && CollisionConfig.Players.ShowCollisionBoxes) {
+        if (Config.Players.ShowCollisionBoxes) {
             if (this._state === PlayerState.InvincibleDueToDamage) {
                 drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), this._invincibleColor, this._invincibleColor, this.isColliding())
             }

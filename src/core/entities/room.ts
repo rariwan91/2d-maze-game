@@ -1,9 +1,11 @@
+import { Door, IDoor, IRoom } from '.'
 import { Direction, IMyScreen } from '../'
-import { IDoor, IRoom } from '.'
-import { Entity } from './entity'
+import { Config } from '../../config'
 import { Colors, IPoint, ISize } from '../../gui'
-import { CollisionConfig, ICollidable, WallCollision } from './../collision'
-import { Door } from './door'
+import { ICollidable, WallCollision } from './../collision'
+import { Entity } from './entity'
+import { RoomTransition } from './roomTransition'
+import { IRoomTransition } from './roomTransition.h'
 
 export class Room extends Entity implements IRoom {
     private readonly _location: IPoint = { x: 50, y: 50 }
@@ -11,6 +13,7 @@ export class Room extends Entity implements IRoom {
     private readonly _myScreen: IMyScreen
     private _walls: WallCollision[] = []
     private _doors: IDoor[] = []
+    private _roomTransitions: IRoomTransition[] = []
     private readonly _mainColor = Colors.Black
     private readonly _noCollisionsColor = Colors.Green
     private readonly _yesCollisionsColor = Colors.Red
@@ -74,6 +77,8 @@ export class Room extends Entity implements IRoom {
             this._roomToLeft = room
         }
         this.createWallCollisions()
+        this.createDoors()
+        this.createRoomTransitions()
     }
 
     public getDoors(): IDoor[] {
@@ -82,9 +87,13 @@ export class Room extends Entity implements IRoom {
 
     public doorOpened(door: IDoor): void {
         const index = this._doors.indexOf(door)
-        if(index !== -1) {
+        if (index !== -1) {
             this._doors.splice(index, 1)
         }
+    }
+
+    public getRoomTransitions(): IRoomTransition[] {
+        return this._roomTransitions
     }
 
     // ----------------------------------------
@@ -124,13 +133,11 @@ export class Room extends Entity implements IRoom {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + this._size.height }, this._mainColor)
         }
 
-        if (CollisionConfig) {
+        if (Config.Rooms.ShowWallCollisionBoxes) {
             const isColliding = this.isColliding()
-            if (CollisionConfig.Rooms.ShowWallCollisionBoxes) {
-                this._walls.forEach(collisionBox => {
-                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
-                })
-            }
+            this._walls.forEach(collisionBox => {
+                this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
+            })
         }
     }
 
@@ -141,6 +148,7 @@ export class Room extends Entity implements IRoom {
     public update(): void {
         this.draw()
         this._doors.forEach(d => d.update())
+        this._roomTransitions.forEach(rt => rt.update())
     }
 
     // ----------------------------------------
@@ -176,14 +184,10 @@ export class Room extends Entity implements IRoom {
 
     private createWallCollisions(): void {
         this._walls = []
-        this._doors = []
         if (this._roomToNorth) {
             this._walls.push(
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this),
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
-            )
-            this._doors.push(
-                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
             )
         }
         else {
@@ -197,9 +201,6 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 }, { height: 0.4 * this._size.height + 6, width: 6 }, this),
                 new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
             )
-            this._doors.push(
-                new Door(this._myScreen, { x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
-            )
         }
         else {
             this._walls.push(
@@ -211,9 +212,6 @@ export class Room extends Entity implements IRoom {
             this._walls.push(
                 new WallCollision({ x: this._location.x - 3, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this),
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
-            )
-            this._doors.push(
-                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
             )
         }
         else {
@@ -227,13 +225,64 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 0.4 * this._size.height + 6, width: 6 }, this),
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
             )
-            this._doors.push(
-                new Door(this._myScreen, { x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
-            )
         }
         else {
             this._walls.push(
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: this._size.height + 6, width: 6 }, this)
+            )
+        }
+    }
+
+    private createDoors(): void {
+        this._doors = []
+        if (this._roomToNorth) {
+            this._doors.push(
+                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
+            )
+        }
+
+        if (this._roomToRight) {
+            this._doors.push(
+                new Door(this._myScreen, { x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
+            )
+        }
+
+        if (this._roomToSouth) {
+            this._doors.push(
+                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
+            )
+        }
+
+        if (this._roomToLeft) {
+            this._doors.push(
+                new Door(this._myScreen, { x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
+            )
+        }
+    }
+
+    private createRoomTransitions(): void {
+        this._roomTransitions = []
+        if (this._roomToNorth) {
+            this._roomTransitions.push(
+                new RoomTransition(this._myScreen, { x: this._location.x + 0.35 * this._size.width, y: this._location.y - 50 }, { height: 20, width: 0.3 * this._size.width }, this._roomToNorth)
+            )
+        }
+
+        if (this._roomToRight) {
+            this._roomTransitions.push(
+                new RoomTransition(this._myScreen, { x: this._location.x + this._size.width + 30, y: this._location.y + 0.35 * this._size.height }, { height: 0.3 * this._size.height, width: 20 }, this._roomToRight)
+            )
+        }
+
+        if (this._roomToSouth) {
+            this._roomTransitions.push(
+                new RoomTransition(this._myScreen, { x: this._location.x + 0.35 * this._size.width, y: this._location.y + this._size.height + 30 }, { height: 20, width: 0.3 * this._size.width }, this._roomToSouth)
+            )
+        }
+
+        if (this._roomToLeft) {
+            this._roomTransitions.push(
+                new RoomTransition(this._myScreen, { x: this._location.x - 50, y: this._location.y + 0.35 * this._size.height }, { height: 0.3 * this._size.height, width: 20 }, this._roomToLeft)
             )
         }
     }
