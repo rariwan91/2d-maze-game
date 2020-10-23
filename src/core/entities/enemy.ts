@@ -1,4 +1,4 @@
-import { EnemyState, IEnemy, IPlayer, Player, Room, Weapon, WeaponState } from '.'
+import { Door, EnemyState, IEnemy, IPlayer, Player, Room, Weapon, WeaponState } from '.'
 import { Entity } from './entity'
 import { Direction,IMyScreen } from '../'
 import { Colors, IPoint } from '../../gui'
@@ -91,7 +91,7 @@ export class Enemy extends Entity implements IEnemy {
     public update(deltaTime: number): void {
         const enemiesCollidingWithMe: Enemy[] = []
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Room) {
+            if (entity instanceof Room || entity instanceof Door) {
                 this._location = this._oldLocation
             }
             else if (entity instanceof Weapon) {
