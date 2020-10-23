@@ -24,7 +24,6 @@ export class Player extends Entity implements IPlayer {
     private _state = PlayerState.Normal
     private _entitiesCollidingWithMe: Entity[] = []
     private _lastTookDamage: number
-    private readonly _deathEventListeners: ((entity: Entity) => void)[] = []
 
     constructor(location: IPoint, myScreen: IMyScreen) {
         super()
@@ -188,18 +187,11 @@ export class Player extends Entity implements IPlayer {
     public takeDamage(amount: number): void {
         this._currentHealth = Math.max(this._currentHealth - amount, 0)
         if (this._currentHealth <= 0) {
-            this._deathEventListeners.forEach(callback => callback(this))
-        }
-    }
-
-    public registerOnDeathEvent(callback: (entity: Entity) => void): void {
-        this._deathEventListeners.push(callback)
-    }
-
-    public unregisterOnDeathEvent(callback: (entity: Entity) => void): void {
-        if (this._deathEventListeners.includes(callback)) {
-            const index = this._deathEventListeners.indexOf(callback)
-            this._deathEventListeners.splice(index)
+            const event = new CustomEvent('onPlayerDeath', {
+                detail: this
+            })
+            const eventTarget = document.getElementById('eventTarget')
+            eventTarget.dispatchEvent(event)
         }
     }
 

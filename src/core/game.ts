@@ -40,8 +40,12 @@ export class Game {
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 75
         }, this._myScreen)
 
-        this._player.registerOnDeathEvent((entity: Entity): void => {
-            this.entityDied(entity)
+        const eventTarget = document.getElementById('eventTarget')
+        eventTarget.addEventListener('onPlayerDeath', (e: CustomEvent) => {
+            this.entityDied(e.detail)
+        })
+        eventTarget.addEventListener('onEnemyDeath', (e: CustomEvent) => {
+            this.entityDied(e.detail)
         })
 
         this._respondsToInput.push(this._player)
@@ -164,26 +168,6 @@ export class Game {
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 + 150,
             y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
         }, this._myScreen, this._player, initialEnemyState))
-
-        this._enemies[0].registerOnDeathEvent((entity: Entity): void => {
-            this.entityDied(entity)
-        })
-
-        this._enemies[1].registerOnDeathEvent((entity: Entity): void => {
-            this.entityDied(entity)
-        })
-
-        this._enemies[2].registerOnDeathEvent((entity: Entity): void => {
-            this.entityDied(entity)
-        })
-
-        this._enemies[3].registerOnDeathEvent((entity: Entity): void => {
-            this.entityDied(entity)
-        })
-
-        this._enemies[4].registerOnDeathEvent((entity: Entity): void => {
-            this.entityDied(entity)
-        })
     }
 
     private entityDied(entity: Entity): void {
