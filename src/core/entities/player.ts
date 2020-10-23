@@ -1,4 +1,4 @@
-import { Enemy, IPlayer, IWeapon, PlayerState, Room } from '.'
+import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room } from '.'
 import { Entity } from './entity'
 import { Direction, IMyScreen } from '../'
 import { Colors, IPoint, Keycode } from '../../gui'
@@ -93,7 +93,7 @@ export class Player extends Entity implements IPlayer {
 
     public update(deltaTime: number): void {
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Room) {
+            if (entity instanceof Room || entity instanceof Door) {
                 this._location = this._oldLocation
                 this._collisionCircle.setLocation(this._location)
             }
@@ -157,7 +157,7 @@ export class Player extends Entity implements IPlayer {
             this._leftPressed = false
         }
         if (keyCode === Keycode.SPACE) {
-
+            console.log('space released')
         }
     }
 

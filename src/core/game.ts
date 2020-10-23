@@ -38,7 +38,7 @@ export class Game {
 
         this._player = new Player({
             x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 50
+            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 75
         }, this._myScreen)
 
         this._player.registerOnDeathEvent((entity: Entity): void => {
@@ -73,6 +73,13 @@ export class Game {
 
     private updateEntities(time: number): void {
         const roomCollidables = this._activeRoom.getCollisionShapes()
+
+        const doors = this._activeRoom.getDoors()
+        const doorCollisions: ICollidable[] = []
+        doors.forEach(d => {
+            d.getCollisionShapes().forEach(dc => doorCollisions.push(dc))
+        })
+
         const playerCollidables = this._player.getCollisionShapes()
 
         const enemyCollidables: ICollidable[] = []
@@ -93,18 +100,18 @@ export class Game {
         })
 
         // Have player check for collisions with room and enemies
-        this._player.checkForCollisionsWith(roomCollidables.concat(enemyCollidables))
+        const playerConcerns = roomCollidables.concat(enemyCollidables).concat(doorCollisions)
+        this._player.checkForCollisionsWith(playerConcerns)
 
         // Have enemies check for collisions with room, player, player weapons, and other enemies
-        const enemyConcerns = roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables).concat(enemyCollidables)
+        const enemyConcerns = roomCollidables.concat(playerCollidables).concat(playerWeaponCollidables).concat(enemyCollidables).concat(doorCollisions)
         this._enemies.forEach(enemy => {
             enemy.checkForCollisionsWith(enemyConcerns)
         })
 
-        // Have rooms check for collisions with players and enemies
+        // Have rooms and doors check for collisions with players and enemies
         const roomConcerns = playerCollidables.concat(enemyCollidables)
         this._activeRoom.checkForCollisionsWith(roomConcerns)
-        const doors = this._activeRoom.getDoors()
         doors.forEach(d => {
             d.checkForCollisionsWith(roomConcerns)
         })
