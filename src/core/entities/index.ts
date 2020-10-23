@@ -1,3 +1,5 @@
+export * from './door'
+export * from './door.h'
 export * from './enemy'
 export * from './enemy.h'
 export * from './enemyState.enum'

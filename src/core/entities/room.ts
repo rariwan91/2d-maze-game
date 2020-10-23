@@ -1,18 +1,19 @@
 import { Direction, IMyScreen } from '../'
-import { IRoom } from '.'
+import { IDoor, IRoom } from '.'
 import { Entity } from './entity'
-import { Colors, IPoint, ISize, Keycode } from '../../gui'
-import { CollisionConfig, DoorCollision, ICollidable, WallCollision } from './../collision'
+import { Colors, IPoint, ISize } from '../../gui'
+import { CollisionConfig, ICollidable, WallCollision } from './../collision'
+import { Door } from './door'
 
 export class Room extends Entity implements IRoom {
-    private _location: IPoint = { x: 50, y: 50 }
+    private readonly _location: IPoint = { x: 50, y: 50 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
     private _walls: WallCollision[] = []
-    private _doors: DoorCollision[] = []
-    private _mainColor = Colors.Black
-    private _noCollisionsColor = Colors.Green
-    private _yesCollisionsColor = Colors.Red
+    private _doors: IDoor[] = []
+    private readonly _mainColor = Colors.Black
+    private readonly _noCollisionsColor = Colors.Green
+    private readonly _yesCollisionsColor = Colors.Red
     private _entitiesCollidingWithMe: Entity[] = []
     private _roomToNorth: IRoom
     private _roomToRight: IRoom
@@ -75,6 +76,10 @@ export class Room extends Entity implements IRoom {
         this.createWallCollisions()
     }
 
+    public getDoors(): IDoor[] {
+        return this._doors
+    }
+
     // ----------------------------------------
     //              IDrawable
     // ----------------------------------------
@@ -82,7 +87,6 @@ export class Room extends Entity implements IRoom {
     public draw(): void {
         if (this._roomToNorth) {
             this._myScreen.drawStraightLine(this._location, { x: this._location.x + 0.4 * this._size.width, y: this._location.y }, this._mainColor)
-            this._myScreen.drawRect({ x: this._location.x + 0.4 * this._size.width, y: this._location.y - 10 }, { width: 0.2 * this._size.width, height: 20 }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y }, this._mainColor)
         }
         else {
@@ -91,7 +95,6 @@ export class Room extends Entity implements IRoom {
 
         if (this._roomToRight) {
             this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + 0.4 * this._size.height }, this._mainColor)
-            this._myScreen.drawRect({ x: this._location.x - 10 + this._size.width, y: this._location.y + 0.4 * this._size.height }, { width: 20, height: 0.2 * this._size.height }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
         }
         else {
@@ -100,7 +103,6 @@ export class Room extends Entity implements IRoom {
 
         if (this._roomToSouth) {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height }, this._mainColor)
-            this._myScreen.drawRect({ x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 }, { width: 0.2 * this._size.width, height: 20 }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, this._mainColor)
         }
         else {
@@ -109,7 +111,6 @@ export class Room extends Entity implements IRoom {
 
         if (this._roomToLeft) {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + 0.4 * this._size.height }, this._mainColor)
-            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + 0.4 * this._size.height }, { width: 20, height: 0.2 * this._size.height }, Colors.Brown, Colors.Brown)
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x, y: this._location.y + this._size.height }, this._mainColor)
         }
         else {
@@ -123,11 +124,6 @@ export class Room extends Entity implements IRoom {
                     this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
                 })
             }
-            if (CollisionConfig.Rooms.ShowDoorCollisionBoxes) {
-                this._doors.forEach(collisionBox => {
-                    this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? this._yesCollisionsColor : this._noCollisionsColor)
-                })
-            }
         }
     }
 
@@ -137,6 +133,7 @@ export class Room extends Entity implements IRoom {
 
     public update(): void {
         this.draw()
+        this._doors.forEach(d => d.update())
     }
 
     // ----------------------------------------
@@ -144,14 +141,13 @@ export class Room extends Entity implements IRoom {
     // ----------------------------------------
 
     public getCollisionShapes(): ICollidable[] {
-        return this._walls.concat(this._doors)
+        return this._walls
     }
 
     public checkForCollisionsWith(collidables: ICollidable[]): void {
         const entities: Entity[] = []
-
         collidables.forEach(collidable => {
-            const result = collidable.isCollidingWithShapes(this._walls.concat(this._doors))
+            const result = collidable.isCollidingWithShapes(this.getCollisionShapes())
             if (!result || result.length > 0) {
                 const entity = collidable.getEntity()
                 if (!entities.includes(entity) && entity !== this as Entity) {
@@ -161,22 +157,6 @@ export class Room extends Entity implements IRoom {
         })
 
         this._entitiesCollidingWithMe = entities
-    }
-
-    // ----------------------------------------
-    //              IRespondsToInput
-    // ----------------------------------------
-
-    public keyPressed(keyCode: Keycode) {
-        if (keyCode === Keycode.ENTER) {
-            console.log('player pressed enter and the door saw it')
-        }
-    }
-
-    public keyReleased(keyCode: Keycode) {
-        if (keyCode === Keycode.ENTER) {
-
-        }
     }
 
     // ----------------------------------------
@@ -196,7 +176,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
             )
             this._doors.push(
-                new DoorCollision({ x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
+                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 })
             )
         }
         else {
@@ -211,7 +191,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
             )
             this._doors.push(
-                new DoorCollision({ x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
+                new Door(this._myScreen, { x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 })
             )
         }
         else {
@@ -226,7 +206,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
             )
             this._doors.push(
-                new DoorCollision({ x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 }, this)
+                new Door(this._myScreen, { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }, { height: 26, width: 0.2 * this._size.width + 6 })
             )
         }
         else {
@@ -241,7 +221,7 @@ export class Room extends Entity implements IRoom {
                 new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
             )
             this._doors.push(
-                new DoorCollision({ x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 }, this)
+                new Door(this._myScreen, { x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }, { height: 0.2 * this._size.height + 6, width: 26 })
             )
         }
         else {

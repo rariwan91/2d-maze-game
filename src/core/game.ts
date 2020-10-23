@@ -45,7 +45,7 @@ export class Game {
             this.entityDied(entity)
         })
 
-        this._respondsToInput.push(this._player, this._activeRoom)
+        this._respondsToInput.push(this._player)
 
         // These enemies will chase you down. This is annoying when I'm trying to test
         // something other than that.
@@ -104,6 +104,10 @@ export class Game {
         // Have rooms check for collisions with players and enemies
         const roomConcerns = playerCollidables.concat(enemyCollidables)
         this._activeRoom.checkForCollisionsWith(roomConcerns)
+        const doors = this._activeRoom.getDoors()
+        doors.forEach(d => {
+            d.checkForCollisionsWith(roomConcerns)
+        })
 
         // Have player weapons check for collisions with enemies
         this._weapons.forEach(weapon => {
