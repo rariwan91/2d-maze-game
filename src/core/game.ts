@@ -1,20 +1,23 @@
 import { Direction, IRespondsToInput, MyScreen } from '.'
-import { Keycode } from '../gui'
+import { Colors, Keycode } from '../gui'
 import { ICollidable } from './collision'
-import { Enemy, EnemyState, IEnemy, IPlayer, IWeapon, Player, Room } from './entities'
+import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWeapon, Player, Room } from './entities'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
+import { GameState } from './gameState.enum'
 
 export class Game {
     private readonly _myScreen: MyScreen
-    private readonly _rooms: Room[] = []
-    private _activeRoom: Room
+    private readonly _rooms: IRoom[] = []
+    private _activeRoom: IRoom
     private readonly _player: IPlayer
     private readonly _enemies: IEnemy[] = []
     private readonly _weapons: IWeapon[] = []
-    private readonly _respondsToInput: IRespondsToInput[] = []
+    private _respondsToInput: IRespondsToInput[] = []
     private _lastTime = 0
-    private _gameOver = false
+    private _gameState = GameState.Playing
+    private _roomTransitionStart: number
+    private _targetRoom: IRoom
 
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
@@ -47,6 +50,13 @@ export class Game {
         eventTarget.addEventListener('onEnemyDeath', (e: CustomEvent) => {
             this.entityDied(e.detail)
         })
+        eventTarget.addEventListener('onRoomTransitionTriggered', (e: CustomEvent) => {
+            if(this._gameState === GameState.RoomTransition) return
+
+            this._gameState = GameState.RoomTransition
+            this._roomTransitionStart = Date.now()
+            this._targetRoom = e.detail
+        })
 
         this._respondsToInput.push(this._player)
         const doors = this._activeRoom.getDoors()
@@ -65,12 +75,46 @@ export class Game {
     }
 
     public updateTick(time: number): boolean {
-        if (this._gameOver) {
+        if (this._gameState === GameState.GameOver) {
             alert('Poor Man\'s Game Over')
             return false
         }
-        this._myScreen.clearScreen()
-        this.updateEntities(time)
+        else if (this._gameState === GameState.RoomTransition) {
+            if (((Date.now() - this._roomTransitionStart) / 1000) > 0.5) {
+                this._gameState = GameState.Playing
+                this._activeRoom = this._targetRoom
+                this._targetRoom = null
+
+                const screenSize = this._myScreen.getSize()
+                const roomLocation = this._activeRoom.getLocation()
+                const roomSize = this._activeRoom.getSize()
+                const playerLocation = this._player.getLocation()
+                if(playerLocation.x < 50) {
+                    this._player.setLocation({ x: roomLocation.x + roomSize.width - 75, y: roomLocation.y + roomSize.height / 2 })
+                }
+                else if(playerLocation.x > screenSize.width - 50) {
+                    this._player.setLocation({ x: roomLocation.x + 75, y: roomLocation.y + roomSize.height / 2 })
+                }
+                else if(playerLocation.y < 50) {
+                    this._player.setLocation({ x: roomLocation.x + roomSize.width / 2, y: roomLocation.y + roomSize.height - 75 })
+                }
+                else if(playerLocation.y > screenSize.height - 50) {
+                    this._player.setLocation({ x: roomLocation.x + roomSize.width / 2, y: roomLocation.y + 75 })
+                }
+                this._respondsToInput = []
+                this._respondsToInput.push(this._player)
+                const doors = this._activeRoom.getDoors()
+                doors.forEach(d => this._respondsToInput.push(d))
+            }
+            else {
+                this._myScreen.clearScreen()
+                this._myScreen.drawRect({ x: 0, y: 0 }, this._myScreen.getSize(), Colors.Black, Colors.Black)
+            }
+        }
+        else if (this._gameState === GameState.Playing) {
+            this._myScreen.clearScreen()
+            this.updateEntities(time)
+        }
 
         this._lastTime = time
         return true
@@ -172,16 +216,12 @@ export class Game {
 
     private entityDied(entity: Entity): void {
         if (entity instanceof Player) {
-            this._gameOver = true
+            this._gameState = GameState.GameOver
         }
         else if (entity instanceof Enemy) {
             const index = this._enemies.indexOf(entity)
             this._enemies.splice(index, 1)
         }
-    }
-
-    public gameOver(): void {
-        this._gameOver = true
     }
 
     private getCollidableShapes(): {

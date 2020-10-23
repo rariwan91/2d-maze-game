@@ -12,7 +12,6 @@ export class RoomTransition extends Entity implements IRoomTransition {
     private _entitiesCollidingWithMe: Entity[] = []
     private _transitionBox: BoxCollision
     private _targetRoom: IRoom
-    private readonly _roomTransitionTriggeredEventListeners: ((targetRoom: IRoom) => void)[] = []
 
     constructor(myScreen: IMyScreen, location: IPoint, size: ISize, targetRoom: IRoom) {
         super()
@@ -21,21 +20,6 @@ export class RoomTransition extends Entity implements IRoomTransition {
         this._location = location
         this._targetRoom = targetRoom
         this._transitionBox = new BoxCollision(this._location, this._size, this)
-    }
-
-    // ----------------------------------------
-    //              IRoom
-    // ----------------------------------------
-
-    public registerRoomTransitionTriggeredEvent(callback: (targetRoom: IRoom) => void): void {
-        this._roomTransitionTriggeredEventListeners.push(callback)
-    }
-
-    public unregisterRoomTransitionTriggeredEvent(callback: (targetRoom: IRoom) => void): void {
-        if (this._roomTransitionTriggeredEventListeners.includes(callback)) {
-            const index = this._roomTransitionTriggeredEventListeners.indexOf(callback)
-            this._roomTransitionTriggeredEventListeners.splice(index)
-        }
     }
 
     // ----------------------------------------
@@ -57,7 +41,11 @@ export class RoomTransition extends Entity implements IRoomTransition {
 
     public update(): void {
         if (this.isColliding()) {
-            this._roomTransitionTriggeredEventListeners.forEach(callback => callback(this._targetRoom))
+            const event = new CustomEvent('onRoomTransitionTriggered', {
+                detail: this._targetRoom
+            })
+            const eventTarget = document.getElementById('eventTarget')
+            eventTarget.dispatchEvent(event)
         }
         else {
             this.draw()

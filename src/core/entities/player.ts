@@ -41,6 +41,11 @@ export class Player extends Entity implements IPlayer {
         return this._location
     }
 
+    public setLocation(newLocation: IPoint): void {
+        this._location = newLocation
+        this._collisionCircle.setLocation(newLocation)
+    }
+
     public getOldLocation(): IPoint {
         return this._oldLocation
     }

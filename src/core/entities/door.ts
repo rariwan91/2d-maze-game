@@ -117,7 +117,7 @@ export class Door extends Entity implements IDoor {
     //              IRespondsToInput
     // ----------------------------------------
 
-    public keyPressed(keyCode: Keycode) {
+    public keyPressed(keyCode: Keycode): void {
         if (!this.isActivated()) return
 
         if (keyCode === Keycode.E) {
@@ -128,7 +128,7 @@ export class Door extends Entity implements IDoor {
         }
     }
 
-    public keyReleased(keyCode: Keycode) {
+    public keyReleased(keyCode: Keycode): void {
         keyCode
     }
 
