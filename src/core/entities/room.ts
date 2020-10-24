@@ -1,12 +1,10 @@
-import { Door, IDoor, IRoom } from '.'
+import { Door, Enemy, IDoor, IEnemy, IPlayer, IRoom, IRoomTransition, RoomState, RoomTransition } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
 import { IPoint, ISize } from '../../gui'
 import { getVectorDistanceBetween } from '../../helpers'
-import { ICollidable, WallCollision } from './../collision'
+import { ICollidable, WallCollision } from '../collision'
 import { Entity } from './entity'
-import { RoomTransition } from './roomTransition'
-import { IRoomTransition } from './roomTransition.h'
 
 export class Room extends Entity implements IRoom {
     private _location: IPoint = { x: 50, y: 50 }
@@ -26,15 +24,20 @@ export class Room extends Entity implements IRoom {
     private _rightRoomTransition: IRoomTransition
     private _southRoomTransition: IRoomTransition
     private _leftRoomTransition: IRoomTransition
+    private _enemies: IEnemy[] = []
+    private readonly _player: IPlayer
+    private _roomState = RoomState.Normal
 
-    constructor(myScreen: IMyScreen) {
+    constructor(myScreen: IMyScreen, player: IPlayer) {
         super()
         this._myScreen = myScreen
         this._size = {
             width: myScreen.getSize().width - 100,
             height: myScreen.getSize().height - 100
         }
+        this._player = player
         this.createWallCollisions()
+        this.createEnemies()
     }
 
     // ----------------------------------------
@@ -84,6 +87,11 @@ export class Room extends Entity implements IRoom {
         if (this._leftRoomTransition) {
             this._leftRoomTransition.setLocation(this.getRoomTransitionLocation(Direction.Left))
         }
+
+        this._enemies.forEach(e => {
+            const eLoc = e.getLocation()
+            e.setLocation({ x: eLoc.x + difference.x, y: eLoc.y + difference.y })
+        })
     }
 
     public getSize(): ISize {
@@ -149,6 +157,27 @@ export class Room extends Entity implements IRoom {
         return [this._northRoomTransition, this._rightRoomTransition, this._southRoomTransition, this._leftRoomTransition].filter(rt => rt)
     }
 
+    public getEnemies(): IEnemy[] {
+        return this._enemies
+    }
+
+    public enemyDied(entity: Entity): void {
+        const index = this._enemies.indexOf(entity as Enemy)
+        this._enemies.splice(index, 1)
+    }
+
+    public getRoomState(): RoomState {
+        return this._roomState
+    }
+
+    public setRoomState(newRoomState: RoomState): void {
+        this._roomState = newRoomState
+    }
+
+    public getPlayer(): IPlayer {
+        return this._player
+    }
+
     // ----------------------------------------
     //              IDrawable
     // ----------------------------------------
@@ -198,7 +227,7 @@ export class Room extends Entity implements IRoom {
     //              IUpdatable
     // ----------------------------------------
 
-    public update(): void {
+    public update(deltaTime: number): void {
         this.draw()
 
         if (this._northDoor) {
@@ -232,6 +261,11 @@ export class Room extends Entity implements IRoom {
         if (this._leftRoomTransition) {
             this._leftRoomTransition.update()
         }
+
+        this._enemies.forEach(e => {
+            e.aiTick()
+            e.update(deltaTime)
+        })
     }
 
     // ----------------------------------------
@@ -394,5 +428,28 @@ export class Room extends Entity implements IRoom {
 
         // Direction.Left
         return { x: this._location.x - 50, y: this._location.y + 0.35 * this._size.height }
+    }
+
+    private createEnemies(): void {
+        this._enemies.push(new Enemy({
+            x: this._location.x + this._size.width / 2,
+            y: this._location.y + this._size.height / 2
+        }, this._myScreen, Config.Enemies.DefaultState, this))
+        this._enemies.push(new Enemy({
+            x: this._location.x + this._size.width / 2 - 75,
+            y: this._location.y + this._size.height / 2
+        }, this._myScreen, Config.Enemies.DefaultState, this))
+        this._enemies.push(new Enemy({
+            x: this._location.x + this._size.width / 2 - 150,
+            y: this._location.y + this._size.height / 2
+        }, this._myScreen, Config.Enemies.DefaultState, this))
+        this._enemies.push(new Enemy({
+            x: this._location.x + this._size.width / 2 + 75,
+            y: this._location.y + this._size.height / 2
+        }, this._myScreen, Config.Enemies.DefaultState, this))
+        this._enemies.push(new Enemy({
+            x: this._location.x + this._size.width / 2 + 150,
+            y: this._location.y + this._size.height / 2
+        }, this._myScreen, Config.Enemies.DefaultState, this))
     }
 }

@@ -1,3 +1,4 @@
+import { EnemyState } from "./core/entities";
 import { Colors } from "./gui";
 
 export const Config = {
@@ -11,7 +12,8 @@ export const Config = {
         ShowCollisionBoxes: true,
         MainColor: Colors.Red,
         SecondaryColor: Colors.Green,
-        InvincibleColor: Colors.Blue
+        InvincibleColor: Colors.Blue,
+        DefaultState: EnemyState.TargetDummy
     },
     Weapons: {
         ShowCollisionBoxes: true,

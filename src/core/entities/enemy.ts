@@ -1,10 +1,12 @@
-import { Door, EnemyState, IEnemy, IPlayer, Player, Room, Weapon, WeaponState } from '.'
+import { Door, EnemyState, IEnemy, Player, Room, Weapon, WeaponState } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
 import { IPoint } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
 import { EnemyCollision, ICollidable } from '../collision'
 import { Entity } from './entity'
+import { IRoom } from './room.h'
+import { RoomState } from './roomState.enum'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
@@ -20,20 +22,20 @@ export class Enemy extends Entity implements IEnemy {
     private _state = EnemyState.TargetDummy
     private _oldState = EnemyState.TargetDummy
     private _knockbackAngle: number
-    private readonly _player: IPlayer
     private _entitiesCollidingWithMe: Entity[] = []
     private _shapesCollidingWithMe: ICollidable[] = []
     private _lastTookDamage: number
+    private readonly _room: IRoom
 
-    constructor(location: IPoint, myScreen: IMyScreen, player: IPlayer, initialState: EnemyState = EnemyState.Moving) {
+    constructor(location: IPoint, myScreen: IMyScreen, initialState: EnemyState = EnemyState.Moving, room: IRoom) {
         super()
         this._location = location
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
-        this._player = player
         this._state = initialState
         this._oldState = initialState
+        this._room = room
     }
 
     // ----------------------------------------
@@ -84,6 +86,11 @@ export class Enemy extends Entity implements IEnemy {
     // ----------------------------------------
 
     public update(deltaTime: number): void {
+        if(this._room.getRoomState() === RoomState.Transitioning) {
+            this.draw()
+            return
+        }
+
         const enemiesCollidingWithMe: Enemy[] = []
         this._entitiesCollidingWithMe.forEach(entity => {
             if (entity instanceof Room || entity instanceof Door) {
@@ -93,7 +100,7 @@ export class Enemy extends Entity implements IEnemy {
                 if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy)) {
                     this.takeDamage(10)
                     this._lastTookDamage = Date.now()
-                    const theirLoc = this._player.getLocation()
+                    const theirLoc = this._room.getPlayer().getLocation()
                     const myLoc = this._location
                     const deltaX = myLoc.x - theirLoc.x
                     const deltaY = myLoc.y - theirLoc.y
@@ -129,37 +136,6 @@ export class Enemy extends Entity implements IEnemy {
         }
 
         this.draw()
-    }
-
-    private nudge(me: IEnemy, them: IEnemy[]): void {
-        const myLoc = this._location
-        const myOldLoc = this._oldLocation
-        const distance: IPoint = {
-            x: myLoc.x - myOldLoc.x,
-            y: myLoc.y - myOldLoc.y
-        }
-
-        const combinedDifference: IPoint = {
-            x: 0,
-            y: 0
-        }
-        them.forEach(enemy => {
-            const loc = enemy.getLocation()
-            combinedDifference.x += (myLoc.x - loc.x)
-            combinedDifference.y += (myLoc.y - loc.y)
-        })
-
-        const distanceMoved = getMagnitude(distance)
-        const combinedLength = getMagnitude(combinedDifference)
-        const unitCombinedDifference: IPoint = {
-            x: combinedDifference.x / combinedLength,
-            y: combinedDifference.y / combinedLength
-        }
-        me.setOldLocation(myLoc)
-        me.setLocation({
-            x: myLoc.x + unitCombinedDifference.x * distanceMoved,
-            y: myLoc.y + unitCombinedDifference.y * distanceMoved
-        })
     }
 
     // ----------------------------------------
@@ -203,7 +179,7 @@ export class Enemy extends Entity implements IEnemy {
         }
 
         const myLoc = this._location
-        const pLoc = this._player.getLocation()
+        const pLoc = this._room.getPlayer().getLocation()
         const deltaY = pLoc.y - myLoc.y
         const deltaX = pLoc.x - myLoc.x
         let angle = Math.atan(-deltaY / deltaX) * 180 / Math.PI
@@ -263,7 +239,7 @@ export class Enemy extends Entity implements IEnemy {
         }
 
         if (this._state !== EnemyState.TargetDummy) {
-            if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._player.getRadius(), 2)) {
+            if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._room.getPlayer().getRadius(), 2)) {
                 this._state = EnemyState.CollidingWithPlayer
             }
             else {
@@ -325,5 +301,36 @@ export class Enemy extends Entity implements IEnemy {
 
     private isColliding(): boolean {
         return this._entitiesCollidingWithMe.length > 0
+    }
+
+    private nudge(me: IEnemy, them: IEnemy[]): void {
+        const myLoc = this._location
+        const myOldLoc = this._oldLocation
+        const distance: IPoint = {
+            x: myLoc.x - myOldLoc.x,
+            y: myLoc.y - myOldLoc.y
+        }
+
+        const combinedDifference: IPoint = {
+            x: 0,
+            y: 0
+        }
+        them.forEach(enemy => {
+            const loc = enemy.getLocation()
+            combinedDifference.x += (myLoc.x - loc.x)
+            combinedDifference.y += (myLoc.y - loc.y)
+        })
+
+        const distanceMoved = getMagnitude(distance)
+        const combinedLength = getMagnitude(combinedDifference)
+        const unitCombinedDifference: IPoint = {
+            x: combinedDifference.x / combinedLength,
+            y: combinedDifference.y / combinedLength
+        }
+        me.setOldLocation(myLoc)
+        me.setLocation({
+            x: myLoc.x + unitCombinedDifference.x * distanceMoved,
+            y: myLoc.y + unitCombinedDifference.y * distanceMoved
+        })
     }
 }

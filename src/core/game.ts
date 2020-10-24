@@ -1,22 +1,21 @@
 import { Direction, GameState, IRespondsToInput, MyScreen } from '.'
 import { IPoint, Keycode } from '../gui'
 import { ICollidable } from './collision'
-import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWeapon, Player, Room } from './entities'
+import { Enemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
 
 export class Game {
     private readonly _myScreen: MyScreen
     private readonly _rooms: IRoom[] = []
-    private _activeRoom: IRoom
+    private _activeRoom: number
     private readonly _player: IPlayer
-    private readonly _enemies: IEnemy[] = []
     private readonly _weapons: IWeapon[] = []
     private _respondsToInput: IRespondsToInput[] = []
     private _lastTime = 0
     private _gameState = GameState.Playing
     private _roomTransitionStart: number
-    private _targetRoom: IRoom
+    private _targetRoom: number
     private readonly _transitionLength = 0.5
     private _originalActiveRoomLocation: IPoint
     private _originalTargetRoomLocation: IPoint
@@ -25,11 +24,16 @@ export class Game {
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
 
-        const centerRoom = new Room(this._myScreen)
-        const northRoom = new Room(this._myScreen)
-        const eastRoom = new Room(this._myScreen)
-        const southRoom = new Room(this._myScreen)
-        const westRoom = new Room(this._myScreen)
+        this._player = new Player({
+            x: this._myScreen.getSize().width / 2,
+            y: this._myScreen.getSize().height - 150
+        }, this._myScreen)
+
+        const centerRoom = new Room(this._myScreen, this._player)
+        const northRoom = new Room(this._myScreen, this._player)
+        const eastRoom = new Room(this._myScreen, this._player)
+        const southRoom = new Room(this._myScreen, this._player)
+        const westRoom = new Room(this._myScreen, this._player)
 
         centerRoom.pairWithRoom(Direction.Up, northRoom)
         centerRoom.pairWithRoom(Direction.Down, southRoom)
@@ -37,14 +41,9 @@ export class Game {
         centerRoom.pairWithRoom(Direction.Right, eastRoom)
 
         this._rooms.push(centerRoom, northRoom, eastRoom, southRoom, westRoom)
-        this._activeRoom = this._rooms[0]
+        this._activeRoom = 0
 
         this._weapons.push(new Sword(this._myScreen))
-
-        this._player = new Player({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height - 75
-        }, this._myScreen)
 
         const eventTarget = document.getElementById('eventTarget')
         eventTarget.addEventListener('onPlayerDeath', (e: CustomEvent) => {
@@ -59,15 +58,8 @@ export class Game {
         })
 
         this._respondsToInput.push(this._player)
-        const doors = this._activeRoom.getDoors()
+        const doors = this._rooms[this._activeRoom].getDoors()
         doors.forEach(d => this._respondsToInput.push(d))
-
-        // These enemies will chase you down. This is annoying when I'm trying to test
-        // something other than that.
-        // this.createEnemies()
-
-        // These enemies will just stand there.
-        this.createEnemies(EnemyState.TargetDummy)
 
         this._weapons[0].attachToPlayer(this._player)
 
@@ -102,11 +94,7 @@ export class Game {
         const concerns = this.getConcerns(shapes)
         this.checkForCollisions(concerns)
 
-        this._activeRoom.update()
-        this._enemies.forEach(enemy => {
-            enemy.aiTick()
-            enemy.update((time - this._lastTime) / 1000.0)
-        })
+        this._rooms[this._activeRoom].update((time - this._lastTime) / 1000.0)
         this._player.update((time - this._lastTime) / 1000.0)
     }
 
@@ -168,36 +156,12 @@ export class Game {
         })
     }
 
-    private createEnemies(initialEnemyState = EnemyState.Moving): void {
-        this._enemies.push(new Enemy({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player, initialEnemyState))
-        this._enemies.push(new Enemy({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 - 75,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player, initialEnemyState))
-        this._enemies.push(new Enemy({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 - 150,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player, initialEnemyState))
-        this._enemies.push(new Enemy({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 + 75,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player, initialEnemyState))
-        this._enemies.push(new Enemy({
-            x: this._rooms[0].getLocation().x + this._rooms[0].getSize().width / 2 + 150,
-            y: this._rooms[0].getLocation().y + this._rooms[0].getSize().height / 2
-        }, this._myScreen, this._player, initialEnemyState))
-    }
-
     private entityDied(entity: Entity): void {
         if (entity instanceof Player) {
             this._gameState = GameState.GameOver
         }
         else if (entity instanceof Enemy) {
-            const index = this._enemies.indexOf(entity)
-            this._enemies.splice(index, 1)
+            this._rooms[this._activeRoom].enemyDied(entity)
         }
     }
 
@@ -209,15 +173,15 @@ export class Game {
         enemyShapes: ICollidable[],
         weaponShapes: ICollidable[]
     } {
-        const roomShapes = this._activeRoom.getCollisionShapes()
+        const roomShapes = this._rooms[this._activeRoom].getCollisionShapes()
 
-        const doors = this._activeRoom.getDoors()
+        const doors = this._rooms[this._activeRoom].getDoors()
         const doorShapes: ICollidable[] = []
         doors.forEach(d => {
             d.getCollisionShapes().forEach(c => doorShapes.push(c))
         })
 
-        const roomTransitions = this._activeRoom.getRoomTransitions()
+        const roomTransitions = this._rooms[this._activeRoom].getRoomTransitions()
         const roomTransitionShapes: ICollidable[] = []
         roomTransitions.forEach(rt => {
             rt.getCollisionShapes().forEach(c => roomTransitionShapes.push(c))
@@ -225,9 +189,10 @@ export class Game {
 
         const playerShapes = this._player.getCollisionShapes()
 
+        const enemies = this._rooms[this._activeRoom].getEnemies()
         const enemyShapes: ICollidable[] = []
 
-        this._enemies.forEach(enemy => {
+        enemies.forEach(enemy => {
             const enemyCollisions = enemy.getCollisionShapes()
             enemyCollisions.forEach(collision => {
                 enemyShapes.push(collision)
@@ -295,99 +260,104 @@ export class Game {
             weaponConcerns: ICollidable[]
         }
     ): void {
-        const doors = this._activeRoom.getDoors()
-        const roomTransitions = this._activeRoom.getRoomTransitions()
+        const doors = this._rooms[this._activeRoom].getDoors()
+        const roomTransitions = this._rooms[this._activeRoom].getRoomTransitions()
+        const enemies = this._rooms[this._activeRoom].getEnemies()
 
-        this._activeRoom.checkForCollisionsWith(concerns.roomConcerns)
+        this._rooms[this._activeRoom].checkForCollisionsWith(concerns.roomConcerns)
         doors.forEach(d => d.checkForCollisionsWith(concerns.doorConcerns))
         roomTransitions.forEach(rt => rt.checkForCollisionsWith(concerns.roomTransitionConcerns))
         this._player.checkForCollisionsWith(concerns.playerConcerns)
-        this._enemies.forEach(enemy => enemy.checkForCollisionsWith(concerns.enemyConcerns))
+        enemies.forEach(enemy => enemy.checkForCollisionsWith(concerns.enemyConcerns))
         this._weapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.weaponConcerns))
     }
 
     private startTransition(targetRoom: IRoom): void {
         this._gameState = GameState.RoomTransition
         this._roomTransitionStart = Date.now()
-        this._targetRoom = targetRoom
+        this._targetRoom = this._rooms.indexOf(targetRoom)
+        this._rooms[this._activeRoom].setRoomState(RoomState.Transitioning)
+        this._rooms[this._targetRoom].setRoomState(RoomState.Transitioning)
 
         const playerLocation = this._player.getLocation()
         if (playerLocation.x < 50) {
             this._roomTransitionDirection = Direction.Left
-            this._targetRoom.setLocation({ x: 50 - this._myScreen.getSize().width, y: 50 })
+            this._rooms[this._targetRoom].setLocation({ x: 50 - this._myScreen.getSize().width, y: 50 })
         }
         else if (playerLocation.x > this._myScreen.getSize().width - 50) {
             this._roomTransitionDirection = Direction.Right
-            this._targetRoom.setLocation({ x: 50 + this._myScreen.getSize().width, y: 50 })
+            this._rooms[this._targetRoom].setLocation({ x: 50 + this._myScreen.getSize().width, y: 50 })
         }
         else if (playerLocation.y < 50) {
             this._roomTransitionDirection = Direction.Up
-            this._targetRoom.setLocation({ x: 50, y: 50 - this._myScreen.getSize().height })
+            this._rooms[this._targetRoom].setLocation({ x: 50, y: 50 - this._myScreen.getSize().height })
         }
         else if (playerLocation.y > this._myScreen.getSize().height - 50) {
             this._roomTransitionDirection = Direction.Down
-            this._targetRoom.setLocation({ x: 50, y: 50 + this._myScreen.getSize().height })
+            this._rooms[this._targetRoom].setLocation({ x: 50, y: 50 + this._myScreen.getSize().height })
         }
 
-        this._originalActiveRoomLocation = this._activeRoom.getLocation()
-        this._originalTargetRoomLocation = this._targetRoom.getLocation()
+        this._originalActiveRoomLocation = this._rooms[this._activeRoom].getLocation()
+        this._originalTargetRoomLocation = targetRoom.getLocation()
     }
 
     private updateTransition(): void {
         const screenSize = this._myScreen.getSize()
 
         if (this._roomTransitionDirection === Direction.Up) {
-            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
-            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._rooms[this._activeRoom].setLocation({ x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._rooms[this._targetRoom].setLocation({ x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
         }
         else if (this._roomTransitionDirection === Direction.Right) {
-            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
-            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
+            this._rooms[this._activeRoom].setLocation({ x: this._originalActiveRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
+            this._rooms[this._targetRoom].setLocation({ x: this._originalTargetRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
         }
         else if (this._roomTransitionDirection === Direction.Down) {
-            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
-            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._rooms[this._activeRoom].setLocation({ x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._rooms[this._targetRoom].setLocation({ x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
         }
         else {
-            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
-            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
+            this._rooms[this._activeRoom].setLocation({ x: this._originalActiveRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
+            this._rooms[this._targetRoom].setLocation({ x: this._originalTargetRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
         }
 
-        this._activeRoom.update()
-        this._targetRoom.update()
+        this._rooms[this._activeRoom].update()
+        this._rooms[this._targetRoom].update()
     }
 
     private endTransition(): void {
         this._gameState = GameState.Playing
+        this._rooms[this._activeRoom].setRoomState(RoomState.Normal)
+        this._rooms[this._targetRoom].setRoomState(RoomState.Normal)
 
         const screenSize = this._myScreen.getSize()
-        const roomSize = this._activeRoom.getSize()
+        const roomSize = this._rooms[this._activeRoom].getSize()
         const playerLocation = this._player.getLocation()
 
         if (playerLocation.x < 50) {
             this._player.setLocation({ x: 50 + roomSize.width - 75, y: 50 + roomSize.height / 2 })
-            this._activeRoom.setLocation({ x: 50 - roomSize.width, y: 50 })
+            this._rooms[this._activeRoom].setLocation({ x: 50 - roomSize.width, y: 50 })
         }
         else if (playerLocation.x > screenSize.width - 50) {
             this._player.setLocation({ x: 50 + 75, y: 50 + roomSize.height / 2 })
-            this._activeRoom.setLocation({ x: 50 + roomSize.width, y: 50 })
+            this._rooms[this._activeRoom].setLocation({ x: 50 + roomSize.width, y: 50 })
         }
         else if (playerLocation.y < 50) {
             this._player.setLocation({ x: 50 + roomSize.width / 2, y: 50 + roomSize.height - 75 })
-            this._activeRoom.setLocation({ x: 50, y: 50 - roomSize.height })
+            this._rooms[this._activeRoom].setLocation({ x: 50, y: 50 - roomSize.height })
         }
         else if (playerLocation.y > screenSize.height - 50) {
             this._player.setLocation({ x: 50 + roomSize.width / 2, y: 50 + 75 })
-            this._activeRoom.setLocation({ x: 50, y: 50 + roomSize.height })
+            this._rooms[this._activeRoom].setLocation({ x: 50, y: 50 + roomSize.height })
         }
 
         this._activeRoom = this._targetRoom
         this._targetRoom = null
-        this._activeRoom.setLocation({ x: 50, y: 50 })
+        this._rooms[this._activeRoom].setLocation({ x: 50, y: 50 })
 
         this._respondsToInput = []
         this._respondsToInput.push(this._player)
-        const doors = this._activeRoom.getDoors()
+        const doors = this._rooms[this._activeRoom].getDoors()
         doors.forEach(d => this._respondsToInput.push(d))
     }
 }
