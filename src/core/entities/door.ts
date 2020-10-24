@@ -1,14 +1,14 @@
 import { IDoor, IRoom } from '.'
 import { IMyScreen } from '../'
 import { Config } from '../../config'
-import { Colors, IPoint, ISize, Keycode } from '../../gui'
+import { IPoint, ISize, Keycode } from '../../gui'
 import { BoxCollision, DoorCollision, ICollidable } from './../collision'
 import { Entity } from './entity'
 import { Player } from './player'
 
 export class Door extends Entity implements IDoor {
     private readonly _room: IRoom
-    private readonly _location: IPoint
+    private _location: IPoint
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
     private readonly _doorCollision: DoorCollision
@@ -26,6 +26,20 @@ export class Door extends Entity implements IDoor {
         this._room = room
         this._doorCollision = new DoorCollision(this._location, this._size, this)
         this._activationBox = new BoxCollision({ x: this._location.x - 25, y: this._location.y - 25 }, { width: this._size.width + 50, height: this._size.height + 50 }, this)
+    }
+
+    // ----------------------------------------
+    //              IRoom
+    // ----------------------------------------
+
+    public getLocation(): IPoint {
+        return this._location
+    }
+
+    public setLocation(newLocation: IPoint): void {
+        this._location = newLocation
+        this._doorCollision.setLocation(newLocation)
+        this._activationBox.setLocation({ x: this._location.x - 25, y: this._location.y - 25 })
     }
 
     // ----------------------------------------

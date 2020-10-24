@@ -6,7 +6,7 @@ import { BoxCollision, ICollidable } from '../collision'
 import { Entity } from './entity'
 
 export class RoomTransition extends Entity implements IRoomTransition {
-    private readonly _location: IPoint
+    private _location: IPoint
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
     private _entitiesCollidingWithMe: Entity[] = []
@@ -20,6 +20,18 @@ export class RoomTransition extends Entity implements IRoomTransition {
         this._location = location
         this._targetRoom = targetRoom
         this._transitionBox = new BoxCollision(this._location, this._size, this)
+    }
+
+    // ----------------------------------------
+    //              IRoomTransition
+    // ----------------------------------------
+
+    public getLocation(): IPoint {
+        return this._location
+    }
+
+    public setLocation(newLocation: IPoint): void {
+        this._location = newLocation
     }
 
     // ----------------------------------------

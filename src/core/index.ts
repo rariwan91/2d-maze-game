@@ -1,5 +1,6 @@
 export * from './direction.enum'
 export * from './game'
+export * from './gameState.enum'
 export * from './hasAI.h'
 export * from './hasHealth.h'
 export * from './myScreen'

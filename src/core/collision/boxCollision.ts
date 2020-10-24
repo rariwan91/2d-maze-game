@@ -80,6 +80,10 @@ export class BoxCollision implements ICollidable {
         return this._location
     }
 
+    public setLocation(newLocation: IPoint): void {
+        this._location = newLocation
+    }
+
     public getSize(): ISize {
         return this._size
     }

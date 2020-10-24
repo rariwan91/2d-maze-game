@@ -5,6 +5,7 @@ import { IHasCollisions } from './../collision'
 
 export interface IRoom extends IDrawable, IUpdatable, IHasCollisions {
     getLocation(): IPoint
+    setLocation(newLocation: IPoint): void
     getSize(): ISize
     pairWithRoom(myExitDirection: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom): void
     setRoomExit(direction: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom): void

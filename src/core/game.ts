@@ -1,10 +1,9 @@
-import { Direction, IRespondsToInput, MyScreen } from '.'
-import { Colors, Keycode } from '../gui'
+import { Direction, GameState, IRespondsToInput, MyScreen } from '.'
+import { IPoint, Keycode } from '../gui'
 import { ICollidable } from './collision'
 import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWeapon, Player, Room } from './entities'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
-import { GameState } from './gameState.enum'
 
 export class Game {
     private readonly _myScreen: MyScreen
@@ -18,6 +17,10 @@ export class Game {
     private _gameState = GameState.Playing
     private _roomTransitionStart: number
     private _targetRoom: IRoom
+    private readonly _transitionLength = 0.5
+    private _originalActiveRoomLocation: IPoint
+    private _originalTargetRoomLocation: IPoint
+    private _roomTransitionDirection: Direction
 
     constructor(canvas: HTMLCanvasElement) {
         this._myScreen = new MyScreen(canvas)
@@ -56,6 +59,27 @@ export class Game {
             this._gameState = GameState.RoomTransition
             this._roomTransitionStart = Date.now()
             this._targetRoom = e.detail
+
+            const playerLocation = this._player.getLocation()
+            if(playerLocation.x < 50) {
+                this._roomTransitionDirection = Direction.Left
+                this._targetRoom.setLocation({ x: 50 - this._myScreen.getSize().width, y: 50 })
+            }
+            else if(playerLocation.x > this._myScreen.getSize().width - 50) {
+                this._roomTransitionDirection = Direction.Right
+                this._targetRoom.setLocation({ x: 50 + this._myScreen.getSize().width, y: 50 })
+            }
+            else if(playerLocation.y < 50) {
+                this._roomTransitionDirection = Direction.Up
+                this._targetRoom.setLocation({ x: 50, y: 50 - this._myScreen.getSize().height })
+            }
+            else if(playerLocation.y > this._myScreen.getSize().height - 50) {
+                this._roomTransitionDirection = Direction.Down
+                this._targetRoom.setLocation({ x: 50, y: 50 + this._myScreen.getSize().height })
+            }
+
+            this._originalActiveRoomLocation = this._activeRoom.getLocation()
+            this._originalTargetRoomLocation = this._targetRoom.getLocation()
         })
 
         this._respondsToInput.push(this._player)
@@ -80,15 +104,17 @@ export class Game {
             return false
         }
         else if (this._gameState === GameState.RoomTransition) {
-            if (((Date.now() - this._roomTransitionStart) / 1000) > 0.5) {
+            if (((Date.now() - this._roomTransitionStart) / 1000) > this._transitionLength) {
                 this._gameState = GameState.Playing
                 this._activeRoom = this._targetRoom
                 this._targetRoom = null
+                this._activeRoom.setLocation({x: 50, y: 50 })
 
                 const screenSize = this._myScreen.getSize()
                 const roomLocation = this._activeRoom.getLocation()
                 const roomSize = this._activeRoom.getSize()
                 const playerLocation = this._player.getLocation()
+
                 if(playerLocation.x < 50) {
                     this._player.setLocation({ x: roomLocation.x + roomSize.width - 75, y: roomLocation.y + roomSize.height / 2 })
                 }
@@ -101,6 +127,7 @@ export class Game {
                 else if(playerLocation.y > screenSize.height - 50) {
                     this._player.setLocation({ x: roomLocation.x + roomSize.width / 2, y: roomLocation.y + 75 })
                 }
+
                 this._respondsToInput = []
                 this._respondsToInput.push(this._player)
                 const doors = this._activeRoom.getDoors()
@@ -108,7 +135,7 @@ export class Game {
             }
             else {
                 this._myScreen.clearScreen()
-                this._myScreen.drawRect({ x: 0, y: 0 }, this._myScreen.getSize(), Colors.Black, Colors.Black)
+                this.updateTransition()
             }
         }
         else if (this._gameState === GameState.Playing) {
@@ -327,5 +354,29 @@ export class Game {
         this._player.checkForCollisionsWith(concerns.playerConcerns)
         this._enemies.forEach(enemy => enemy.checkForCollisionsWith(concerns.enemyConcerns))
         this._weapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.weaponConcerns))
+    }
+
+    private updateTransition(): void {
+        const screenSize = this._myScreen.getSize()
+
+        if(this._roomTransitionDirection === Direction.Up) {
+            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+        }
+        else if(this._roomTransitionDirection === Direction.Right) {
+            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
+            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
+        }
+        else if(this._roomTransitionDirection === Direction.Down) {
+            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+        }
+        else {
+            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
+            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
+        }
+
+        this._activeRoom.update((Date.now() - this._lastTime) / 1000)
+        this._targetRoom.update((Date.now() - this._lastTime) / 1000)
     }
 }

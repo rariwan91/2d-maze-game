@@ -125,6 +125,13 @@ export function getDistanceBetween(point1: IPoint, point2: IPoint): number {
     return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2))
 }
 
+export function getVectorDistanceBetween(point1: IPoint, point2: IPoint): IPoint {
+    return {
+        x: point2.x - point1.x,
+        y: point2.y - point1.y
+    }
+}
+
 export function getMagnitude(point1: IPoint): number {
     return Math.sqrt(Math.pow(point1.x, 2) + Math.pow(point1.y, 2))
 }
