@@ -4,7 +4,7 @@
   "description": "",
   "main": "./dist/src/electronMain.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "npm run e-build && electron-forge start",
     "wp-start": "webpack-dev-server --open",
     "wp-build": "webpack",
     "tests": "mocha -r ts-node/register tests/**/*.test.ts",
