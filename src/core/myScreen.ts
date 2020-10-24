@@ -106,4 +106,12 @@ export class MyScreen implements IMyScreen {
         }
         this._context.restore()
     }
+
+    public drawText(topLeft: IPoint, text: string, textSize: number, textColor: IColor): void {
+        this._context.save()
+        this._context.strokeStyle = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`
+        this._context.font = `${textSize}px serif`
+        this._context.fillText(text, topLeft.x, topLeft.y)
+        this._context.restore()
+    }
 }

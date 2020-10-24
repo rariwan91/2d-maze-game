@@ -7,4 +7,5 @@ export interface IMyScreen {
     drawArc(point: IPoint, radius: number, startAngle: number, endAngle: number, borderColor: IColor, fillColor?: IColor): void
     drawStraightLine(start: IPoint, end: IPoint, color: IColor): void
     drawEquilateralTriange(center: IPoint, sideLength: number, borderColor: IColor, fillColor?: IColor): void
+    drawText(topLeft: IPoint, text: string, textSize: number, textColor: IColor): void
 }

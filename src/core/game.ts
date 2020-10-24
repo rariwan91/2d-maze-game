@@ -1,4 +1,4 @@
-import { Direction, GameState, IRespondsToInput, MyScreen } from '.'
+import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
 import { IPoint, Keycode } from '../gui'
 import { ICollidable } from './collision'
 import { Enemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
@@ -6,7 +6,7 @@ import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
 
 export class Game {
-    private readonly _myScreen: MyScreen
+    private readonly _myScreen: IMyScreen
     private readonly _rooms: IRoom[] = []
     private _activeRoom: number
     private readonly _player: IPlayer
