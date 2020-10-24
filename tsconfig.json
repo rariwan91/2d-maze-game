@@ -17,7 +17,8 @@
     "strictNullChecks": false,
     "lib": ["es2017", "dom"],
     "outDir": "dist",
-    "rootDirs": ["src", "tests"]
+    "rootDirs": ["src", "tests"],
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "dist", "webpack.config.js", "out"]
 }

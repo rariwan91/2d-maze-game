@@ -1,0 +1,147 @@
+{
+    "rooms": [
+        {
+            "name": "room1",
+            "enemies": [],
+            "text": [
+                {
+                    "value": "W A S D to move",
+                    "size": 25,
+                    "location": {
+                        "x": 350,
+                        "y": 200
+                    }
+                },
+                {
+                    "value": "Up, Down, Left, or Right arrow to move as well",
+                    "size": 25,
+                    "location": {
+                        "x": 350,
+                        "y": 275
+                    }
+                },
+                {
+                    "value": "E to open doors",
+                    "size": 25,
+                    "location": {
+                        "x": 350,
+                        "y": 350
+                    }
+                }
+            ],
+            "doors": [
+                {
+                    "direction": "Up",
+                    "toRoom": "room2"
+                }
+            ]
+        },
+        {
+            "name": "room2",
+            "enemies": [],
+            "text": [
+                {
+                    "value": "Space to attack",
+                    "size": 25,
+                    "location": {
+                        "x": 350,
+                        "y": 200
+                    }
+                }
+            ],
+            "doors": [
+                {
+                    "direction": "Down",
+                    "toRoom": "room1"
+                },
+                {
+                    "direction": "Up",
+                    "toRoom": "room3"
+                }
+            ]
+        },
+        {
+            "name": "room3",
+            "enemies": [
+                {
+                    "location": {
+                        "x": 350,
+                        "y": 200
+                    },
+                    "enemyState": "Moving"
+                }
+            ],
+            "doors": [
+                {
+                    "direction": "Down",
+                    "toRoom": "room2"
+                },
+                {
+                    "direction": "Right",
+                    "toRoom": "room4"
+                },
+                {
+                    "direction": "Left",
+                    "toRoom": "room5"
+                }
+            ]
+        },
+        {
+            "name": "room4",
+            "enemies": [
+                {
+                    "location": {
+                        "x": 400,
+                        "y": 200
+                    },
+                    "enemyState": "Moving"
+                },
+                {
+                    "location": {
+                        "x": 400,
+                        "y": 400
+                    },
+                    "enemyState": "Moving"
+                },
+                {
+                    "location": {
+                        "x": 300,
+                        "y": 300
+                    },
+                    "enemyState": "Moving"
+                }
+            ],
+            "doors": [
+                {
+                    "direction": "Left",
+                    "toRoom": "room3"
+                }
+            ]
+        },
+        {
+            "name": "room5",
+            "enemies": [
+                {
+                    "location": {
+                        "x": 400,
+                        "y": 200
+                    },
+                    "enemyState": "Moving"
+                },
+                {
+                    "location": {
+                        "x": 400,
+                        "y": 400
+                    },
+                    "enemyState": "Moving"
+                }
+            ],
+            "doors": [
+                {
+                    "direction": "Right",
+                    "toRoom": "room3"
+                }
+            ]
+        }
+    ]
+}

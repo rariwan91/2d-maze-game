@@ -8,11 +8,12 @@ export interface IRoom extends IDrawable, IUpdatable, IHasCollisions {
     getLocation(): IPoint
     setLocation(newLocation: IPoint): void
     getSize(): ISize
-    pairWithRoom(myExitDirection: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom): void
+    pairWithRoom(myExitDirection: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom, isOpen?: boolean): void
     setRoomExit(direction: Direction.Up | Direction.Down | Direction.Right | Direction.Left, room: IRoom): void
     getDoors(): IDoor[]
     doorOpened(door: IDoor): void
     getRoomTransitions(): IRoomTransition[]
+    addEnemyToRoom(enemy: IEnemy): void
     getEnemies(): IEnemy[]
     enemyDied(entity: Entity): void
     getRoomState(): RoomState

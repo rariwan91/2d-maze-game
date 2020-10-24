@@ -1,7 +1,7 @@
-import { Door, Enemy, IDoor, IEnemy, IPlayer, IRoom, IRoomTransition, RoomState, RoomTransition } from '.'
+import { Door, Enemy, IDoor, IEnemy, IPlayer, IRoom, IRoomTransition, IText, RoomState, RoomTransition } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
-import { IPoint, ISize } from '../../gui'
+import { Colors, IPoint, ISize } from '../../gui'
 import { getVectorDistanceBetween } from '../../helpers'
 import { ICollidable, WallCollision } from '../collision'
 import { Entity } from './entity'
@@ -25,6 +25,7 @@ export class Room extends Entity implements IRoom {
     private _southRoomTransition: IRoomTransition
     private _leftRoomTransition: IRoomTransition
     private _enemies: IEnemy[] = []
+    private _text: IText[] = []
     private readonly _player: IPlayer
     private _roomState = RoomState.Normal
 
@@ -37,7 +38,6 @@ export class Room extends Entity implements IRoom {
         }
         this._player = player
         this.createWallCollisions()
-        this.createEnemies()
     }
 
     // ----------------------------------------
@@ -91,6 +91,11 @@ export class Room extends Entity implements IRoom {
         this._enemies.forEach(e => {
             const eLoc = e.getLocation()
             e.setLocation({ x: eLoc.x + difference.x, y: eLoc.y + difference.y })
+        })
+
+        this._text.forEach(t => {
+            const tLoc = t.location
+            t.location = { x: tLoc.x + difference.x, y: tLoc.y + difference.y }
         })
     }
 
@@ -157,6 +162,11 @@ export class Room extends Entity implements IRoom {
         return [this._northRoomTransition, this._rightRoomTransition, this._southRoomTransition, this._leftRoomTransition].filter(rt => rt)
     }
 
+    public addEnemyToRoom(enemy: IEnemy): void {
+        this._enemies.push(enemy)
+        enemy.setRoom(this)
+    }
+
     public getEnemies(): IEnemy[] {
         return this._enemies
     }
@@ -176,6 +186,10 @@ export class Room extends Entity implements IRoom {
 
     public getPlayer(): IPlayer {
         return this._player
+    }
+
+    public addTextToRoom(text: IText): void {
+        this._text.push(text)
     }
 
     // ----------------------------------------
@@ -213,6 +227,12 @@ export class Room extends Entity implements IRoom {
         }
         else {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+        }
+
+        if(this._text) {
+            this._text.forEach(t => {
+                this._myScreen.drawText(t.location, t.value, t.size, Colors.Black)
+            })
         }
 
         if (Config.Rooms.ShowWallCollisionBoxes) {
@@ -428,28 +448,5 @@ export class Room extends Entity implements IRoom {
 
         // Direction.Left
         return { x: this._location.x - 50, y: this._location.y + 0.35 * this._size.height }
-    }
-
-    private createEnemies(): void {
-        this._enemies.push(new Enemy({
-            x: this._location.x + this._size.width / 2,
-            y: this._location.y + this._size.height / 2
-        }, this._myScreen, Config.Enemies.DefaultState, this))
-        this._enemies.push(new Enemy({
-            x: this._location.x + this._size.width / 2 - 75,
-            y: this._location.y + this._size.height / 2
-        }, this._myScreen, Config.Enemies.DefaultState, this))
-        this._enemies.push(new Enemy({
-            x: this._location.x + this._size.width / 2 - 150,
-            y: this._location.y + this._size.height / 2
-        }, this._myScreen, Config.Enemies.DefaultState, this))
-        this._enemies.push(new Enemy({
-            x: this._location.x + this._size.width / 2 + 75,
-            y: this._location.y + this._size.height / 2
-        }, this._myScreen, Config.Enemies.DefaultState, this))
-        this._enemies.push(new Enemy({
-            x: this._location.x + this._size.width / 2 + 150,
-            y: this._location.y + this._size.height / 2
-        }, this._myScreen, Config.Enemies.DefaultState, this))
     }
 }

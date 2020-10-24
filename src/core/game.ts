@@ -1,9 +1,10 @@
 import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
 import { IPoint, Keycode } from '../gui'
 import { ICollidable } from './collision'
-import { Enemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
+import { Enemy, IEnemy, IPlayer, IRoom, IText, IWeapon, Player, Room, RoomState } from './entities'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
+import { LevelLoader } from './loader'
 
 export class Game {
     private readonly _myScreen: IMyScreen
@@ -28,22 +29,79 @@ export class Game {
             x: this._myScreen.getSize().width / 2,
             y: this._myScreen.getSize().height - 150
         }, this._myScreen)
-
-        const centerRoom = new Room(this._myScreen, this._player)
-        const northRoom = new Room(this._myScreen, this._player)
-        const eastRoom = new Room(this._myScreen, this._player)
-        const southRoom = new Room(this._myScreen, this._player)
-        const westRoom = new Room(this._myScreen, this._player)
-
-        centerRoom.pairWithRoom(Direction.Up, northRoom)
-        centerRoom.pairWithRoom(Direction.Down, southRoom)
-        centerRoom.pairWithRoom(Direction.Left, westRoom)
-        centerRoom.pairWithRoom(Direction.Right, eastRoom)
-
-        this._rooms.push(centerRoom, northRoom, eastRoom, southRoom, westRoom)
-        this._activeRoom = 0
-
+    
         this._weapons.push(new Sword(this._myScreen))
+        this._weapons[0].attachToPlayer(this._player)
+
+        const loadedLevel = LevelLoader.loadLevel()
+        if(loadedLevel) {
+            const roomMap = new Map<string, IRoom>()
+
+            loadedLevel.rooms.forEach(room => {
+                const enemies: IEnemy[] = []
+                if(room.enemies) {
+                    room.enemies.forEach(enemy => {
+                        enemies.push(new Enemy(enemy.location, this._myScreen, enemy.enemyState))
+                    })
+                }
+
+                const texts: IText[] = []
+                if(room.text) {
+                    room.text.forEach(text => {
+                        texts.push({
+                            location: text.location,
+                            value: text.value,
+                            size: text.size
+                        })
+                    })
+                }
+
+                const newRoom = new Room(this._myScreen, this._player)
+                enemies.forEach(enemy => {
+                    newRoom.addEnemyToRoom(enemy)
+                })
+                texts.forEach(text => {
+                    newRoom.addTextToRoom(text)
+                })
+                roomMap.set(room.name, newRoom)
+            })
+
+            loadedLevel.rooms.forEach(room => {
+                const currentRoom = roomMap.get(room.name)
+                room.doors.forEach(d => {
+                    const targetRoom = roomMap.get(d.toRoom)
+                    let direction: Direction
+                    if(d.direction === "Up") {
+                        direction = Direction.Up
+                    }
+                    else if(d.direction === "Right") {
+                        direction = Direction.Right
+                    }
+                    else if(d.direction === "Down") {
+                        direction = Direction.Down
+                    }
+                    else {
+                        direction = Direction.Left
+                    }
+                    currentRoom.pairWithRoom(direction, targetRoom, d.open)
+                })
+                this._rooms.push(currentRoom)
+            })
+        }
+        else {
+            const centerRoom = new Room(this._myScreen, this._player)
+            const northRoom = new Room(this._myScreen, this._player)
+            const eastRoom = new Room(this._myScreen, this._player)
+            const southRoom = new Room(this._myScreen, this._player)
+            const westRoom = new Room(this._myScreen, this._player)
+    
+            centerRoom.pairWithRoom(Direction.Up, northRoom)
+            centerRoom.pairWithRoom(Direction.Down, southRoom)
+            centerRoom.pairWithRoom(Direction.Left, westRoom)
+            centerRoom.pairWithRoom(Direction.Right, eastRoom)
+    
+            this._rooms.push(centerRoom, northRoom, eastRoom, southRoom, westRoom)
+        }
 
         const eventTarget = document.getElementById('eventTarget')
         eventTarget.addEventListener('onPlayerDeath', (e: CustomEvent) => {
@@ -58,10 +116,9 @@ export class Game {
         })
 
         this._respondsToInput.push(this._player)
+        this._activeRoom = 0
         const doors = this._rooms[this._activeRoom].getDoors()
         doors.forEach(d => this._respondsToInput.push(d))
-
-        this._weapons[0].attachToPlayer(this._player)
 
         this._myScreen.clearScreen()
     }

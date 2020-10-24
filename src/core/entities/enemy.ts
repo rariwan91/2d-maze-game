@@ -25,9 +25,9 @@ export class Enemy extends Entity implements IEnemy {
     private _entitiesCollidingWithMe: Entity[] = []
     private _shapesCollidingWithMe: ICollidable[] = []
     private _lastTookDamage: number
-    private readonly _room: IRoom
+    private _room: IRoom
 
-    constructor(location: IPoint, myScreen: IMyScreen, initialState: EnemyState = EnemyState.Moving, room: IRoom) {
+    constructor(location: IPoint, myScreen: IMyScreen, initialState: EnemyState = EnemyState.Moving) {
         super()
         this._location = location
         this._oldLocation = location
@@ -35,7 +35,6 @@ export class Enemy extends Entity implements IEnemy {
         this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
         this._state = initialState
         this._oldState = initialState
-        this._room = room
     }
 
     // ----------------------------------------
@@ -60,6 +59,10 @@ export class Enemy extends Entity implements IEnemy {
 
     public getDirection(): Direction {
         return this._direction
+    }
+
+    public setRoom(newRoom: IRoom): void {
+        this._room = newRoom
     }
 
     // ----------------------------------------
