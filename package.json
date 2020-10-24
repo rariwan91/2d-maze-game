@@ -2,17 +2,26 @@
   "name": "2d-maze-game",
   "version": "1.0.0",
   "description": "",
+  "main": "./dist/src/electronMain.js",
   "scripts": {
-    "start": "webpack-dev-server --open",
-    "build": "webpack",
+    "start": "electron-forge start",
+    "wp-start": "webpack-dev-server --open",
+    "wp-build": "webpack",
     "tests": "mocha -r ts-node/register tests/**/*.test.ts",
-    "elec-build": "tsc --build",
-    "elec-start": "npm run elec-build && electron ./dist/src/electronMain.js",
-    "lint": "eslint .eslintrc.json"
+    "e-build": "tsc --build",
+    "e-start": "npm run elec-build && electron ./dist/src/electronMain.js",
+    "lint": "eslint .eslintrc.json",
+    "package": "npm run e-build && electron-forge package",
+    "make": "npm run e-build && electron-forge make"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.54",
+    "@electron-forge/maker-deb": "^6.0.0-beta.54",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.54",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
+    "@electron-forge/maker-zip": "^6.0.0-beta.54",
     "@types/chai": "^4.2.14",
     "@types/copy-webpack-plugin": "^6.0.0",
     "@types/mocha": "^8.0.3",
@@ -38,6 +47,34 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
     "guid-typescript": "^1.0.9"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "2d_maze_game"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
   }
 }
