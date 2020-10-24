@@ -32,6 +32,7 @@ export class RoomTransition extends Entity implements IRoomTransition {
 
     public setLocation(newLocation: IPoint): void {
         this._location = newLocation
+        this._transitionBox.setLocation(newLocation)
     }
 
     // ----------------------------------------
@@ -59,9 +60,7 @@ export class RoomTransition extends Entity implements IRoomTransition {
             const eventTarget = document.getElementById('eventTarget')
             eventTarget.dispatchEvent(event)
         }
-        else {
-            this.draw()
-        }
+        this.draw()
     }
 
     // ----------------------------------------

@@ -54,32 +54,8 @@ export class Game {
             this.entityDied(e.detail)
         })
         eventTarget.addEventListener('onRoomTransitionTriggered', (e: CustomEvent) => {
-            if(this._gameState === GameState.RoomTransition) return
-
-            this._gameState = GameState.RoomTransition
-            this._roomTransitionStart = Date.now()
-            this._targetRoom = e.detail
-
-            const playerLocation = this._player.getLocation()
-            if(playerLocation.x < 50) {
-                this._roomTransitionDirection = Direction.Left
-                this._targetRoom.setLocation({ x: 50 - this._myScreen.getSize().width, y: 50 })
-            }
-            else if(playerLocation.x > this._myScreen.getSize().width - 50) {
-                this._roomTransitionDirection = Direction.Right
-                this._targetRoom.setLocation({ x: 50 + this._myScreen.getSize().width, y: 50 })
-            }
-            else if(playerLocation.y < 50) {
-                this._roomTransitionDirection = Direction.Up
-                this._targetRoom.setLocation({ x: 50, y: 50 - this._myScreen.getSize().height })
-            }
-            else if(playerLocation.y > this._myScreen.getSize().height - 50) {
-                this._roomTransitionDirection = Direction.Down
-                this._targetRoom.setLocation({ x: 50, y: 50 + this._myScreen.getSize().height })
-            }
-
-            this._originalActiveRoomLocation = this._activeRoom.getLocation()
-            this._originalTargetRoomLocation = this._targetRoom.getLocation()
+            if (this._gameState === GameState.RoomTransition) return
+            this.startTransition(e.detail)
         })
 
         this._respondsToInput.push(this._player)
@@ -105,33 +81,7 @@ export class Game {
         }
         else if (this._gameState === GameState.RoomTransition) {
             if (((Date.now() - this._roomTransitionStart) / 1000) > this._transitionLength) {
-                this._gameState = GameState.Playing
-                this._activeRoom = this._targetRoom
-                this._targetRoom = null
-                this._activeRoom.setLocation({x: 50, y: 50 })
-
-                const screenSize = this._myScreen.getSize()
-                const roomLocation = this._activeRoom.getLocation()
-                const roomSize = this._activeRoom.getSize()
-                const playerLocation = this._player.getLocation()
-
-                if(playerLocation.x < 50) {
-                    this._player.setLocation({ x: roomLocation.x + roomSize.width - 75, y: roomLocation.y + roomSize.height / 2 })
-                }
-                else if(playerLocation.x > screenSize.width - 50) {
-                    this._player.setLocation({ x: roomLocation.x + 75, y: roomLocation.y + roomSize.height / 2 })
-                }
-                else if(playerLocation.y < 50) {
-                    this._player.setLocation({ x: roomLocation.x + roomSize.width / 2, y: roomLocation.y + roomSize.height - 75 })
-                }
-                else if(playerLocation.y > screenSize.height - 50) {
-                    this._player.setLocation({ x: roomLocation.x + roomSize.width / 2, y: roomLocation.y + 75 })
-                }
-
-                this._respondsToInput = []
-                this._respondsToInput.push(this._player)
-                const doors = this._activeRoom.getDoors()
-                doors.forEach(d => this._respondsToInput.push(d))
+                this.endTransition()
             }
             else {
                 this._myScreen.clearScreen()
@@ -356,27 +306,88 @@ export class Game {
         this._weapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.weaponConcerns))
     }
 
+    private startTransition(targetRoom: IRoom): void {
+        this._gameState = GameState.RoomTransition
+        this._roomTransitionStart = Date.now()
+        this._targetRoom = targetRoom
+
+        const playerLocation = this._player.getLocation()
+        if (playerLocation.x < 50) {
+            this._roomTransitionDirection = Direction.Left
+            this._targetRoom.setLocation({ x: 50 - this._myScreen.getSize().width, y: 50 })
+        }
+        else if (playerLocation.x > this._myScreen.getSize().width - 50) {
+            this._roomTransitionDirection = Direction.Right
+            this._targetRoom.setLocation({ x: 50 + this._myScreen.getSize().width, y: 50 })
+        }
+        else if (playerLocation.y < 50) {
+            this._roomTransitionDirection = Direction.Up
+            this._targetRoom.setLocation({ x: 50, y: 50 - this._myScreen.getSize().height })
+        }
+        else if (playerLocation.y > this._myScreen.getSize().height - 50) {
+            this._roomTransitionDirection = Direction.Down
+            this._targetRoom.setLocation({ x: 50, y: 50 + this._myScreen.getSize().height })
+        }
+
+        this._originalActiveRoomLocation = this._activeRoom.getLocation()
+        this._originalTargetRoomLocation = this._targetRoom.getLocation()
+    }
+
     private updateTransition(): void {
         const screenSize = this._myScreen.getSize()
 
-        if(this._roomTransitionDirection === Direction.Up) {
-            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
-            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+        if (this._roomTransitionDirection === Direction.Up) {
+            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y + screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
         }
-        else if(this._roomTransitionDirection === Direction.Right) {
-            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
-            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
+        else if (this._roomTransitionDirection === Direction.Right) {
+            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
+            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x - screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
         }
-        else if(this._roomTransitionDirection === Direction.Down) {
-            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
-            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+        else if (this._roomTransitionDirection === Direction.Down) {
+            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x, y: this._originalActiveRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
+            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x, y: this._originalTargetRoomLocation.y - screenSize.height * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength })
         }
         else {
-            this._activeRoom.setLocation({x: this._originalActiveRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
-            this._targetRoom.setLocation({x: this._originalTargetRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
+            this._activeRoom.setLocation({ x: this._originalActiveRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalActiveRoomLocation.y })
+            this._targetRoom.setLocation({ x: this._originalTargetRoomLocation.x + screenSize.width * ((Date.now() - this._roomTransitionStart) / 1000) / this._transitionLength, y: this._originalTargetRoomLocation.y })
         }
 
-        this._activeRoom.update((Date.now() - this._lastTime) / 1000)
-        this._targetRoom.update((Date.now() - this._lastTime) / 1000)
+        this._activeRoom.update()
+        this._targetRoom.update()
+    }
+
+    private endTransition(): void {
+        this._gameState = GameState.Playing
+
+        const screenSize = this._myScreen.getSize()
+        const roomSize = this._activeRoom.getSize()
+        const playerLocation = this._player.getLocation()
+
+        if (playerLocation.x < 50) {
+            this._player.setLocation({ x: 50 + roomSize.width - 75, y: 50 + roomSize.height / 2 })
+            this._activeRoom.setLocation({ x: 50 - roomSize.width, y: 50 })
+        }
+        else if (playerLocation.x > screenSize.width - 50) {
+            this._player.setLocation({ x: 50 + 75, y: 50 + roomSize.height / 2 })
+            this._activeRoom.setLocation({ x: 50 + roomSize.width, y: 50 })
+        }
+        else if (playerLocation.y < 50) {
+            this._player.setLocation({ x: 50 + roomSize.width / 2, y: 50 + roomSize.height - 75 })
+            this._activeRoom.setLocation({ x: 50, y: 50 - roomSize.height })
+        }
+        else if (playerLocation.y > screenSize.height - 50) {
+            this._player.setLocation({ x: 50 + roomSize.width / 2, y: 50 + 75 })
+            this._activeRoom.setLocation({ x: 50, y: 50 + roomSize.height })
+        }
+
+        this._activeRoom = this._targetRoom
+        this._targetRoom = null
+        this._activeRoom.setLocation({ x: 50, y: 50 })
+
+        this._respondsToInput = []
+        this._respondsToInput.push(this._player)
+        const doors = this._activeRoom.getDoors()
+        doors.forEach(d => this._respondsToInput.push(d))
     }
 }

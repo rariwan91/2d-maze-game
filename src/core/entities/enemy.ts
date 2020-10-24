@@ -1,10 +1,10 @@
 import { Door, EnemyState, IEnemy, IPlayer, Player, Room, Weapon, WeaponState } from '.'
-import { Entity } from './entity'
-import { Direction,IMyScreen } from '../'
+import { Direction, IMyScreen } from '../'
+import { Config } from '../../config'
 import { IPoint } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
 import { EnemyCollision, ICollidable } from '../collision'
-import { Config } from '../../config'
+import { Entity } from './entity'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
@@ -16,7 +16,7 @@ export class Enemy extends Entity implements IEnemy {
     private readonly _movementSpeed = 50
     private readonly _knockbackSpeed = 200
     private _maxHealth = 100
-    private _currentHealth= 100
+    private _currentHealth = 100
     private _state = EnemyState.TargetDummy
     private _oldState = EnemyState.TargetDummy
     private _knockbackAngle: number

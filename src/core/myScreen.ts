@@ -1,6 +1,6 @@
 import { IMyScreen } from '.'
-import { IColor, IPoint, ISize } from '../gui'
 import { Config } from '../config'
+import { IColor, IPoint, ISize } from '../gui'
 
 export class MyScreen implements IMyScreen {
     private readonly _canvas: HTMLCanvasElement
@@ -25,7 +25,7 @@ export class MyScreen implements IMyScreen {
 
     public clearScreen(): void {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height)
-        this.drawRect({ x: 0, y: 0}, { width: this._canvas.width, height: this._canvas.height }, Config.MyScreen.BackgroundColor, Config.MyScreen.BackgroundColor)
+        this.drawRect({ x: 0, y: 0 }, { width: this._canvas.width, height: this._canvas.height }, Config.MyScreen.BackgroundColor, Config.MyScreen.BackgroundColor)
     }
 
     public getSize(): ISize {
@@ -100,7 +100,7 @@ export class MyScreen implements IMyScreen {
         this._context.lineTo(bottomRightPoint.x, bottomRightPoint.y)
         this._context.closePath()
         this._context.stroke()
-        if(fillColor) {
+        if (fillColor) {
             this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
             this._context.fill()
         }

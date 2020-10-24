@@ -50,7 +50,7 @@ export class Door extends Entity implements IDoor {
         if (!this._opened) {
             this._myScreen.drawRect(this._location, this._size, Config.Doors.MainColor, Config.Doors.MainColor)
 
-            if(this._size.width > this._size.height) {
+            if (this._size.width > this._size.height) {
                 this._myScreen.drawStraightLine({ x: this._location.x + this._size.width / 6, y: this._location.y }, { x: this._location.x + this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
                 this._myScreen.drawStraightLine({ x: this._location.x + 2 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 2 * this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
                 this._myScreen.drawStraightLine({ x: this._location.x + 3 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 3 * this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)

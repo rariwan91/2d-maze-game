@@ -13,13 +13,19 @@ export class Room extends Entity implements IRoom {
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
     private _walls: WallCollision[] = []
-    private _doors: IDoor[] = []
-    private _roomTransitions: IRoomTransition[] = []
     private _entitiesCollidingWithMe: Entity[] = []
     private _roomToNorth: IRoom
     private _roomToRight: IRoom
     private _roomToSouth: IRoom
     private _roomToLeft: IRoom
+    private _northDoor: IDoor
+    private _rightDoor: IDoor
+    private _southDoor: IDoor
+    private _leftDoor: IDoor
+    private _northRoomTransition: IRoomTransition
+    private _rightRoomTransition: IRoomTransition
+    private _southRoomTransition: IRoomTransition
+    private _leftRoomTransition: IRoomTransition
 
     constructor(myScreen: IMyScreen) {
         super()
@@ -39,21 +45,45 @@ export class Room extends Entity implements IRoom {
         return this._location
     }
 
-    public setLocation(newLocation?: IPoint): void {
+    public setLocation(newLocation: IPoint): void {
         const difference = getVectorDistanceBetween(this._location, newLocation)
         this._location = newLocation
         this._walls.forEach(w => {
             const wLoc = w.getLocation()
             w.setLocation({ x: wLoc.x + difference.x, y: wLoc.y + difference.y })
         })
-        this._doors.forEach(d => {
-            const dLoc = d.getLocation()
-            d.setLocation({ x: dLoc.x + difference.x, y: dLoc.y + difference.y })
-        })
-        this._roomTransitions.forEach(rt => {
-            const rtLoc = rt.getLocation()
-            rt.setLocation({ x: rtLoc.x + difference.x, y: rtLoc.y + difference.y })
-        })
+
+        if (this._northDoor) {
+            this._northDoor.setLocation(this.getDoorLocation(Direction.Up))
+        }
+
+        if (this._leftDoor) {
+            this._leftDoor.setLocation(this.getDoorLocation(Direction.Left))
+        }
+
+        if (this._southDoor) {
+            this._southDoor.setLocation(this.getDoorLocation(Direction.Down))
+        }
+
+        if (this._rightDoor) {
+            this._rightDoor.setLocation(this.getDoorLocation(Direction.Right))
+        }
+
+        if (this._northRoomTransition) {
+            this._northRoomTransition.setLocation(this.getRoomTransitionLocation(Direction.Up))
+        }
+
+        if (this._rightRoomTransition) {
+            this._rightRoomTransition.setLocation(this.getRoomTransitionLocation(Direction.Right))
+        }
+
+        if (this._southRoomTransition) {
+            this._southRoomTransition.setLocation(this.getRoomTransitionLocation(Direction.Down))
+        }
+
+        if (this._leftRoomTransition) {
+            this._leftRoomTransition.setLocation(this.getRoomTransitionLocation(Direction.Left))
+        }
     }
 
     public getSize(): ISize {
@@ -97,18 +127,26 @@ export class Room extends Entity implements IRoom {
     }
 
     public getDoors(): IDoor[] {
-        return this._doors
+        return [this._northDoor, this._rightDoor, this._southDoor, this._leftDoor].filter(d => d)
     }
 
     public doorOpened(door: IDoor): void {
-        const index = this._doors.indexOf(door)
-        if (index !== -1) {
-            this._doors.splice(index, 1)
+        if (this._northDoor === door) {
+            this._northDoor = null
+        }
+        else if (this._leftDoor === door) {
+            this._leftDoor = null
+        }
+        else if (this._southDoor === door) {
+            this._southDoor = null
+        }
+        else if (this._rightDoor === door) {
+            this._rightDoor = null
         }
     }
 
     public getRoomTransitions(): IRoomTransition[] {
-        return this._roomTransitions
+        return [this._northRoomTransition, this._rightRoomTransition, this._southRoomTransition, this._leftRoomTransition].filter(rt => rt)
     }
 
     // ----------------------------------------
@@ -162,8 +200,38 @@ export class Room extends Entity implements IRoom {
 
     public update(): void {
         this.draw()
-        this._doors.forEach(d => d.update())
-        this._roomTransitions.forEach(rt => rt.update())
+
+        if (this._northDoor) {
+            this._northDoor.update()
+        }
+
+        if (this._leftDoor) {
+            this._leftDoor.update()
+        }
+
+        if (this._southDoor) {
+            this._southDoor.update()
+        }
+
+        if (this._rightDoor) {
+            this._rightDoor.update()
+        }
+
+        if (this._northRoomTransition) {
+            this._northRoomTransition.update()
+        }
+
+        if (this._rightRoomTransition) {
+            this._rightRoomTransition.update()
+        }
+
+        if (this._southRoomTransition) {
+            this._southRoomTransition.update()
+        }
+
+        if (this._leftRoomTransition) {
+            this._leftRoomTransition.update()
+        }
     }
 
     // ----------------------------------------
@@ -249,73 +317,82 @@ export class Room extends Entity implements IRoom {
     }
 
     private createDoors(): void {
-        this._doors = []
+        this._northDoor = null
+        this._rightDoor = null
+        this._southDoor = null
+        this._leftDoor = null
+
         if (this._roomToNorth) {
-            this._doors.push(
-                new Door(this._myScreen, this.getDoorLocation(Direction.Up), { height: 26, width: 0.2 * this._size.width + 6 }, this)
-            )
+            this._northDoor = new Door(this._myScreen, this.getDoorLocation(Direction.Up), { height: 20, width: 0.2 * this._size.width }, this)
         }
 
         if (this._roomToRight) {
-            this._doors.push(
-                new Door(this._myScreen, this.getDoorLocation(Direction.Right), { height: 0.2 * this._size.height + 6, width: 26 }, this)
-            )
+            this._rightDoor = new Door(this._myScreen, this.getDoorLocation(Direction.Right), { height: 0.2 * this._size.height, width: 20 }, this)
         }
 
         if (this._roomToSouth) {
-            this._doors.push(
-                new Door(this._myScreen, this.getDoorLocation(Direction.Down), { height: 26, width: 0.2 * this._size.width + 6 }, this)
-            )
+            this._southDoor = new Door(this._myScreen, this.getDoorLocation(Direction.Down), { height: 20, width: 0.2 * this._size.width }, this)
         }
 
         if (this._roomToLeft) {
-            this._doors.push(
-                new Door(this._myScreen, this.getDoorLocation(Direction.Left), { height: 0.2 * this._size.height + 6, width: 26 }, this)
-            )
+            this._leftDoor = new Door(this._myScreen, this.getDoorLocation(Direction.Left), { height: 0.2 * this._size.height, width: 20 }, this)
         }
     }
 
     private createRoomTransitions(): void {
-        this._roomTransitions = []
+        this._northRoomTransition = null
+        this._rightRoomTransition = null
+        this._southRoomTransition = null
+        this._leftRoomTransition = null
+
         if (this._roomToNorth) {
-            this._roomTransitions.push(
-                new RoomTransition(this._myScreen, { x: this._location.x + 0.35 * this._size.width, y: this._location.y - 50 }, { height: 20, width: 0.3 * this._size.width }, this._roomToNorth)
-            )
+            this._northRoomTransition = new RoomTransition(this._myScreen, this.getRoomTransitionLocation(Direction.Up), { height: 20, width: 0.3 * this._size.width }, this._roomToNorth)
         }
 
         if (this._roomToRight) {
-            this._roomTransitions.push(
-                new RoomTransition(this._myScreen, { x: this._location.x + this._size.width + 30, y: this._location.y + 0.35 * this._size.height }, { height: 0.3 * this._size.height, width: 20 }, this._roomToRight)
-            )
+            this._rightRoomTransition = new RoomTransition(this._myScreen, this.getRoomTransitionLocation(Direction.Right), { height: 0.3 * this._size.height, width: 20 }, this._roomToRight)
         }
 
         if (this._roomToSouth) {
-            this._roomTransitions.push(
-                new RoomTransition(this._myScreen, { x: this._location.x + 0.35 * this._size.width, y: this._location.y + this._size.height + 30 }, { height: 20, width: 0.3 * this._size.width }, this._roomToSouth)
-            )
+            this._southRoomTransition = new RoomTransition(this._myScreen, this.getRoomTransitionLocation(Direction.Down), { height: 20, width: 0.3 * this._size.width }, this._roomToSouth)
         }
 
         if (this._roomToLeft) {
-            this._roomTransitions.push(
-                new RoomTransition(this._myScreen, { x: this._location.x - 50, y: this._location.y + 0.35 * this._size.height }, { height: 0.3 * this._size.height, width: 20 }, this._roomToLeft)
-            )
+            this._leftRoomTransition = new RoomTransition(this._myScreen, this.getRoomTransitionLocation(Direction.Left), { height: 0.3 * this._size.height, width: 20 }, this._roomToLeft)
         }
     }
 
     private getDoorLocation(direction: Direction.Up | Direction.Right | Direction.Down | Direction.Left): IPoint {
         if (direction === Direction.Up) {
-            return { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y - 10 - 3 }
+            return { x: this._location.x + 0.4 * this._size.width, y: this._location.y - 10 }
         }
 
         if (direction === Direction.Right) {
-            return { x: this._location.x + this._size.width - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }
+            return { x: this._location.x + this._size.width - 10, y: this._location.y + 0.4 * this._size.height }
         }
 
         if (direction === Direction.Down) {
-            return { x: this._location.x - 3 + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 - 3 }
+            return { x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height - 10 }
         }
 
         // Direction.Left
-        return { x: this._location.x - 10 - 3, y: this._location.y + 0.4 * this._size.height - 3 }
+        return { x: this._location.x - 10, y: this._location.y + 0.4 * this._size.height }
+    }
+
+    private getRoomTransitionLocation(direction: Direction.Up | Direction.Right | Direction.Down | Direction.Left): IPoint {
+        if (direction === Direction.Up) {
+            return { x: this._location.x + 0.35 * this._size.width, y: this._location.y - 50 }
+        }
+
+        if (direction === Direction.Right) {
+            return { x: this._location.x + this._size.width + 30, y: this._location.y + 0.35 * this._size.height }
+        }
+
+        if (direction === Direction.Down) {
+            return { x: this._location.x + 0.35 * this._size.width, y: this._location.y + this._size.height + 30 }
+        }
+
+        // Direction.Left
+        return { x: this._location.x - 50, y: this._location.y + 0.35 * this._size.height }
     }
 }

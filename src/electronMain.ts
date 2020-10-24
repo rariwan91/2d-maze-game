@@ -1,5 +1,5 @@
-import { app, BrowserWindow } from 'electron'
-import * as path from 'path'
+import { app, BrowserWindow } from 'electron';
+import * as path from 'path';
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -17,13 +17,13 @@ function createWindow() {
 app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {
-    if(process.platform !== 'darwin') {
+    if (process.platform !== 'darwin') {
         app.quit()
     }
 })
 
 app.on('activate', () => {
-    if(BrowserWindow.getAllWindows().length === 0) {
+    if (BrowserWindow.getAllWindows().length === 0) {
         createWindow()
     }
 })
