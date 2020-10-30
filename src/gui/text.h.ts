@@ -1,4 +1,4 @@
-import { IPoint } from "../../gui";
+import { IPoint } from ".";
 
 export interface IText {
     value: string

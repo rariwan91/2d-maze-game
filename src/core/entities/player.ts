@@ -1,9 +1,10 @@
 import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room } from '.'
-import { Direction, IMyScreen } from '../'
+import { Direction, IMyScreen } from '..'
 import { Config } from '../../config'
 import { IPoint, Keycode } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../../helpers'
-import { CircleCollision, ICollidable } from '../collision'
+import { ICollidable } from '../collision'
+import { CircleCollision } from '../collision/circleCollision'
 import { Entity } from './entity'
 
 export class Player extends Entity implements IPlayer {

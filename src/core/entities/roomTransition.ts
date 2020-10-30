@@ -2,7 +2,8 @@ import { IRoom, IRoomTransition, Player } from '.'
 import { IMyScreen } from '../'
 import { Config } from '../../config'
 import { IPoint, ISize } from '../../gui'
-import { BoxCollision, ICollidable } from '../collision'
+import { ICollidable } from '../collision'
+import { BoxCollision } from '../collision/boxCollision'
 import { Entity } from './entity'
 
 export class RoomTransition extends Entity implements IRoomTransition {

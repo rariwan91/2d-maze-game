@@ -1,4 +1,4 @@
-export enum PlayerState {
+export const enum PlayerState {
     Normal,
     InvincibleDueToDamage
 }

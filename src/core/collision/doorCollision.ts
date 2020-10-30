@@ -1,4 +1,4 @@
-import { BoxCollision } from '.'
+import { BoxCollision } from './boxCollision'
 import { IPoint, ISize } from '../../gui'
 import { Entity } from '../entities/entity'
 

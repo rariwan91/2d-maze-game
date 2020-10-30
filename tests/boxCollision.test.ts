@@ -1,7 +1,7 @@
 import * as mocha from 'mocha'
 import * as chai from 'chai'
 
-import { BoxCollision } from '../src/core/collision'
+import { BoxCollision } from '../src/core/collision/boxCollision'
 import { Entity } from '../src/core/entities/entity'
 
 describe('>>> Box Collision', () => {

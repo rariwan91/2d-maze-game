@@ -1,4 +1,4 @@
-export enum RoomState {
+export const enum RoomState {
     Normal,
     Transitioning
 }

@@ -1,4 +1,4 @@
-export enum EnemyState {
+export const enum EnemyState {
     Moving,
     KnockbackFromDamage,
     InvincibleDueToDamage,
