@@ -1,5 +1,6 @@
 import { IPlayer, IWeapon, WeaponState } from '.';
 import { ICollidable } from '../collision/collidable.h';
+import { IEnemy } from './enemy.h';
 import { Entity } from './entity';
 
 export abstract class Weapon extends Entity implements IWeapon {
@@ -9,11 +10,11 @@ export abstract class Weapon extends Entity implements IWeapon {
     getState(): WeaponState {
         throw new Error("Method not implemented.");
     }
-    attachToPlayer(player: IPlayer): void {
-        player
+    attachToCharacter(character: IPlayer | IEnemy): void {
+        character
         throw new Error("Method not implemented.");
     }
-    detachFromPlayer(): void {
+    detachFromCharacter(): void {
         throw new Error("Method not implemented.");
     }
     draw(): void {

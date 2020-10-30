@@ -31,7 +31,7 @@ export class Game {
         }, this._myScreen)
     
         this._weapons.push(new Sword(this._myScreen))
-        this._weapons[0].attachToPlayer(this._player)
+        this._weapons[0].attachToCharacter(this._player)
 
         const loadedLevel = LevelLoader.loadLevel()
         if(loadedLevel) {

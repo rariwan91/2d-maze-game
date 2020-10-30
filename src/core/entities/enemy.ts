@@ -7,6 +7,7 @@ import { EnemyCollision, ICollidable } from '../collision'
 import { Entity } from './entity'
 import { IRoom } from './room.h'
 import { RoomState } from './roomState.enum'
+import { IWeapon } from './weapon.h'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
@@ -26,6 +27,7 @@ export class Enemy extends Entity implements IEnemy {
     private _shapesCollidingWithMe: ICollidable[] = []
     private _lastTookDamage: number
     private _room: IRoom
+    private _weapon: IWeapon
 
     constructor(location: IPoint, myScreen: IMyScreen, initialState: EnemyState = EnemyState.Moving) {
         super()
@@ -61,8 +63,25 @@ export class Enemy extends Entity implements IEnemy {
         return this._direction
     }
 
+    public getMostRecentDirection(): Direction {
+        return this._direction
+    }
+
+    public getRadius(): number {
+        return this._radius
+    }
+
     public setRoom(newRoom: IRoom): void {
         this._room = newRoom
+    }
+
+    public equipWeapon(weapon: IWeapon): void {
+        this._weapon = weapon
+    }
+
+    public unequipWeapon(weapon: IWeapon): void {
+        weapon
+        this._weapon = null
     }
 
     // ----------------------------------------
@@ -136,6 +155,10 @@ export class Enemy extends Entity implements IEnemy {
         else {
             this.calculateLocation(deltaTime)
             this._collisionShape.setLocation(this._location)
+        }
+
+        if(this._weapon) {
+            this._weapon.update(deltaTime)
         }
 
         this.draw()

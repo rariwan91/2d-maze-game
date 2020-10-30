@@ -26,7 +26,7 @@ export class Door extends Entity implements IDoor {
         this._location = location
         this._room = room
         this._doorCollision = new DoorCollision(this._location, this._size, this)
-        this._activationBox = new BoxCollision({ x: this._location.x - 25, y: this._location.y - 25 }, { width: this._size.width + 50, height: this._size.height + 50 }, this)
+        this._activationBox = new BoxCollision({ x: this._location.x - 40, y: this._location.y - 40 }, { width: this._size.width + 80, height: this._size.height + 80 }, this)
     }
 
     // ----------------------------------------
@@ -40,7 +40,7 @@ export class Door extends Entity implements IDoor {
     public setLocation(newLocation: IPoint): void {
         this._location = newLocation
         this._doorCollision.setLocation(newLocation)
-        this._activationBox.setLocation({ x: this._location.x - 25, y: this._location.y - 25 })
+        this._activationBox.setLocation({ x: this._location.x - 40, y: this._location.y - 40 })
     }
 
     // ----------------------------------------

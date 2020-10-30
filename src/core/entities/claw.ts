@@ -1,14 +1,15 @@
-import { IPlayer, Weapon, WeaponState } from '.'
+import { Weapon, WeaponState } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
 import { IPoint } from '../../gui'
 import { calculateSwordStartPoint } from '../../helpers/calculationHelpers'
 import { ICollidable, PlayerWeaponCollision } from '../collision'
+import { IEnemy } from './enemy.h'
 import { Entity } from './entity'
 
-export class Sword extends Weapon {
+export class Claw extends Weapon {
     private readonly _myScreen: IMyScreen
-    private _player: IPlayer
+    private _enemy: IEnemy
 
     private readonly _offset = 15
     private readonly _secondOffset = 30
@@ -45,16 +46,16 @@ export class Sword extends Weapon {
         return this._state
     }
 
-    public attachToCharacter(charater: IPlayer): void {
-        charater.equipWeapon(this)
-        this._player = charater
+    public attachToCharacter(character: IEnemy): void {
+        character.equipWeapon(this)
+        this._enemy = character
         this.initializeSwordHitboxes()
     }
 
     public detachFromCharacter(): void {
-        if (this._player) {
-            this._player.unequipWeapon(this)
-            this._player = null
+        if (this._enemy) {
+            this._enemy.unequipWeapon(this)
+            this._enemy = null
             this._hitboxes = []
         }
     }
@@ -103,7 +104,7 @@ export class Sword extends Weapon {
     // ----------------------------------------
 
     public update(deltaTime: number): void {
-        if (!this._player) return
+        if (!this._enemy) return
 
         this.updateSword(deltaTime)
         this.draw()
@@ -164,7 +165,7 @@ export class Sword extends Weapon {
     }
 
     private getStartPoint(): IPoint {
-        return calculateSwordStartPoint(this._player.getLocation(), this._player.getMostRecentDirection(), this._player.getRadius(), this._offset, this._secondOffset)
+        return calculateSwordStartPoint(this._enemy.getLocation(), this._enemy.getMostRecentDirection(), this._enemy.getRadius(), this._offset, this._secondOffset)
     }
 
     private isColliding(): boolean {
@@ -172,7 +173,7 @@ export class Sword extends Weapon {
     }
 
     private setStartAngle(): void {
-        const characterDirection = this._player.getMostRecentDirection()
+        const characterDirection = this._enemy.getMostRecentDirection()
         if (characterDirection === Direction.Down) {
             this._startAngle = -90 + 90
         }
