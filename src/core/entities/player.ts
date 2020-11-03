@@ -1,4 +1,4 @@
-import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room, WeaponState } from '.'
+import { Door, Enemy, IPlayer, PlayerState, Room } from '.'
 import { Direction, IMyScreen } from '..'
 import { Config } from '../../config'
 import { IPoint, Keycode } from '../../gui'
@@ -6,7 +6,7 @@ import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, 
 import { ICollidable } from '../collision'
 import { CircleCollision } from '../collision/circleCollision'
 import { Entity } from './entity'
-import { Weapon } from './weapon'
+import { IWeapon, Weapon, WeaponState } from './weapons'
 
 export class Player extends Entity implements IPlayer {
     private _location: IPoint
@@ -67,6 +67,10 @@ export class Player extends Entity implements IPlayer {
     public unequipWeapon(weapon: IWeapon): void {
         weapon
         this._weapon = null
+    }
+
+    public getWeapon(): IWeapon {
+        return this._weapon
     }
 
     // ----------------------------------------

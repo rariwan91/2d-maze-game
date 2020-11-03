@@ -1,11 +1,11 @@
 import { Weapon, WeaponState } from '.'
-import { Direction, IMyScreen } from '..'
-import { Config } from '../../config'
-import { IPoint } from '../../gui'
-import { calculateSwordStartPoint } from '../../helpers/calculationHelpers'
-import { ICollidable, PlayerWeaponCollision } from '../collision'
-import { IEnemy } from './enemy.h'
-import { Entity } from './entity'
+import { Direction, IMyScreen } from '../..'
+import { Config } from '../../../config'
+import { IPoint } from '../../../gui'
+import { calculateSwordStartPoint } from '../../../helpers/calculationHelpers'
+import { ICollidable, PlayerWeaponCollision } from '../../collision'
+import { IEnemy } from '../enemy.h'
+import { Entity } from '../entity'
 
 export class EnemySword extends Weapon {
     private readonly _myScreen: IMyScreen

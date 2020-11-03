@@ -2,7 +2,7 @@ import { Direction, IHasAI, IHasHealth, IUpdatable } from '../'
 import { IDrawable, IPoint } from '../../gui'
 import { IHasActivations, IHasCollisions } from '../collision'
 import { IRoom } from './room.h'
-import { IWeapon } from './weapon.h'
+import { IWeapon } from './weapons/weapon.h'
 
 export interface IEnemy extends IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth, IHasActivations {
     getLocation(): IPoint
@@ -15,4 +15,5 @@ export interface IEnemy extends IDrawable, IUpdatable, IHasCollisions, IHasAI, I
     setRoom(newRoom: IRoom): void
     equipWeapon(weapon: IWeapon): void
     unequipWeapon(weapon: IWeapon): void
+    getWeapon(): IWeapon
 }

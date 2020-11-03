@@ -1,4 +1,4 @@
-import { Door, EnemyState, IEnemy, Player, Room, Weapon, WeaponState } from '.'
+import { Door, EnemyState, IEnemy, Player, Room } from '.'
 import { Direction, IMyScreen } from '../'
 import { Config } from '../../config'
 import { IPoint } from '../../gui'
@@ -8,7 +8,8 @@ import { CircleCollision } from '../collision/circleCollision'
 import { Entity } from './entity'
 import { IRoom } from './room.h'
 import { RoomState } from './roomState.enum'
-import { IWeapon } from './weapon.h'
+import { Weapon, WeaponState } from './weapons'
+import { IWeapon } from './weapons/weapon.h'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
@@ -87,6 +88,10 @@ export class Enemy extends Entity implements IEnemy {
     public unequipWeapon(weapon: IWeapon): void {
         weapon
         this._weapon = null
+    }
+
+    public getWeapon(): IWeapon {
+        return this._weapon
     }
 
     // ----------------------------------------

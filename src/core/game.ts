@@ -1,10 +1,10 @@
 import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
 import { IPoint, IText, Keycode } from '../gui'
 import { ICollidable } from './collision'
-import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
-import { EnemySword } from './entities/enemySword'
+import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, Player, Room, RoomState } from './entities'
 import { Entity } from './entities/entity'
-import { Sword } from './entities/sword'
+import { EnemySword } from './entities/weapons/enemySword'
+import { Sword } from './entities/weapons/sword'
 import { LevelLoader } from './loader'
 
 export class Game {
@@ -12,8 +12,6 @@ export class Game {
     private readonly _rooms: IRoom[] = []
     private _activeRoom: number
     private readonly _player: IPlayer
-    private readonly _weapons: IWeapon[] = []
-    private readonly _enemyWeapons: IWeapon[] = []
     private _respondsToInput: IRespondsToInput[] = []
     private _lastTime = 0
     private _gameState = GameState.Playing
@@ -32,8 +30,8 @@ export class Game {
             y: this._myScreen.getSize().height - 150
         }, this._myScreen)
     
-        this._weapons.push(new Sword(this._myScreen))
-        this._weapons[0].attachToCharacter(this._player)
+        const sword = new Sword(this._myScreen)
+        sword.attachToCharacter(this._player)
 
         const loadedLevel = LevelLoader.loadLevel()
         if(loadedLevel) {
@@ -65,9 +63,8 @@ export class Game {
 
                 const newRoom = new Room(this._myScreen, this._player)
                 enemies.forEach(enemy => {
-                    const weapon = new EnemySword(this._myScreen)
-                    this._enemyWeapons.push(weapon)
-                    weapon.attachToCharacter(enemy)
+                    const sword = new EnemySword(this._myScreen)
+                    sword.attachToCharacter(enemy)
                     newRoom.addEnemyToRoom(enemy)
                 })
                 texts.forEach(text => {
@@ -165,6 +162,10 @@ export class Game {
         this._player.update((time - this._lastTime) / 1000.0)
     }
 
+    // ----------------------------------------
+    //              Keyboard Events
+    // ----------------------------------------
+
     public keydown(event: KeyboardEvent): void {
         this._respondsToInput.forEach(responder => {
             switch (event.key) {
@@ -223,6 +224,10 @@ export class Game {
         })
     }
 
+    // ----------------------------------------
+    //              Game Events
+    // ----------------------------------------
+
     private entityDied(entity: Entity): void {
         if (entity instanceof Player) {
             this._gameState = GameState.GameOver
@@ -231,6 +236,10 @@ export class Game {
             this._rooms[this._activeRoom].enemyDied(entity)
         }
     }
+
+    // ----------------------------------------
+    //              Collision Helpers
+    // ----------------------------------------
 
     private getCollidableShapes(): {
         roomShapes: ICollidable[],
@@ -259,6 +268,7 @@ export class Game {
 
         const enemies = this._rooms[this._activeRoom].getEnemies()
         const enemyShapes: ICollidable[] = []
+        const enemyWeaponShapes: ICollidable[] = []
 
         enemies.forEach(enemy => {
             const enemyCollisions = enemy.getCollisionShapes()
@@ -269,10 +279,7 @@ export class Game {
             enemyActivations.forEach(activation => {
                 enemyActivations.push(activation)
             })
-        })
-
-        const enemyWeaponShapes: ICollidable[] = []
-        this._enemyWeapons.forEach(weapon => {
+            const weapon = enemy.getWeapon()
             const weaponCollisions = weapon.getCollisionShapes()
             weaponCollisions.forEach(collision => {
                 enemyWeaponShapes.push(collision)
@@ -280,11 +287,10 @@ export class Game {
         })
 
         const weaponShapes: ICollidable[] = []
-        this._weapons.forEach(weapon => {
-            const weaponCollisions = weapon.getCollisionShapes()
-            weaponCollisions.forEach(collision => {
-                weaponShapes.push(collision)
-            })
+        const playerWeapon = this._player.getWeapon()
+        const weaponCollisions = playerWeapon.getCollisionShapes()
+        weaponCollisions.forEach(collision => {
+            weaponShapes.push(collision)
         })
 
         return {
@@ -361,9 +367,9 @@ export class Game {
         enemies.forEach(enemy => {
             enemy.checkForCollisionsWith(concerns.enemyConcerns)
             enemy.checkForActivationsWith(concerns.enemyActivationConcerns)
+            enemy.getWeapon().checkForCollisionsWith(concerns.enemyWeaponConcerns)
         })
-        this._enemyWeapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.enemyWeaponConcerns))
-        this._weapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.weaponConcerns))
+        this._player.getWeapon().checkForCollisionsWith(concerns.weaponConcerns)
     }
 
     private startTransition(targetRoom: IRoom): void {
