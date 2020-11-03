@@ -23,112 +23,45 @@ export class Game {
     private _roomTransitionDirection: Direction
 
     constructor(canvas: HTMLCanvasElement) {
+        // Create screen
         this._myScreen = new MyScreen(canvas)
 
+        // Initialize Player
         this._player = new Player({
             x: this._myScreen.getSize().width / 2,
             y: this._myScreen.getSize().height - 150
         }, this._myScreen)
-    
         const sword = new Sword(this._myScreen)
         sword.attachToCharacter(this._player)
+        this._respondsToInput.push(this._player)
 
-        const loadedLevel = LevelLoader.loadLevel()
-        if(loadedLevel) {
-            const roomMap = new Map<string, IRoom>()
+        // Load the level
+        this.loadLevel()
 
-            loadedLevel.rooms.forEach(room => {
-                const enemies: IEnemy[] = []
-                if(room.enemies) {
-                    room.enemies.forEach(enemy => {
-                        if(enemy.enemyState === "Moving") {
-                            enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.Moving))
-                        }
-                        else if(enemy.enemyState === "TargetDummy") {
-                            enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.TargetDummy))
-                        }
-                    })
-                }
-
-                const texts: IText[] = []
-                if(room.text) {
-                    room.text.forEach(text => {
-                        texts.push({
-                            location: text.location,
-                            value: text.value,
-                            size: text.size
-                        })
-                    })
-                }
-
-                const newRoom = new Room(this._myScreen, this._player)
-                enemies.forEach(enemy => {
-                    const sword = new EnemySword(this._myScreen)
-                    sword.attachToCharacter(enemy)
-                    newRoom.addEnemyToRoom(enemy)
-                })
-                texts.forEach(text => {
-                    newRoom.addTextToRoom(text)
-                })
-                roomMap.set(room.name, newRoom)
-            })
-
-            loadedLevel.rooms.forEach(room => {
-                const currentRoom = roomMap.get(room.name)
-                room.doors.forEach(d => {
-                    const targetRoom = roomMap.get(d.toRoom)
-                    let direction: Direction
-                    if(d.direction === "Up") {
-                        direction = Direction.Up
-                    }
-                    else if(d.direction === "Right") {
-                        direction = Direction.Right
-                    }
-                    else if(d.direction === "Down") {
-                        direction = Direction.Down
-                    }
-                    else {
-                        direction = Direction.Left
-                    }
-                    currentRoom.pairWithRoom(direction, targetRoom, d.open)
-                })
-                this._rooms.push(currentRoom)
-            })
-        }
-        else {
-            const centerRoom = new Room(this._myScreen, this._player)
-            const northRoom = new Room(this._myScreen, this._player)
-            const eastRoom = new Room(this._myScreen, this._player)
-            const southRoom = new Room(this._myScreen, this._player)
-            const westRoom = new Room(this._myScreen, this._player)
-    
-            centerRoom.pairWithRoom(Direction.Up, northRoom)
-            centerRoom.pairWithRoom(Direction.Down, southRoom)
-            centerRoom.pairWithRoom(Direction.Left, westRoom)
-            centerRoom.pairWithRoom(Direction.Right, eastRoom)
-    
-            this._rooms.push(centerRoom, northRoom, eastRoom, southRoom, westRoom)
-        }
-
+        // Hook into events
         const eventTarget = document.getElementById('eventTarget')
         eventTarget.addEventListener('onPlayerDeath', (e: CustomEvent) => {
-            this.entityDied(e.detail)
+            this.entityDied(e.detail as Entity)
         })
         eventTarget.addEventListener('onEnemyDeath', (e: CustomEvent) => {
-            this.entityDied(e.detail)
+            this.entityDied(e.detail as Entity)
         })
         eventTarget.addEventListener('onRoomTransitionTriggered', (e: CustomEvent) => {
             if (this._gameState === GameState.RoomTransition) return
-            this.startTransition(e.detail)
+            this.startTransition(e.detail as IRoom)
         })
 
-        this._respondsToInput.push(this._player)
+        // Set initial room to spawn in
         this._activeRoom = 0
+
+        // Activate doors in the spawn room
         const doors = this._rooms[this._activeRoom].getDoors()
         doors.forEach(d => this._respondsToInput.push(d))
-
-        this._myScreen.clearScreen()
     }
+
+    // ----------------------------------------
+    //              Update Helpers
+    // ----------------------------------------
 
     public updateTick(time: number): boolean {
         if (this._gameState === GameState.GameOver) {
@@ -372,6 +305,10 @@ export class Game {
         this._player.getWeapon().checkForCollisionsWith(concerns.weaponConcerns)
     }
 
+    // ----------------------------------------
+    //              Room Transition Helpers
+    // ----------------------------------------
+
     private startTransition(targetRoom: IRoom): void {
         this._gameState = GameState.RoomTransition
         this._roomTransitionStart = Date.now()
@@ -459,5 +396,71 @@ export class Game {
         this._respondsToInput.push(this._player)
         const doors = this._rooms[this._activeRoom].getDoors()
         doors.forEach(d => this._respondsToInput.push(d))
+    }
+
+    // ----------------------------------------
+    //              Load Game Helpers
+    // ----------------------------------------
+    private loadLevel(): void {
+        const loadedLevel = LevelLoader.loadLevel()
+        const roomMap = new Map<string, IRoom>()
+
+        loadedLevel.rooms.forEach(room => {
+            const enemies: IEnemy[] = []
+            if(room.enemies) {
+                room.enemies.forEach(enemy => {
+                    if(enemy.enemyState === "Moving") {
+                        enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.Moving))
+                    }
+                    else if(enemy.enemyState === "TargetDummy") {
+                        enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.TargetDummy))
+                    }
+                })
+            }
+
+            const texts: IText[] = []
+            if(room.text) {
+                room.text.forEach(text => {
+                    texts.push({
+                        location: text.location,
+                        value: text.value,
+                        size: text.size
+                    })
+                })
+            }
+
+            const newRoom = new Room(this._myScreen, this._player)
+            enemies.forEach(enemy => {
+                const sword = new EnemySword(this._myScreen)
+                sword.attachToCharacter(enemy)
+                newRoom.addEnemyToRoom(enemy)
+            })
+            texts.forEach(text => {
+                newRoom.addTextToRoom(text)
+            })
+            roomMap.set(room.name, newRoom)
+        })
+
+        loadedLevel.rooms.forEach(room => {
+            const currentRoom = roomMap.get(room.name)
+            room.doors.forEach(d => {
+                const targetRoom = roomMap.get(d.toRoom)
+                let direction: Direction
+                if(d.direction === "Up") {
+                    direction = Direction.Up
+                }
+                else if(d.direction === "Right") {
+                    direction = Direction.Right
+                }
+                else if(d.direction === "Down") {
+                    direction = Direction.Down
+                }
+                else {
+                    direction = Direction.Left
+                }
+                currentRoom.pairWithRoom(direction, targetRoom, d.open)
+            })
+            this._rooms.push(currentRoom)
+        })
     }
 }
