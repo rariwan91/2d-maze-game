@@ -1,8 +1,9 @@
-import { IDoor, IEnemy, IPlayer, IRoomTransition, RoomState } from '.'
 import { Direction, IUpdatable } from '../'
+import { IDoor, IEnemy, IPlayer, IRoomTransition, RoomState } from '.'
 import { IDrawable, IPoint, ISize } from '../../gui'
-import { IHasCollisions } from '../collision'
+
 import { Entity } from './entity'
+import { IHasCollisions } from '../collision'
 
 export interface IRoom extends IDrawable, IUpdatable, IHasCollisions {
     getLocation(): IPoint

@@ -1,12 +1,13 @@
-import { Door, Enemy, IPlayer, PlayerState, Room } from '.'
 import { Direction, IMyScreen } from '..'
-import { Config } from '../../config'
+import { Door, Enemy, IPlayer, PlayerState, Room } from '.'
 import { IPoint, Keycode } from '../../gui'
-import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../../helpers'
-import { ICollidable } from '../collision'
-import { CircleCollision } from '../collision/circleCollision'
-import { Entity } from './entity'
 import { IWeapon, Weapon, WeaponState } from './weapons'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../../helpers'
+
+import { CircleCollision } from '../collision/circleCollision'
+import { Config } from '../../config'
+import { Entity } from './entity'
+import { ICollidable } from '../collision'
 
 export class Player extends Entity implements IPlayer {
     private _location: IPoint
@@ -86,9 +87,9 @@ export class Player extends Entity implements IPlayer {
         const collidingEntities: Entity[] = []
         collidingShapes.forEach(collidable => {
             const entity = collidable.getEntity()
-            if (!collidingEntities.includes(entity)) {
+            if (!collidingEntities.includes(entity)) 
                 collidingEntities.push(entity)
-            }
+            
         })
         this._entitiesCollidingWithMe = collidingEntities
     }
@@ -110,28 +111,28 @@ export class Player extends Entity implements IPlayer {
                     this._state = PlayerState.InvincibleDueToDamage
                 }
             }
-            else if(entity instanceof Weapon) {
-                if (entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) {
+            else if(entity instanceof Weapon) 
+                if (entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) 
                     if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
                         this.takeDamage(10)
                         this._lastTookDamage = Date.now()
                         this._state = PlayerState.InvincibleDueToDamage
                     }
-                }
-            }
+                
+            
         })
 
-        if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+        if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) 
             this._state = PlayerState.Normal
-        }
+        
 
         this.updateDirection()
         this.calculateLocation(deltaTime)
         this._collisionCircle.setLocation(this._location)
         this.draw()
-        if (this._weapon) {
+        if (this._weapon) 
             this._weapon.update(deltaTime)
-        }
+        
     }
 
     // ----------------------------------------
@@ -139,38 +140,38 @@ export class Player extends Entity implements IPlayer {
     // ----------------------------------------
 
     public keyPressed(keyCode: Keycode): void {
-        if (keyCode === Keycode.Up) {
+        if (keyCode === Keycode.Up) 
             this._upPressed = true
-        }
-        else if (keyCode === Keycode.Right) {
+        
+        else if (keyCode === Keycode.Right) 
             this._rightPressed = true
-        }
-        else if (keyCode === Keycode.Down) {
+        
+        else if (keyCode === Keycode.Down) 
             this._downPressed = true
-        }
-        else if (keyCode === Keycode.Left) {
+        
+        else if (keyCode === Keycode.Left) 
             this._leftPressed = true
-        }
-        else if (keyCode === Keycode.SPACE) {
-            if (this._weapon) {
+        
+        else if (keyCode === Keycode.SPACE) 
+            if (this._weapon) 
                 this._weapon.attack()
-            }
-        }
+            
+        
     }
 
     public keyReleased(keyCode: Keycode): void {
-        if (keyCode === Keycode.Up) {
+        if (keyCode === Keycode.Up) 
             this._upPressed = false
-        }
-        else if (keyCode === Keycode.Right) {
+        
+        else if (keyCode === Keycode.Right) 
             this._rightPressed = false
-        }
-        else if (keyCode === Keycode.Down) {
+        
+        else if (keyCode === Keycode.Down) 
             this._downPressed = false
-        }
-        else if (keyCode === Keycode.Left) {
+        
+        else if (keyCode === Keycode.Left) 
             this._leftPressed = false
-        }
+        
     }
 
     // ----------------------------------------
@@ -180,14 +181,14 @@ export class Player extends Entity implements IPlayer {
     public draw(): void {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, Config.Players.MainColor, Config.Players.SecondaryColor)
 
-        if (Config.Players.ShowCollisionBoxes) {
-            if (this._state === PlayerState.InvincibleDueToDamage) {
+        if (Config.Players.ShowCollisionBoxes) 
+            if (this._state === PlayerState.InvincibleDueToDamage) 
                 drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), Config.Players.InvincibleColor, Config.Players.InvincibleColor, this.isColliding())
-            }
-            else {
+            
+            else 
                 drawCollision(this._myScreen, this._collisionCircle.getLocation(), this._collisionCircle.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isColliding())
-            }
-        }
+            
+        
 
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
@@ -225,9 +226,9 @@ export class Player extends Entity implements IPlayer {
 
     private updateDirection(): void {
         const newDirection = this.getDirection()
-        if (newDirection !== Direction.None) {
+        if (newDirection !== Direction.None) 
             this._direction = newDirection
-        }
+        
     }
 
     private calculateLocation(deltaTime: number): void {

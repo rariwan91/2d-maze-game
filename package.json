@@ -10,7 +10,8 @@
     "tests": "mocha -r ts-node/register tests/**/*.test.ts",
     "e-build": "tsc --build",
     "e-start": "npm run elec-build && electron ./dist/src/electronMain.js",
-    "lint": "eslint .eslintrc.json",
+    "lint": "eslint -c .eslintrc.json src",
+    "lint-fix": "eslint -c .eslintrc.json src --fix",
     "package": "npm run e-build && electron-forge package",
     "make": "npm run e-build && electron-forge make"
   },

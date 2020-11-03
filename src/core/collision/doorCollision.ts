@@ -1,5 +1,6 @@
-import { BoxCollision } from './boxCollision'
 import { IPoint, ISize } from '../../gui'
+
+import { BoxCollision } from './boxCollision'
 import { Entity } from '../entities/entity'
 
 export class DoorCollision extends BoxCollision {

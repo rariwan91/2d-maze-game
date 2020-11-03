@@ -1,5 +1,5 @@
-import { Direction, IMyScreen } from '../core'
 import { Colors, IColor, IPoint } from '../gui'
+import { Direction, IMyScreen } from '../core'
 
 export function drawCharacter(screen: IMyScreen, location: IPoint, radius: number, direction: Direction, mainColor: IColor, secondaryColor: IColor): void {
     // draw character circle
@@ -44,7 +44,7 @@ export function drawCharacter(screen: IMyScreen, location: IPoint, radius: numbe
 }
 
 export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, collisionRadius: number, yesColor: IColor, noColor: IColor, isColliding: boolean): void {
-    if (isColliding) {
+    if (isColliding) 
         // screen.drawRect({
         //     x: collisionLocation.x - collisionRadius,
         //     y: collisionLocation.y - collisionRadius
@@ -53,8 +53,8 @@ export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, coll
         //     height: 2 * collisionRadius
         // }, yesColor)
         screen.drawArc(collisionLocation, collisionRadius, 0, 360, yesColor)
-    }
-    else {
+    
+    else 
         // screen.drawRect({
         //     x: collisionLocation.x - collisionRadius,
         //     y: collisionLocation.y - collisionRadius
@@ -63,7 +63,7 @@ export function drawCollision(screen: IMyScreen, collisionLocation: IPoint, coll
         //     height: 2 * collisionRadius
         // }, noColor)
         screen.drawArc(collisionLocation, collisionRadius, 0, 360, noColor)
-    }
+    
 }
 
 export function drawHealthBar(screen: IMyScreen, characterLocation: IPoint, characterRadius: number, characterMaxHealth: number, characterCurrentHealth: number): void {
@@ -75,7 +75,7 @@ export function drawHealthBar(screen: IMyScreen, characterLocation: IPoint, char
         height: 10
     }, Colors.Black, Colors.Red)
 
-    if (characterCurrentHealth !== 0) {
+    if (characterCurrentHealth !== 0) 
         screen.drawRect({
             x: characterLocation.x - characterRadius + 2,
             y: characterLocation.y - characterRadius - 20 + 2
@@ -83,5 +83,5 @@ export function drawHealthBar(screen: IMyScreen, characterLocation: IPoint, char
             width: (2 * characterRadius - 4) * (characterCurrentHealth / characterMaxHealth),
             height: 10 - 4
         }, Colors.Green, Colors.Green)
-    }
+    
 }

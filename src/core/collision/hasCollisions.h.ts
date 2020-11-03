@@ -1,4 +1,4 @@
-import { ICollidable } from '.';
+import { ICollidable } from '.'
 
 export interface IHasCollisions {
     getCollisionShapes(): ICollidable[]

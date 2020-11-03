@@ -1,6 +1,7 @@
-import { IMyScreen } from '.'
-import { Config } from '../config'
 import { IColor, IPoint, ISize } from '../gui'
+
+import { Config } from '../config'
+import { IMyScreen } from '.'
 
 export class MyScreen implements IMyScreen {
     private readonly _canvas: HTMLCanvasElement
@@ -8,7 +9,7 @@ export class MyScreen implements IMyScreen {
 
     constructor(canvas: HTMLCanvasElement) {
         this._canvas = canvas
-        const context = canvas.getContext("2d")
+        const context = canvas.getContext('2d')
         if (context) {
             this._context = context
             this._context.lineWidth = 2
@@ -49,9 +50,9 @@ export class MyScreen implements IMyScreen {
     public drawArc(point: IPoint, radius: number, startAngleDegrees: number, endAngleDegrees: number, borderColor: IColor, fillColor?: IColor): void {
         this._context.save()
         this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
-        if (fillColor) {
+        if (fillColor) 
             this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
-        }
+        
         this._context.beginPath()
         if (fillColor) {
             this._context.moveTo(point.x, point.y)

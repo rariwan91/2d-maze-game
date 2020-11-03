@@ -1,10 +1,11 @@
-import { IRoom, IRoomTransition, Player } from '.'
-import { IMyScreen } from '../'
-import { Config } from '../../config'
 import { IPoint, ISize } from '../../gui'
-import { ICollidable } from '../collision'
+import { IRoom, IRoomTransition, Player } from '.'
+
 import { BoxCollision } from '../collision/boxCollision'
+import { Config } from '../../config'
 import { Entity } from './entity'
+import { ICollidable } from '../collision'
+import { IMyScreen } from '..'
 
 export class RoomTransition extends Entity implements IRoomTransition {
     private _location: IPoint
@@ -78,9 +79,9 @@ export class RoomTransition extends Entity implements IRoomTransition {
             const result = collidable.isCollidingWithShapes(this.getCollisionShapes())
             if (!result || result.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entities.includes(entity) && entity !== this as Entity) {
+                if (!entities.includes(entity) && entity !== this as Entity) 
                     entities.push(entity)
-                }
+                
             }
         })
 
@@ -94,9 +95,9 @@ export class RoomTransition extends Entity implements IRoomTransition {
     private isColliding(): boolean {
         let result = false
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Player) {
+            if (entity instanceof Player) 
                 result = true
-            }
+            
         })
         return result
     }

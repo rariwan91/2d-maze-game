@@ -1,10 +1,11 @@
-import { IDoor, IRoom } from '.'
-import { IMyScreen } from '../'
-import { Config } from '../../config'
-import { IPoint, ISize, Keycode } from '../../gui'
 import { DoorCollision, ICollidable } from '../collision'
+import { IDoor, IRoom } from '.'
+import { IPoint, ISize, Keycode } from '../../gui'
+
 import { BoxCollision } from '../collision/boxCollision'
+import { Config } from '../../config'
 import { Entity } from './entity'
+import { IMyScreen } from '..'
 import { Player } from './player'
 
 export class Door extends Entity implements IDoor {
@@ -112,15 +113,15 @@ export class Door extends Entity implements IDoor {
             const isActivating = collidable.isCollidingWithShapes(this.getActivationShapes())
             if (!isColliding || isColliding.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entitiesCollidingWithMe.includes(entity) && entity !== this as Entity) {
+                if (!entitiesCollidingWithMe.includes(entity) && entity !== this as Entity) 
                     entitiesCollidingWithMe.push(entity)
-                }
+                
             }
             if (!isActivating || isActivating.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entitiesActivatingMe.includes(entity) && entity !== this as Entity) {
+                if (!entitiesActivatingMe.includes(entity) && entity !== this as Entity) 
                     entitiesActivatingMe.push(entity)
-                }
+                
             }
         })
 
@@ -135,12 +136,12 @@ export class Door extends Entity implements IDoor {
     public keyPressed(keyCode: Keycode): void {
         if (!this.isActivated()) return
 
-        if (keyCode === Keycode.E) {
+        if (keyCode === Keycode.E) 
             if (!this._locked) {
                 this._opened = true
                 this._room.doorOpened(this)
             }
-        }
+        
     }
 
     public keyReleased(keyCode: Keycode): void {
@@ -154,9 +155,9 @@ export class Door extends Entity implements IDoor {
     private isColliding(): boolean {
         let result = false
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Player) {
+            if (entity instanceof Player) 
                 result = true
-            }
+            
         })
         return result
     }
@@ -164,9 +165,9 @@ export class Door extends Entity implements IDoor {
     private isActivated(): boolean {
         let result = false
         this._entitiesActivatingMe.forEach(entity => {
-            if (entity instanceof Player) {
+            if (entity instanceof Player) 
                 result = true
-            }
+            
         })
         return result
     }

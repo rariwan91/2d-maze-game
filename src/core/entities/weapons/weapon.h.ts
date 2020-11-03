@@ -1,9 +1,9 @@
-import { WeaponState } from '.'
+import { IDrawable } from '../../../gui'
+import { IEnemy } from '../enemy.h'
+import { IHasCollisions } from '../../collision'
 import { IPlayer } from '..'
 import { IUpdatable } from '../..'
-import { IDrawable } from '../../../gui'
-import { IHasCollisions } from '../../collision'
-import { IEnemy } from '../enemy.h'
+import { WeaponState } from '.'
 
 export interface IWeapon extends IDrawable, IUpdatable, IHasCollisions {
     attack(): void

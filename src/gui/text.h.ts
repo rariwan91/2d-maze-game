@@ -1,4 +1,4 @@
-import { IPoint } from ".";
+import { IPoint } from '.'
 
 export interface IText {
     value: string

@@ -1,5 +1,6 @@
 import { Direction, IHasHealth, IRespondsToInput, IUpdatable } from '..'
 import { IDrawable, IPoint } from '../../gui'
+
 import { IHasCollisions } from '../collision'
 import { IWeapon } from './weapons'
 

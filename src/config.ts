@@ -1,5 +1,5 @@
-import { EnemyState } from './core/entities'
 import { Colors } from './gui'
+import { EnemyState } from './core/entities'
 
 export const Config = {
     Players: {

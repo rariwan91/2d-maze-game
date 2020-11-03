@@ -1,6 +1,7 @@
 import { Direction, IHasAI, IHasHealth, IUpdatable } from '../'
 import { IDrawable, IPoint } from '../../gui'
 import { IHasActivations, IHasCollisions } from '../collision'
+
 import { IRoom } from './room.h'
 import { IWeapon } from './weapons/weapon.h'
 

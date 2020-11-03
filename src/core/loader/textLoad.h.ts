@@ -1,4 +1,4 @@
-import { IPoint } from "../../gui";
+import { IPoint } from '../../gui'
 
 export interface TextLoad {
     value: string

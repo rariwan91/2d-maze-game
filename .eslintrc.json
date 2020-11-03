@@ -1,5 +1,8 @@
 {
     "env": {
+        "node": true,
+        "mocha": true,
+        "commonjs": true,
         "browser": true,
         "es2021": true
     },
@@ -17,5 +20,10 @@
         "import"
     ],
     "rules": {
+        "curly": [ "error", "multi" ],
+        "sort-imports": "error",
+        "semi": [ "error", "never" ],
+        "quotes": [ "error", "single" ],
+        "no-unused-vars": "error"
     }
 }

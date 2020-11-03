@@ -1,6 +1,6 @@
 import { CircleCollision } from './circleCollision'
-import { IPoint } from '../../gui'
 import { Entity } from '../entities/entity'
+import { IPoint } from '../../gui'
 
 export class EnemyCollision extends CircleCollision {
     constructor(location: IPoint, radius: number, entity: Entity) {

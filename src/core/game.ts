@@ -1,11 +1,12 @@
 import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
-import { IPoint, IText, Keycode } from '../gui'
-import { ICollidable } from './collision'
 import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, Player, Room, RoomState } from './entities'
-import { Entity } from './entities/entity'
+import { IPoint, IText, Keycode } from '../gui'
+
 import { EnemySword } from './entities/weapons/enemySword'
-import { Sword } from './entities/weapons/sword'
+import { Entity } from './entities/entity'
+import { ICollidable } from './collision'
 import { LevelLoader } from './loader'
+import { Sword } from './entities/weapons/sword'
 
 export class Game {
     private readonly _myScreen: IMyScreen
@@ -68,15 +69,15 @@ export class Game {
             alert('Poor Man\'s Game Over')
             return false
         }
-        else if (this._gameState === GameState.RoomTransition) {
-            if (((Date.now() - this._roomTransitionStart) / 1000) > this._transitionLength) {
+        else if (this._gameState === GameState.RoomTransition) 
+            if (((Date.now() - this._roomTransitionStart) / 1000) > this._transitionLength) 
                 this.endTransition()
-            }
+            
             else {
                 this._myScreen.clearScreen()
                 this.updateTransition()
             }
-        }
+        
         else if (this._gameState === GameState.Playing) {
             this._myScreen.clearScreen()
             this.updateEntities(time)
@@ -162,12 +163,12 @@ export class Game {
     // ----------------------------------------
 
     private entityDied(entity: Entity): void {
-        if (entity instanceof Player) {
+        if (entity instanceof Player) 
             this._gameState = GameState.GameOver
-        }
-        else if (entity instanceof Enemy) {
+        
+        else if (entity instanceof Enemy) 
             this._rooms[this._activeRoom].enemyDied(entity)
-        }
+        
     }
 
     // ----------------------------------------
@@ -407,19 +408,19 @@ export class Game {
 
         loadedLevel.rooms.forEach(room => {
             const enemies: IEnemy[] = []
-            if(room.enemies) {
+            if(room.enemies) 
                 room.enemies.forEach(enemy => {
-                    if(enemy.enemyState === "Moving") {
+                    if(enemy.enemyState === 'Moving') 
                         enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.Moving))
-                    }
-                    else if(enemy.enemyState === "TargetDummy") {
+                    
+                    else if(enemy.enemyState === 'TargetDummy') 
                         enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.TargetDummy))
-                    }
+                    
                 })
-            }
+            
 
             const texts: IText[] = []
-            if(room.text) {
+            if(room.text) 
                 room.text.forEach(text => {
                     texts.push({
                         location: text.location,
@@ -427,7 +428,7 @@ export class Game {
                         size: text.size
                     })
                 })
-            }
+            
 
             const newRoom = new Room(this._myScreen, this._player)
             enemies.forEach(enemy => {
@@ -446,18 +447,18 @@ export class Game {
             room.doors.forEach(d => {
                 const targetRoom = roomMap.get(d.toRoom)
                 let direction: Direction
-                if(d.direction === "Up") {
+                if(d.direction === 'Up') 
                     direction = Direction.Up
-                }
-                else if(d.direction === "Right") {
+                
+                else if(d.direction === 'Right') 
                     direction = Direction.Right
-                }
-                else if(d.direction === "Down") {
+                
+                else if(d.direction === 'Down') 
                     direction = Direction.Down
-                }
-                else {
+                
+                else 
                     direction = Direction.Left
-                }
+                
                 currentRoom.pairWithRoom(direction, targetRoom, d.open)
             })
             this._rooms.push(currentRoom)
