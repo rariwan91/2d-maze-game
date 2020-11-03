@@ -2,7 +2,7 @@ import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
 import { IPoint, IText, Keycode } from '../gui'
 import { ICollidable } from './collision'
 import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
-import { Claw } from './entities/claw'
+import { EnemySword } from './entities/enemySword'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
 import { LevelLoader } from './loader'
@@ -65,9 +65,9 @@ export class Game {
 
                 const newRoom = new Room(this._myScreen, this._player)
                 enemies.forEach(enemy => {
-                    const claw = new Claw(this._myScreen)
-                    this._enemyWeapons.push(claw)
-                    claw.attachToCharacter(enemy)
+                    const weapon = new EnemySword(this._myScreen)
+                    this._enemyWeapons.push(weapon)
+                    weapon.attachToCharacter(enemy)
                     newRoom.addEnemyToRoom(enemy)
                 })
                 texts.forEach(text => {

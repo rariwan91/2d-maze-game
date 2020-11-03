@@ -45,9 +45,9 @@ export class Sword extends Weapon {
         return this._state
     }
 
-    public attachToCharacter(charater: IPlayer): void {
-        charater.equipWeapon(this)
-        this._player = charater
+    public attachToCharacter(character: IPlayer): void {
+        character.equipWeapon(this)
+        this._player = character
         this.initializeSwordHitboxes()
     }
 
