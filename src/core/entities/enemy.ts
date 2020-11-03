@@ -38,7 +38,7 @@ export class Enemy extends Entity implements IEnemy {
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
-        this._activationShape = new CircleCollision(location, this._radius + 100, this)
+        this._activationShape = new CircleCollision(location, this._radius + 55, this)
         this._state = initialState
         this._oldState = initialState
     }
