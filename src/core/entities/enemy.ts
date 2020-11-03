@@ -4,6 +4,7 @@ import { Config } from '../../config'
 import { IPoint } from '../../gui'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
 import { EnemyCollision, ICollidable } from '../collision'
+import { CircleCollision } from '../collision/circleCollision'
 import { Entity } from './entity'
 import { IRoom } from './room.h'
 import { RoomState } from './roomState.enum'
@@ -16,6 +17,7 @@ export class Enemy extends Entity implements IEnemy {
     private _direction = Direction.Down
     private readonly _myScreen: IMyScreen
     private _collisionShape: EnemyCollision
+    private _activationShape: CircleCollision
     private readonly _movementSpeed = 50
     private readonly _knockbackSpeed = 200
     private _maxHealth = 100
@@ -24,6 +26,7 @@ export class Enemy extends Entity implements IEnemy {
     private _oldState = EnemyState.TargetDummy
     private _knockbackAngle: number
     private _entitiesCollidingWithMe: Entity[] = []
+    private _entitiesActivatingMe: Entity[] = []
     private _shapesCollidingWithMe: ICollidable[] = []
     private _lastTookDamage: number
     private _room: IRoom
@@ -35,6 +38,7 @@ export class Enemy extends Entity implements IEnemy {
         this._oldLocation = location
         this._myScreen = myScreen
         this._collisionShape = new EnemyCollision(location, this._radius + 3, this)
+        this._activationShape = new CircleCollision(location, this._radius + 100, this)
         this._state = initialState
         this._oldState = initialState
     }
@@ -49,6 +53,7 @@ export class Enemy extends Entity implements IEnemy {
     public setLocation(newLocation: IPoint): void {
         this._location = newLocation
         this._collisionShape.setLocation(newLocation)
+        this._activationShape.setLocation(newLocation)
     }
 
     public getOldLocation(): IPoint {
@@ -98,6 +103,7 @@ export class Enemy extends Entity implements IEnemy {
             else {
                 drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isColliding())
             }
+            drawCollision(this._myScreen, this._activationShape.getLocation(), this._activationShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isActivating())
         }
 
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
@@ -157,11 +163,19 @@ export class Enemy extends Entity implements IEnemy {
             this._collisionShape.setLocation(this._location)
         }
 
+        if(this._entitiesActivatingMe.length > 0) {
+            if(this._weapon) {
+                this._weapon.attack()
+            }
+        }
+
+        this._activationShape.setLocation(this._location)
+
+        this.draw()
+
         if(this._weapon) {
             this._weapon.update(deltaTime)
         }
-
-        this.draw()
     }
 
     // ----------------------------------------
@@ -183,6 +197,26 @@ export class Enemy extends Entity implements IEnemy {
         })
         this._entitiesCollidingWithMe = collidingEntities
         this._shapesCollidingWithMe = collidingShapes
+    }
+
+    // ----------------------------------------
+    //              IHasActivations
+    // ----------------------------------------
+
+    public getActivationShapes(): ICollidable[] {
+        return [this._activationShape]
+    }
+
+    public checkForActivationsWith(shapes: ICollidable[]): void {
+        const activatingShapes = this._activationShape.isCollidingWithShapes(shapes)
+        const activatingEntities: Entity[] = []
+        activatingShapes.forEach(shape => {
+            const entity = shape.getEntity()
+            if (!activatingEntities.includes(entity) && entity instanceof Player) {
+                activatingEntities.push(entity)
+            }
+        })
+        this._entitiesActivatingMe = activatingEntities
     }
 
     // ----------------------------------------
@@ -327,6 +361,10 @@ export class Enemy extends Entity implements IEnemy {
 
     private isColliding(): boolean {
         return this._entitiesCollidingWithMe.length > 0
+    }
+
+    private isActivating(): boolean {
+        return this._entitiesActivatingMe.length > 0
     }
 
     private nudge(me: IEnemy, them: IEnemy[]): void {

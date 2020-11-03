@@ -1,7 +1,6 @@
-import { IPoint } from "../../gui";
-import { EnemyState } from "../entities";
+import { IPoint } from "../../gui"
 
 export interface EnemyLoad {
     location: IPoint
-    enemyState: EnemyState
+    enemyState: string
 }

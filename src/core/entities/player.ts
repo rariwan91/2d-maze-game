@@ -1,4 +1,4 @@
-import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room } from '.'
+import { Door, Enemy, IPlayer, IWeapon, PlayerState, Room, WeaponState } from '.'
 import { Direction, IMyScreen } from '..'
 import { Config } from '../../config'
 import { IPoint, Keycode } from '../../gui'
@@ -6,6 +6,7 @@ import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, 
 import { ICollidable } from '../collision'
 import { CircleCollision } from '../collision/circleCollision'
 import { Entity } from './entity'
+import { Weapon } from './weapon'
 
 export class Player extends Entity implements IPlayer {
     private _location: IPoint
@@ -103,6 +104,15 @@ export class Player extends Entity implements IPlayer {
                     this.takeDamage(10)
                     this._lastTookDamage = Date.now()
                     this._state = PlayerState.InvincibleDueToDamage
+                }
+            }
+            else if(entity instanceof Weapon) {
+                if (entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) {
+                    if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {
+                        this.takeDamage(10)
+                        this._lastTookDamage = Date.now()
+                        this._state = PlayerState.InvincibleDueToDamage
+                    }
                 }
             }
         })

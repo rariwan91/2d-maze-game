@@ -1,10 +1,10 @@
 import { Direction, IHasAI, IHasHealth, IUpdatable } from '../'
 import { IDrawable, IPoint } from '../../gui'
-import { IHasCollisions } from '../collision'
+import { IHasActivations, IHasCollisions } from '../collision'
 import { IRoom } from './room.h'
 import { IWeapon } from './weapon.h'
 
-export interface IEnemy extends IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth {
+export interface IEnemy extends IDrawable, IUpdatable, IHasCollisions, IHasAI, IHasHealth, IHasActivations {
     getLocation(): IPoint
     setLocation(newLocation: IPoint): void
     getOldLocation(): IPoint

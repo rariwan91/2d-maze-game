@@ -1,7 +1,8 @@
 import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
 import { IPoint, IText, Keycode } from '../gui'
 import { ICollidable } from './collision'
-import { Enemy, IEnemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
+import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWeapon, Player, Room, RoomState } from './entities'
+import { Claw } from './entities/claw'
 import { Entity } from './entities/entity'
 import { Sword } from './entities/sword'
 import { LevelLoader } from './loader'
@@ -12,6 +13,7 @@ export class Game {
     private _activeRoom: number
     private readonly _player: IPlayer
     private readonly _weapons: IWeapon[] = []
+    private readonly _enemyWeapons: IWeapon[] = []
     private _respondsToInput: IRespondsToInput[] = []
     private _lastTime = 0
     private _gameState = GameState.Playing
@@ -41,7 +43,12 @@ export class Game {
                 const enemies: IEnemy[] = []
                 if(room.enemies) {
                     room.enemies.forEach(enemy => {
-                        enemies.push(new Enemy(enemy.location, this._myScreen, enemy.enemyState))
+                        if(enemy.enemyState === "Moving") {
+                            enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.Moving))
+                        }
+                        else if(enemy.enemyState === "TargetDummy") {
+                            enemies.push(new Enemy(enemy.location, this._myScreen, EnemyState.TargetDummy))
+                        }
                     })
                 }
 
@@ -58,6 +65,9 @@ export class Game {
 
                 const newRoom = new Room(this._myScreen, this._player)
                 enemies.forEach(enemy => {
+                    const claw = new Claw(this._myScreen)
+                    this._enemyWeapons.push(claw)
+                    claw.attachToCharacter(enemy)
                     newRoom.addEnemyToRoom(enemy)
                 })
                 texts.forEach(text => {
@@ -228,6 +238,7 @@ export class Game {
         roomTransitionShapes: ICollidable[],
         playerShapes: ICollidable[],
         enemyShapes: ICollidable[],
+        enemyWeaponShapes: ICollidable[],
         weaponShapes: ICollidable[]
     } {
         const roomShapes = this._rooms[this._activeRoom].getCollisionShapes()
@@ -253,8 +264,20 @@ export class Game {
             const enemyCollisions = enemy.getCollisionShapes()
             enemyCollisions.forEach(collision => {
                 enemyShapes.push(collision)
-            });
-        });
+            })
+            const enemyActivations = enemy.getActivationShapes()
+            enemyActivations.forEach(activation => {
+                enemyActivations.push(activation)
+            })
+        })
+
+        const enemyWeaponShapes: ICollidable[] = []
+        this._enemyWeapons.forEach(weapon => {
+            const weaponCollisions = weapon.getCollisionShapes()
+            weaponCollisions.forEach(collision => {
+                enemyWeaponShapes.push(collision)
+            })
+        })
 
         const weaponShapes: ICollidable[] = []
         this._weapons.forEach(weapon => {
@@ -270,6 +293,7 @@ export class Game {
             roomTransitionShapes: roomTransitionShapes,
             playerShapes: playerShapes,
             enemyShapes: enemyShapes,
+            enemyWeaponShapes: enemyWeaponShapes,
             weaponShapes: weaponShapes
         }
     }
@@ -281,6 +305,7 @@ export class Game {
             roomTransitionShapes: ICollidable[],
             playerShapes: ICollidable[],
             enemyShapes: ICollidable[],
+            enemyWeaponShapes: ICollidable[],
             weaponShapes: ICollidable[]
         }
     ): {
@@ -289,6 +314,8 @@ export class Game {
         roomTransitionConcerns: ICollidable[],
         playerConcerns: ICollidable[],
         enemyConcerns: ICollidable[],
+        enemyActivationConcerns: ICollidable[],
+        enemyWeaponConcerns: ICollidable[],
         weaponConcerns: ICollidable[]
     } {
         return {
@@ -298,10 +325,14 @@ export class Game {
             doorConcerns: shapes.playerShapes.concat(shapes.enemyShapes),
             // Room transitions care about players
             roomTransitionConcerns: shapes.playerShapes,
-            // Players care about rooms and enemies
-            playerConcerns: shapes.roomShapes.concat(shapes.enemyShapes).concat(shapes.doorShapes).concat(shapes.roomTransitionShapes),
+            // Players care about rooms, enemies, and enemy weapons
+            playerConcerns: shapes.roomShapes.concat(shapes.enemyShapes).concat(shapes.doorShapes).concat(shapes.roomTransitionShapes).concat(shapes.enemyWeaponShapes),
             // Enemies care about rooms, players, weapons, and other enemies
             enemyConcerns: shapes.roomShapes.concat(shapes.playerShapes).concat(shapes.weaponShapes).concat(shapes.enemyShapes).concat(shapes.doorShapes),
+            // Enemy activations care about players
+            enemyActivationConcerns: shapes.playerShapes,
+            // Enemy weapons care about players
+            enemyWeaponConcerns: shapes.playerShapes,
             // Weapons care about enemies
             weaponConcerns: shapes.enemyShapes
         }
@@ -314,6 +345,8 @@ export class Game {
             roomTransitionConcerns: ICollidable[],
             playerConcerns: ICollidable[],
             enemyConcerns: ICollidable[],
+            enemyActivationConcerns: ICollidable[],
+            enemyWeaponConcerns: ICollidable[],
             weaponConcerns: ICollidable[]
         }
     ): void {
@@ -325,7 +358,11 @@ export class Game {
         doors.forEach(d => d.checkForCollisionsWith(concerns.doorConcerns))
         roomTransitions.forEach(rt => rt.checkForCollisionsWith(concerns.roomTransitionConcerns))
         this._player.checkForCollisionsWith(concerns.playerConcerns)
-        enemies.forEach(enemy => enemy.checkForCollisionsWith(concerns.enemyConcerns))
+        enemies.forEach(enemy => {
+            enemy.checkForCollisionsWith(concerns.enemyConcerns)
+            enemy.checkForActivationsWith(concerns.enemyActivationConcerns)
+        })
+        this._enemyWeapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.enemyWeaponConcerns))
         this._weapons.forEach(weapon => weapon.checkForCollisionsWith(concerns.weaponConcerns))
     }
 

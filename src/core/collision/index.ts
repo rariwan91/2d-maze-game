@@ -1,6 +1,7 @@
 export * from './collidable.h'
 export * from './doorCollision'
 export * from './enemyCollision'
+export * from './hasActivations.h'
 export * from './hasCollisions.h'
 export * from './playerWeaponCollision'
 export * from './wallCollision'
