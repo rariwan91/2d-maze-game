@@ -5,6 +5,7 @@ import { ICollidable, WallCollision } from '../collision'
 
 import { Config } from '../../config'
 import { Entity } from './entity'
+import { TouchBarOtherItemsProxy } from 'electron'
 import { getVectorDistanceBetween } from '../../helpers'
 
 export class Room extends Entity implements IRoom {
@@ -201,35 +202,35 @@ export class Room extends Entity implements IRoom {
 
     public draw(): void {
         if (this._roomToNorth) {
-            this._myScreen.drawStraightLine(this._location, { x: this._location.x + 0.4 * this._size.width, y: this._location.y }, Config.Rooms.WallColor)
-            this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, Config.Rooms.WallColor, Colors.Gray)
+            this._myScreen.drawRect({ x: this._location.x + 0.6 * this._size.width, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, Config.Rooms.WallColor, Colors.Gray)
         }
         else {
-            this._myScreen.drawStraightLine(this._location, { x: this._location.x + this._size.width, y: this._location.y }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y - 10 }, { width: this._size.width + 20, height: 20 }, Config.Rooms.WallColor, Colors.Gray)
         }
 
         if (this._roomToRight) {
-            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + 0.4 * this._size.height }, Config.Rooms.WallColor)
-            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }, Config.Rooms.WallColor, Colors.Gray)
+            this._myScreen.drawRect({ x: this._location.x + this._size.width - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 }, Config.Rooms.WallColor, Colors.Gray)
         }
         else {
-            this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 }, Config.Rooms.WallColor, Colors.Gray)
         }
 
         if (this._roomToSouth) {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + 0.4 * this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
-            this._myScreen.drawStraightLine({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, Config.Rooms.WallColor, Colors.Gray)
+            this._myScreen.drawRect({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, Config.Rooms.WallColor, Colors.Gray)
         }
         else {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: this._size.width + 20, height: 20 }, Config.Rooms.WallColor, Colors.Gray)
         }
 
         if (this._roomToLeft) {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + 0.4 * this._size.height }, Config.Rooms.WallColor)
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 0.6 * this._size.height }, { x: this._location.x, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }, Config.Rooms.WallColor, Colors.Gray)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 }, Config.Rooms.WallColor, Colors.Gray)
         }
         else {
-            this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y }, { x: this._location.x, y: this._location.y + this._size.height }, Config.Rooms.WallColor)
+            this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 }, Config.Rooms.WallColor, Colors.Gray)
         }
 
         if (this._text) {
@@ -326,49 +327,49 @@ export class Room extends Entity implements IRoom {
         this._walls = []
         if (this._roomToNorth) {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this),
-                new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
+                new WallCollision({ x: this._location.x - 10, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this),
+                new WallCollision({ x: this._location.x + 0.6 * this._size.width, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this)
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 6, width: this._size.width + 6 }, this)
+                new WallCollision({ x: this._location.x - 10, y: this._location.y - 10 }, { width: this._size.width + 20, height: 20 }, this)
             )
         }
 
         if (this._roomToRight) {
             this._walls.push(
-                new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 }, { height: 0.4 * this._size.height + 6, width: 6 }, this),
-                new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
+                new WallCollision({ x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }, this),
+                new WallCollision({ x: this._location.x + this._size.width - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 }, this)
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x + this._size.width - 3, y: this._location.y - 3 }, { height: this._size.height + 6, width: 6 }, this)
+                new WallCollision({ x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 }, this)
             )
         }
 
         if (this._roomToSouth) {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 3, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this),
-                new WallCollision({ x: this._location.x - 3 + 0.6 * this._size.width, y: this._location.y + this._size.height - 3 }, { height: 6, width: 0.4 * this._size.width + 6 }, this)
+                new WallCollision({ x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this),
+                new WallCollision({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this)
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 3, y: this._location.y + this._size.height - 3 }, { height: 6, width: this._size.width + 6 }, this)
+                new WallCollision({ x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: this._size.width + 20, height: 20 }, this)
             )
         }
 
         if (this._roomToLeft) {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: 0.4 * this._size.height + 6, width: 6 }, this),
-                new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 + 0.6 * this._size.height }, { height: 0.4 * this._size.height + 6, width: 6 }, this)
+                new WallCollision({ x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }, this),
+                new WallCollision({ x: this._location.x - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 }, this)
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 3, y: this._location.y - 3 }, { height: this._size.height + 6, width: 6 }, this)
+                new WallCollision({ x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 }, this)
             )
         }
     }
