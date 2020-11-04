@@ -1,8 +1,8 @@
-import * as mocha from 'mocha'
 import * as chai from 'chai'
+import * as mocha from 'mocha'
 
-import { getDirection } from '../src/helpers'
 import { Direction } from '../src/core'
+import { getDirection } from '../src/helpers'
 
 describe('>>> Direction Calculation', () => {
     describe('>>> One Direction', () => {
@@ -11,42 +11,42 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = false
             const downPressed = false
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Up)
         })
-    
+
         it('Should return Right if only Right is pressed', () => {
             const upPressed = false
             const rightPressed = true
             const downPressed = false
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Right)
         })
-    
+
         it('Should return Down if only Down is pressed', () => {
             const upPressed = false
             const rightPressed = false
             const downPressed = true
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Down)
         })
-    
+
         it('Should return Left if only Left is pressed', () => {
             const upPressed = false
             const rightPressed = false
             const downPressed = false
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Left)
         })
     })
@@ -57,9 +57,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = false
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.UpRight)
         })
 
@@ -68,9 +68,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = false
             const downPressed = false
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.UpLeft)
         })
 
@@ -79,9 +79,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = true
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.DownRight)
         })
 
@@ -90,9 +90,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = false
             const downPressed = true
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.DownLeft)
         })
 
@@ -101,9 +101,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = false
             const downPressed = true
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.None)
         })
 
@@ -112,9 +112,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = false
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.None)
         })
     })
@@ -125,9 +125,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = true
             const leftPressed = false
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Right)
         })
 
@@ -136,9 +136,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = true
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Down)
         })
 
@@ -147,9 +147,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = false
             const downPressed = true
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Left)
         })
 
@@ -158,9 +158,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = false
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.Up)
         })
     })
@@ -171,9 +171,9 @@ describe('>>> Direction Calculation', () => {
             const rightPressed = true
             const downPressed = true
             const leftPressed = true
-    
+
             const result = getDirection(upPressed, rightPressed, downPressed, leftPressed)
-    
+
             chai.expect(result).to.equal(Direction.None)
         })
     })

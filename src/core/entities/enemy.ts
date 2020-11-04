@@ -103,12 +103,13 @@ export class Enemy extends Entity implements IEnemy {
         drawCharacter(this._myScreen, this._location, this._radius, this._direction, Config.Enemies.MainColor, Config.Enemies.SecondaryColor)
 
         if (Config.Enemies.ShowCollisionBoxes) {
-            if (this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) 
+            if (this._state === EnemyState.KnockbackFromDamage || this._state === EnemyState.InvincibleDueToDamage) {
                 drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), Config.Enemies.InvincibleColor, Config.Enemies.InvincibleColor, this.isColliding())
-            
-            else 
+            }
+            else {
                 drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isColliding())
-            
+            }
+
             drawCollision(this._myScreen, this._activationShape.getLocation(), this._activationShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isActivating())
         }
 
@@ -120,16 +121,17 @@ export class Enemy extends Entity implements IEnemy {
     // ----------------------------------------
 
     public update(deltaTime: number): void {
-        if(this._room.getRoomState() === RoomState.Transitioning) {
+        if (this._room.getRoomState() === RoomState.Transitioning) {
             this.draw()
             return
         }
 
         const enemiesCollidingWithMe: Enemy[] = []
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Room || entity instanceof Door) 
+            if (entity instanceof Room || entity instanceof Door) {
                 this._location = this._oldLocation
-            
+            }
+
             else if (entity instanceof Weapon) {
                 if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy)) {
                     this.takeDamage(10)
@@ -140,24 +142,22 @@ export class Enemy extends Entity implements IEnemy {
                     const deltaY = myLoc.y - theirLoc.y
 
                     let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
-                    if (deltaX < 0 && deltaY < 0) 
-                        angle = 180 + angle
-                    
-                    else if (deltaX < 0 && deltaY > 0) 
-                        angle = angle - 180
-                    
+                    if (deltaX < 0 && deltaY < 0) { angle = 180 + angle }
+
+                    else if (deltaX < 0 && deltaY > 0) { angle = angle - 180 }
+
 
                     this._oldState = this._state
                     this._state = EnemyState.KnockbackFromDamage
                     this._knockbackAngle = angle
                 }
             }
-            else if (entity instanceof Enemy && entity !== this as Entity) 
+            else if (entity instanceof Enemy && entity !== this as Entity) {
                 enemiesCollidingWithMe.push(entity)
-            
-            else if (entity instanceof Player) 
+            }
+            else if (entity instanceof Player) {
                 this._location = this._oldLocation
-            
+            }
         })
 
         if (enemiesCollidingWithMe.length > 0) {
@@ -169,19 +169,16 @@ export class Enemy extends Entity implements IEnemy {
             this._collisionShape.setLocation(this._location)
         }
 
-        if(this._entitiesActivatingMe.length > 0) 
-            if(this._weapon) 
-                this._weapon.attack()
-            
-        
+        if (this._entitiesActivatingMe.length > 0 && this._weapon) {
+            this._weapon.attack()
+        }
 
         this._activationShape.setLocation(this._location)
-
         this.draw()
 
-        if(this._weapon) 
+        if (this._weapon) {
             this._weapon.update(deltaTime)
-        
+        }
     }
 
     // ----------------------------------------
@@ -197,9 +194,9 @@ export class Enemy extends Entity implements IEnemy {
         const collidingEntities: Entity[] = []
         collidingShapes.forEach(collidable => {
             const entity = collidable.getEntity()
-            if (!collidingEntities.includes(entity) && entity !== (this as Entity)) 
+            if (!collidingEntities.includes(entity) && entity !== (this as Entity)) {
                 collidingEntities.push(entity)
-            
+            }
         })
         this._entitiesCollidingWithMe = collidingEntities
         this._shapesCollidingWithMe = collidingShapes
@@ -218,9 +215,9 @@ export class Enemy extends Entity implements IEnemy {
         const activatingEntities: Entity[] = []
         activatingShapes.forEach(shape => {
             const entity = shape.getEntity()
-            if (!activatingEntities.includes(entity) && entity instanceof Player) 
+            if (!activatingEntities.includes(entity) && entity instanceof Player) {
                 activatingEntities.push(entity)
-            
+            }
         })
         this._entitiesActivatingMe = activatingEntities
     }
@@ -231,16 +228,16 @@ export class Enemy extends Entity implements IEnemy {
 
     public aiTick(): void {
         if (this._state === EnemyState.KnockbackFromDamage) {
-            if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.25) 
+            if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.25) {
                 this._state = EnemyState.InvincibleDueToDamage
-            
+            }
             return
         }
 
         if (this._state === EnemyState.InvincibleDueToDamage) {
-            if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.5) 
+            if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.5) {
                 this._state = this._oldState
-            
+            }
             return
         }
 
@@ -251,67 +248,67 @@ export class Enemy extends Entity implements IEnemy {
         let angle = Math.atan(-deltaY / deltaX) * 180 / Math.PI
 
         // player is down and to the right of me
-        if (deltaX > 0 && deltaY > 0) 
+        if (deltaX > 0 && deltaY > 0) {
             angle = 360 + angle
-        
+        }
         // player is up and to the right of me
         else if (deltaX > 0 && deltaY < 0) {
             // do nothing
         }
         // player is down and to the left of me
-        else if (deltaX < 0 && deltaY > 0) 
+        else if (deltaX < 0 && deltaY > 0) {
             angle = 180 + angle
-        
+        }
         // player is up and to the left of me
-        else if (deltaX < 0 && deltaY < 0) 
+        else if (deltaX < 0 && deltaY < 0) {
             angle = 180 + angle
-        
-        else if (deltaX === 0 && deltaY > 0) 
+        }
+        else if (deltaX === 0 && deltaY > 0) {
             angle = 270
-        
-        else if (deltaX === 0 && deltaY < 0) 
+        }
+        else if (deltaX === 0 && deltaY < 0) {
             angle = 90
-        
-        else if (deltaY === 0 && deltaX > 0) 
+        }
+        else if (deltaY === 0 && deltaX > 0) {
             angle = 0
-        
-        else if (deltaY === 0 && deltaX < 0) 
+        }
+        else if (deltaY === 0 && deltaX < 0) {
             angle = 180
-        
+        }
 
-        if (angle < 22.5 || angle >= 337.5) 
+        if (angle < 22.5 || angle >= 337.5) {
             this._direction = Direction.Right
-        
-        else if (angle >= 22.5 && angle < 67.5) 
+        }
+        else if (angle >= 22.5 && angle < 67.5) {
             this._direction = Direction.UpRight
-        
-        else if (angle >= 67.5 && angle < 112.5) 
+        }
+        else if (angle >= 67.5 && angle < 112.5) {
             this._direction = Direction.Up
-        
-        else if (angle >= 112.5 && angle < 157.5) 
+        }
+        else if (angle >= 112.5 && angle < 157.5) {
             this._direction = Direction.UpLeft
-        
-        else if (angle >= 157.5 && angle < 202.5) 
+        }
+        else if (angle >= 157.5 && angle < 202.5) {
             this._direction = Direction.Left
-        
-        else if (angle >= 202.5 && angle < 247.5) 
+        }
+        else if (angle >= 202.5 && angle < 247.5) {
             this._direction = Direction.DownLeft
-        
-        else if (angle >= 247.5 && angle < 292.5) 
+        }
+        else if (angle >= 247.5 && angle < 292.5) {
             this._direction = Direction.Down
-        
-        else if (angle >= 292.5 && angle < 337.5) 
+        }
+        else if (angle >= 292.5 && angle < 337.5) {
             this._direction = Direction.DownRight
-        
+        }
 
-        if (this._state !== EnemyState.TargetDummy) 
-            if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._room.getPlayer().getRadius(), 2)) 
+        if (this._state !== EnemyState.TargetDummy) {
+            if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._room.getPlayer().getRadius(), 2)) {
                 this._state = EnemyState.CollidingWithPlayer
-            
-            else 
+            }
+            else {
                 this._state = EnemyState.Moving
-            
-        
+            }
+        }
     }
 
     // ----------------------------------------

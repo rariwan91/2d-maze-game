@@ -50,9 +50,10 @@ export class MyScreen implements IMyScreen {
     public drawArc(point: IPoint, radius: number, startAngleDegrees: number, endAngleDegrees: number, borderColor: IColor, fillColor?: IColor): void {
         this._context.save()
         this._context.strokeStyle = `rgb(${borderColor.r}, ${borderColor.g}, ${borderColor.b})`
-        if (fillColor) 
+        if (fillColor) {
             this._context.fillStyle = `rgb(${fillColor.r}, ${fillColor.g}, ${fillColor.b})`
-        
+        }
+
         this._context.beginPath()
         if (fillColor) {
             this._context.moveTo(point.x, point.y)

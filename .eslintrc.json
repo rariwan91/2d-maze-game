@@ -20,7 +20,7 @@
         "import"
     ],
     "rules": {
-        "curly": [ "error", "multi" ],
+        "curly": [ "error", "multi-line" ],
         "sort-imports": "error",
         "semi": [ "error", "never" ],
         "quotes": [ "error", "single" ],

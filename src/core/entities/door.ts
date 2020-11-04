@@ -1,6 +1,6 @@
+import { Colors, IPoint, ISize, Keycode } from '../../gui'
 import { DoorCollision, ICollidable } from '../collision'
 import { IDoor, IRoom } from '.'
-import { IPoint, ISize, Keycode } from '../../gui'
 
 import { BoxCollision } from '../collision/boxCollision'
 import { Config } from '../../config'
@@ -50,21 +50,22 @@ export class Door extends Entity implements IDoor {
 
     public draw(): void {
         if (!this._opened) {
-            this._myScreen.drawRect(this._location, this._size, Config.Doors.MainColor, Config.Doors.MainColor)
+            const outlineColor = this.isActivated() ? Colors.Yellow : Config.Doors.SecondaryColor
+            this._myScreen.drawRect(this._location, this._size, outlineColor, Config.Doors.MainColor)
 
             if (this._size.width > this._size.height) {
-                this._myScreen.drawStraightLine({ x: this._location.x + this._size.width / 6, y: this._location.y }, { x: this._location.x + this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x + 2 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 2 * this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x + 3 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 3 * this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x + 4 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 4 * this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x + 5 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 5 * this._size.width / 6, y: this._location.y + this._size.height }, Config.Doors.SecondaryColor)
+                this._myScreen.drawStraightLine({ x: this._location.x + this._size.width / 6, y: this._location.y }, { x: this._location.x + this._size.width / 6, y: this._location.y + this._size.height }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x + 2 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 2 * this._size.width / 6, y: this._location.y + this._size.height }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x + 3 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 3 * this._size.width / 6, y: this._location.y + this._size.height }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x + 4 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 4 * this._size.width / 6, y: this._location.y + this._size.height }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x + 5 * this._size.width / 6, y: this._location.y }, { x: this._location.x + 5 * this._size.width / 6, y: this._location.y + this._size.height }, outlineColor)
             }
             else {
-                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height / 6 }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 2 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 2 * this._size.height / 6 }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 3 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 3 * this._size.height / 6 }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 4 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 4 * this._size.height / 6 }, Config.Doors.SecondaryColor)
-                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 5 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 5 * this._size.height / 6 }, Config.Doors.SecondaryColor)
+                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height / 6 }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 2 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 2 * this._size.height / 6 }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 3 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 3 * this._size.height / 6 }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 4 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 4 * this._size.height / 6 }, outlineColor)
+                this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + 5 * this._size.height / 6 }, { x: this._location.x + this._size.width, y: this._location.y + 5 * this._size.height / 6 }, outlineColor)
             }
 
             if (this._locked) {
@@ -113,15 +114,13 @@ export class Door extends Entity implements IDoor {
             const isActivating = collidable.isCollidingWithShapes(this.getActivationShapes())
             if (!isColliding || isColliding.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entitiesCollidingWithMe.includes(entity) && entity !== this as Entity) 
-                    entitiesCollidingWithMe.push(entity)
-                
+                if (!entitiesCollidingWithMe.includes(entity) && entity !== this as Entity) { entitiesCollidingWithMe.push(entity) }
+
             }
             if (!isActivating || isActivating.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entitiesActivatingMe.includes(entity) && entity !== this as Entity) 
-                    entitiesActivatingMe.push(entity)
-                
+                if (!entitiesActivatingMe.includes(entity) && entity !== this as Entity) { entitiesActivatingMe.push(entity) }
+
             }
         })
 
@@ -136,12 +135,13 @@ export class Door extends Entity implements IDoor {
     public keyPressed(keyCode: Keycode): void {
         if (!this.isActivated()) return
 
-        if (keyCode === Keycode.E) 
+        if (keyCode === Keycode.E) {
             if (!this._locked) {
                 this._opened = true
                 this._room.doorOpened(this)
             }
-        
+        }
+
     }
 
     public keyReleased(keyCode: Keycode): void {
@@ -155,9 +155,8 @@ export class Door extends Entity implements IDoor {
     private isColliding(): boolean {
         let result = false
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Player) 
-                result = true
-            
+            if (entity instanceof Player) { result = true }
+
         })
         return result
     }
@@ -165,9 +164,8 @@ export class Door extends Entity implements IDoor {
     private isActivated(): boolean {
         let result = false
         this._entitiesActivatingMe.forEach(entity => {
-            if (entity instanceof Player) 
-                result = true
-            
+            if (entity instanceof Player) { result = true }
+
         })
         return result
     }

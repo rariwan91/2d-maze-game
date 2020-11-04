@@ -2,7 +2,16 @@
     "rooms": [
         {
             "name": "room1",
-            "enemies": [],
+            "enemies": [
+                {
+                    "location": {
+                        "x": 400,
+                        "y": 300
+                    },
+                    "enemyState": "Moving",
+                    "weapon": "Claw"
+                }
+            ],
             "text": [
                 {
                     "value": "W A S D to move",
@@ -68,7 +77,8 @@
                         "x": 350,
                         "y": 200
                     },
-                    "enemyState": "Moving"
+                    "enemyState": "Moving",
+                    "weapon": "Claw"
                 }
             ],
             "doors": [
@@ -94,21 +104,24 @@
                         "x": 400,
                         "y": 200
                     },
-                    "enemyState": "Moving"
+                    "enemyState": "Moving",
+                    "weapon": "Claw"
                 },
                 {
                     "location": {
                         "x": 400,
                         "y": 400
                     },
-                    "enemyState": "Moving"
+                    "enemyState": "Moving",
+                    "weapon": "Sword"
                 },
                 {
                     "location": {
                         "x": 300,
                         "y": 300
                     },
-                    "enemyState": "Moving"
+                    "enemyState": "Moving",
+                    "weapon": "Claw"
                 }
             ],
             "doors": [
@@ -126,14 +139,16 @@
                         "x": 400,
                         "y": 200
                     },
-                    "enemyState": "Moving"
+                    "enemyState": "Moving",
+                    "weapon": "Claw"
                 },
                 {
                     "location": {
                         "x": 400,
                         "y": 400
                     },
-                    "enemyState": "Moving"
+                    "enemyState": "Moving",
+                    "weapon": "Claw"
                 }
             ],
             "doors": [

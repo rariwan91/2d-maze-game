@@ -89,16 +89,16 @@ export class Sword extends Weapon {
             y: guardStartPoint.y + (this._guardLength / 2.0) * Math.cos((this._startAngle - this._angleMoved) * Math.PI / 180.0)
         }, Config.Weapons.Color)
 
-        if (Config.Weapons.ShowCollisionBoxes) 
+        if (Config.Weapons.ShowCollisionBoxes) {
             this._hitboxes.forEach(hitbox => {
-                if (this.isColliding()) 
+                if (this.isColliding()) {
                     this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, Config.Collisions.YesCollisionColor)
-                
-                else 
+                }
+                else {
                     this._myScreen.drawArc(hitbox.getLocation(), hitbox.getRadius(), 0, 360, Config.Collisions.NoCollisionColor)
-                
+                }
             })
-        
+        }
     }
 
     // ----------------------------------------
@@ -127,9 +127,9 @@ export class Sword extends Weapon {
             const result = collidable.isCollidingWithShapes(this._hitboxes)
             if (!result || result.length > 0) {
                 const entity = collidable.getEntity()
-                if (!entities.includes(entity)) 
+                if (!entities.includes(entity)) {
                     entities.push(entity)
-                
+                }
             }
         })
 
@@ -176,30 +176,30 @@ export class Sword extends Weapon {
 
     private setStartAngle(): void {
         const characterDirection = this._player.getMostRecentDirection()
-        if (characterDirection === Direction.Down) 
+        if (characterDirection === Direction.Down) {
             this._startAngle = -90 + 90
-        
-        else if (characterDirection === Direction.DownLeft) 
+        }
+        else if (characterDirection === Direction.DownLeft) {
             this._startAngle = -135 + 90
-        
-        else if (characterDirection == Direction.Left) 
+        }
+        else if (characterDirection == Direction.Left) {
             this._startAngle = 180 + 90
-        
-        else if (characterDirection === Direction.UpLeft) 
+        }
+        else if (characterDirection === Direction.UpLeft) {
             this._startAngle = 135 + 90
-        
-        else if (characterDirection === Direction.Up) 
+        }
+        else if (characterDirection === Direction.Up) {
             this._startAngle = 90 + 90
-        
-        else if (characterDirection === Direction.UpRight) 
+        }
+        else if (characterDirection === Direction.UpRight) {
             this._startAngle = 45 + 90
-        
-        else if (characterDirection === Direction.Right) 
+        }
+        else if (characterDirection === Direction.Right) {
             this._startAngle = 0 + 90
-        
-        else if (characterDirection === Direction.DownRight) 
+        }
+        else if (characterDirection === Direction.DownRight) {
             this._startAngle = -45 + 90
-        
+        }
     }
 
     private initializeSwordHitboxes(): void {
