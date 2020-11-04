@@ -2,16 +2,7 @@
     "rooms": [
         {
             "name": "room1",
-            "enemies": [
-                {
-                    "location": {
-                        "x": 400,
-                        "y": 300
-                    },
-                    "enemyState": "Moving",
-                    "weapon": "Claw"
-                }
-            ],
+            "enemies": [],
             "text": [
                 {
                     "value": "W A S D to move",
@@ -36,33 +27,17 @@
                         "x": 350,
                         "y": 350
                     }
-                }
-            ],
-            "doors": [
-                {
-                    "direction": "Up",
-                    "toRoom": "room2"
-                }
-            ]
-        },
-        {
-            "name": "room2",
-            "enemies": [],
-            "text": [
+                },
                 {
                     "value": "Space to attack",
                     "size": 25,
                     "location": {
                         "x": 350,
-                        "y": 200
+                        "y": 425
                     }
                 }
             ],
             "doors": [
-                {
-                    "direction": "Down",
-                    "toRoom": "room1"
-                },
                 {
                     "direction": "Up",
                     "toRoom": "room3"
@@ -84,7 +59,7 @@
             "doors": [
                 {
                     "direction": "Down",
-                    "toRoom": "room2"
+                    "toRoom": "room1"
                 },
                 {
                     "direction": "Right",
