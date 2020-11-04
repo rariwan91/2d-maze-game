@@ -178,7 +178,7 @@ export class Game {
     // ----------------------------------------
 
     private getCollidableShapes(): {
-        roomShapes: ICollidable[],
+        wallShapes: ICollidable[],
         doorShapes: ICollidable[],
         roomTransitionShapes: ICollidable[],
         playerShapes: ICollidable[],
@@ -186,7 +186,7 @@ export class Game {
         enemyWeaponShapes: ICollidable[],
         weaponShapes: ICollidable[]
     } {
-        const roomShapes = this._rooms[this._activeRoom].getCollisionShapes()
+        const wallShapes = this._rooms[this._activeRoom].getCollisionShapes()
 
         const doors = this._rooms[this._activeRoom].getDoors()
         const doorShapes: ICollidable[] = []
@@ -230,7 +230,7 @@ export class Game {
         })
 
         return {
-            roomShapes: roomShapes,
+            wallShapes: wallShapes,
             doorShapes: doorShapes,
             roomTransitionShapes: roomTransitionShapes,
             playerShapes: playerShapes,
@@ -242,7 +242,7 @@ export class Game {
 
     private getConcerns(
         shapes: {
-            roomShapes: ICollidable[],
+            wallShapes: ICollidable[],
             doorShapes: ICollidable[],
             roomTransitionShapes: ICollidable[],
             playerShapes: ICollidable[],
@@ -251,7 +251,7 @@ export class Game {
             weaponShapes: ICollidable[]
         }
     ): {
-        roomConcerns: ICollidable[],
+        wallConcerns: ICollidable[],
         doorConcerns: ICollidable[],
         roomTransitionConcerns: ICollidable[],
         playerConcerns: ICollidable[],
@@ -261,16 +261,16 @@ export class Game {
         weaponConcerns: ICollidable[]
     } {
         return {
-            // Rooms care about players and enemies
-            roomConcerns: shapes.playerShapes.concat(shapes.enemyShapes),
+            // Walls care about players and enemies
+            wallConcerns: shapes.playerShapes.concat(shapes.enemyShapes),
             // Doors care about players and enemies
             doorConcerns: shapes.playerShapes.concat(shapes.enemyShapes),
             // Room transitions care about players
             roomTransitionConcerns: shapes.playerShapes,
-            // Players care about rooms, enemies, and enemy weapons
-            playerConcerns: shapes.roomShapes.concat(shapes.enemyShapes).concat(shapes.doorShapes).concat(shapes.roomTransitionShapes).concat(shapes.enemyWeaponShapes),
-            // Enemies care about rooms, players, weapons, and other enemies
-            enemyConcerns: shapes.roomShapes.concat(shapes.playerShapes).concat(shapes.weaponShapes).concat(shapes.enemyShapes).concat(shapes.doorShapes),
+            // Players care about walls, enemies, and enemy weapons
+            playerConcerns: shapes.wallShapes.concat(shapes.enemyShapes).concat(shapes.doorShapes).concat(shapes.roomTransitionShapes).concat(shapes.enemyWeaponShapes),
+            // Enemies care about walls, players, weapons, and other enemies
+            enemyConcerns: shapes.wallShapes.concat(shapes.playerShapes).concat(shapes.weaponShapes).concat(shapes.enemyShapes).concat(shapes.doorShapes),
             // Enemy activations care about players
             enemyActivationConcerns: shapes.playerShapes,
             // Enemy weapons care about players
@@ -282,7 +282,7 @@ export class Game {
 
     private checkForCollisions(
         concerns: {
-            roomConcerns: ICollidable[],
+            wallConcerns: ICollidable[],
             doorConcerns: ICollidable[],
             roomTransitionConcerns: ICollidable[],
             playerConcerns: ICollidable[],
@@ -296,7 +296,7 @@ export class Game {
         const roomTransitions = this._rooms[this._activeRoom].getRoomTransitions()
         const enemies = this._rooms[this._activeRoom].getEnemies()
 
-        this._rooms[this._activeRoom].checkForCollisionsWith(concerns.roomConcerns)
+        this._rooms[this._activeRoom].checkForCollisionsWith(concerns.wallConcerns)
         doors.forEach(d => d.checkForCollisionsWith(concerns.doorConcerns))
         roomTransitions.forEach(rt => rt.checkForCollisionsWith(concerns.roomTransitionConcerns))
         this._player.checkForCollisionsWith(concerns.playerConcerns)

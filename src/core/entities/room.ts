@@ -1,18 +1,17 @@
 import { Colors, IPoint, ISize, IText } from '../../gui'
 import { Direction, IMyScreen } from '..'
-import { Door, Enemy, IDoor, IEnemy, IPlayer, IRoom, IRoomTransition, RoomState, RoomTransition } from '.'
-import { ICollidable, WallCollision } from '../collision'
+import { Door, Enemy, IDoor, IEnemy, IPlayer, IRoom, IRoomTransition, IWall, RoomState, RoomTransition, Wall } from '.'
 
 import { Config } from '../../config'
 import { Entity } from './entity'
+import { ICollidable } from '../collision'
 import { getVectorDistanceBetween } from '../../helpers'
 
 export class Room extends Entity implements IRoom {
     private _location: IPoint = { x: 50, y: 50 }
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
-    private _walls: WallCollision[] = []
-    private _entitiesCollidingWithMe: Entity[] = []
+    private _walls: IWall[] = []
     private _roomToNorth: IRoom
     private _roomToRight: IRoom
     private _roomToSouth: IRoom
@@ -38,7 +37,7 @@ export class Room extends Entity implements IRoom {
             height: myScreen.getSize().height - 100
         }
         this._player = player
-        this.createWallCollisions()
+        this.createWalls()
     }
 
     // ----------------------------------------
@@ -137,7 +136,7 @@ export class Room extends Entity implements IRoom {
             this._roomToLeft = room
         }
 
-        this.createWallCollisions()
+        this.createWalls()
         this.createDoors()
         this.createRoomTransitions()
     }
@@ -246,13 +245,6 @@ export class Room extends Entity implements IRoom {
                 this._myScreen.drawText(t.location, t.value, t.size, Colors.Black)
             })
         }
-
-        if (Config.Rooms.ShowWallCollisionBoxes) {
-            const isColliding = this.isColliding()
-            this._walls.forEach(collisionBox => {
-                this._myScreen.drawRect(collisionBox.getLocation(), collisionBox.getSize(), isColliding ? Config.Collisions.YesCollisionColor : Config.Collisions.NoCollisionColor)
-            })
-        }
     }
 
     // ----------------------------------------
@@ -261,6 +253,8 @@ export class Room extends Entity implements IRoom {
 
     public update(deltaTime: number): void {
         this.draw()
+
+        this._walls.forEach(w => w.update())
 
         if (this._northDoor) {
             this._northDoor.update()
@@ -305,81 +299,72 @@ export class Room extends Entity implements IRoom {
     // ----------------------------------------
 
     public getCollisionShapes(): ICollidable[] {
-        return this._walls
+        let wallCollisions: ICollidable[] = []
+        this._walls.forEach(w => {
+            wallCollisions = wallCollisions.concat(w.getCollisionShapes())
+        })
+        return wallCollisions
     }
 
     public checkForCollisionsWith(collidables: ICollidable[]): void {
-        const entities: Entity[] = []
-        collidables.forEach(collidable => {
-            const result = collidable.isCollidingWithShapes(this.getCollisionShapes())
-            if (!result || result.length > 0) {
-                const entity = collidable.getEntity()
-                if (!entities.includes(entity) && entity !== this as Entity) {
-                    entities.push(entity)
-                }
-            }
-        })
-
-        this._entitiesCollidingWithMe = entities
+        this._walls.forEach(w => w.checkForCollisionsWith(collidables))
     }
 
     // ----------------------------------------
     //              private
     // ----------------------------------------
 
-    private isColliding(): boolean {
-        return this._entitiesCollidingWithMe.length > 0
-    }
-
-    private createWallCollisions(): void {
+    private createWalls(): void {
         this._walls = []
         if (this._roomToNorth) {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 10, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this),
-                new WallCollision({ x: this._location.x + 0.6 * this._size.width, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this)
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }),
+                new Wall(this._myScreen, { x: this._location.x + 0.6 * this._size.width, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 })
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 10, y: this._location.y - 10 }, { width: this._size.width + 20, height: 20 }, this)
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y - 10 }, { width: this._size.width + 20, height: 20 })
             )
         }
 
         if (this._roomToRight) {
             this._walls.push(
-                new WallCollision({ x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }, this),
-                new WallCollision({ x: this._location.x + this._size.width - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 }, this)
+                new Wall(this._myScreen, { x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }),
+                new Wall(this._myScreen, { x: this._location.x + this._size.width - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 })
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 }, this)
+                new Wall(this._myScreen, { x: this._location.x + this._size.width - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 })
             )
         }
 
         if (this._roomToSouth) {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this),
-                new WallCollision({ x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, this)
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }),
+                new Wall(this._myScreen, { x: this._location.x + 0.6 * this._size.width, y: this._location.y + this._size.height - 10 }, { width: 0.4 * this._size.width + 10, height: 20 })
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: this._size.width + 20, height: 20 }, this)
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y + this._size.height - 10 }, { width: this._size.width + 20, height: 20 })
             )
         }
 
         if (this._roomToLeft) {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }, this),
-                new WallCollision({ x: this._location.x - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 }, this)
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: 0.4 * this._size.height - 10 }),
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y + 0.6 * this._size.height }, { width: 20, height: 0.4 * this._size.height - 10 })
             )
         }
         else {
             this._walls.push(
-                new WallCollision({ x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 }, this)
+                new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 })
             )
         }
+
+        this._walls.push(new Wall(this._myScreen, { x: this._location.x + this._size.width / 2 - 200, y: this._location.y + this._size.height / 2 - 20 }, { width: 400, height: 40 }))
     }
 
     private createDoors(): void {

@@ -1,5 +1,5 @@
 import { Direction, IMyScreen } from '..'
-import { Door, Enemy, IPlayer, PlayerState, Room } from '.'
+import { Door, Enemy, IPlayer, PlayerState, Wall } from '.'
 import { IPoint, Keycode } from '../../gui'
 import { IWeapon, Weapon, WeaponState } from './weapons'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getDirection } from '../../helpers'
@@ -100,9 +100,8 @@ export class Player extends Entity implements IPlayer {
 
     public update(deltaTime: number): void {
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Room || entity instanceof Door) {
-                this._location = this._oldLocation
-                this._collisionCircle.setLocation(this._location)
+            if (entity instanceof Wall || entity instanceof Door) {
+                this.setLocation(this._oldLocation)
             }
             else if (entity instanceof Enemy) {
                 if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= .5) {

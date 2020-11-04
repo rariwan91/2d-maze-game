@@ -1,5 +1,5 @@
 import { Direction, IMyScreen } from '..'
-import { Door, EnemyState, IEnemy, Player, Room } from '.'
+import { Door, EnemyState, IEnemy, Player, Wall } from '.'
 import { EnemyCollision, ICollidable } from '../collision'
 import { Weapon, WeaponState } from './weapons'
 import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
@@ -53,6 +53,7 @@ export class Enemy extends Entity implements IEnemy {
     }
 
     public setLocation(newLocation: IPoint): void {
+        this._oldLocation = this._location
         this._location = newLocation
         this._collisionShape.setLocation(newLocation)
         this._activationShape.setLocation(newLocation)
@@ -128,10 +129,27 @@ export class Enemy extends Entity implements IEnemy {
 
         const enemiesCollidingWithMe: Enemy[] = []
         this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Room || entity instanceof Door) {
-                this._location = this._oldLocation
+            if (entity instanceof Door) {
+                this.setLocation(this._oldLocation)
             }
-
+            else if(entity instanceof Wall) {
+                const wall = entity as Wall
+                const wallLocation = wall.getLocation()
+                const wallSize = wall.getSize()
+                if([Direction.DownRight, Direction.DownLeft, Direction.UpLeft, Direction.UpRight].includes(this._direction)) {
+                    if(this._location.y <= wallLocation.y || this._location.y >= wallLocation.y + wallSize.height) {
+                        const newLocation = { x: this._location.x, y: this._oldLocation.y }
+                        this.setLocation(newLocation)
+                    }
+                    else if(this._location.x >= wallLocation.x + wallSize.width || this._location.x <= wallLocation.x) {
+                        const newLocation = { x: this._oldLocation.x, y: this._location.y }
+                        this.setLocation(newLocation)
+                    }
+                }
+                else {
+                    this.setLocation(this._oldLocation)
+                }
+            }
             else if (entity instanceof Weapon) {
                 if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy)) {
                     this.takeDamage(10)
