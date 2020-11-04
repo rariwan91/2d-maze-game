@@ -129,10 +129,10 @@ export class Player extends Entity implements IPlayer {
         this.updateDirection()
         this.calculateLocation(deltaTime)
         this._collisionCircle.setLocation(this._location)
-        this.draw()
         if (this._weapon) {
             this._weapon.update(deltaTime)
         }
+        this.draw()
     }
 
     // ----------------------------------------

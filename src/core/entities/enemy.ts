@@ -174,11 +174,12 @@ export class Enemy extends Entity implements IEnemy {
         }
 
         this._activationShape.setLocation(this._location)
-        this.draw()
 
         if (this._weapon) {
             this._weapon.update(deltaTime)
         }
+
+        this.draw()
     }
 
     // ----------------------------------------
