@@ -11,4 +11,5 @@ export class Colors {
     public static Yellow: IColor = { r: 255, g: 255, b: 30 }
     public static Gainsboro: IColor = { r: 220, g: 220, b: 220 }
     public static Gray: IColor = { r: 128, g: 128, b: 128 }
+    public static LightGray: IColor = { r: 192, g: 192, b: 192 }
 }

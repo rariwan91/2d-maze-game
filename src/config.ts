@@ -3,35 +3,35 @@ import { EnemyState } from './core/entities'
 
 export const Config = {
     Players: {
-        ShowCollisionBoxes: true,
+        ShowCollisionBoxes: false,
         MainColor: Colors.Blue,
         SecondaryColor: Colors.Green,
         InvincibleColor: Colors.Blue
     },
     Enemies: {
-        ShowCollisionBoxes: true,
+        ShowCollisionBoxes: false,
         MainColor: Colors.Red,
         SecondaryColor: Colors.Green,
         InvincibleColor: Colors.Blue,
         DefaultState: EnemyState.TargetDummy
     },
     Weapons: {
-        ShowCollisionBoxes: true,
+        ShowCollisionBoxes: false,
         Color: Colors.Black
     },
     Rooms: {
-        ShowWallCollisionBoxes: true,
+        ShowWallCollisionBoxes: false,
         WallColor: Colors.Black
     },
     Doors: {
-        ShowActivationBoxes: true,
-        ShowCollisionBoxes: true,
+        ShowActivationBoxes: false,
+        ShowCollisionBoxes: false,
         MainColor: Colors.Brown,
         SecondaryColor: Colors.DarkBrown,
         TertiaryColor: Colors.Black
     },
     Transitions: {
-        ShowCollisionBoxes: true,
+        ShowCollisionBoxes: false,
         Color: Colors.Blue
     },
     MyScreen: {
