@@ -21,4 +21,5 @@ export interface IRoom extends IDrawable, IUpdatable {
     setRoomState(newRoomState: RoomState): void
     getPlayer(): IPlayer
     getWalls(): IWall[]
+    addWallToRoom(wall: IWall): void
 }

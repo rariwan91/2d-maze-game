@@ -1,5 +1,5 @@
 import { Direction, GameState, IMyScreen, IRespondsToInput, MyScreen } from '.'
-import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, Player, Room, RoomState } from './entities'
+import { Enemy, EnemyState, IEnemy, IPlayer, IRoom, IWall, Player, Room, RoomState, Wall } from './entities'
 import { IPoint, IText, Keycode } from '../gui'
 
 import { Claw } from './entities/weapons/claw'
@@ -444,12 +444,22 @@ export class Game {
                 })
             }
 
+            const walls: IWall[] = []
+            if(room.walls) {
+                room.walls.forEach(wall => {
+                    walls.push(new Wall(this._myScreen, wall.location, wall.size))
+                })
+            }
+
             const newRoom = new Room(this._myScreen, this._player)
             enemies.forEach(enemy => {
                 newRoom.addEnemyToRoom(enemy)
             })
             texts.forEach(text => {
                 newRoom.addTextToRoom(text)
+            })
+            walls.forEach(wall => {
+                newRoom.addWallToRoom(wall)
             })
             roomMap.set(room.name, newRoom)
         })

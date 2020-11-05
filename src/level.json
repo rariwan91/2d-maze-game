@@ -42,7 +42,8 @@
                     "direction": "Up",
                     "toRoom": "room3"
                 }
-            ]
+            ],
+            "walls": []
         },
         {
             "name": "room3",
@@ -69,7 +70,8 @@
                     "direction": "Left",
                     "toRoom": "room5"
                 }
-            ]
+            ],
+            "walls": []
         },
         {
             "name": "room4",
@@ -85,15 +87,15 @@
                 {
                     "location": {
                         "x": 400,
-                        "y": 400
+                        "y": 500
                     },
                     "enemyState": "Moving",
                     "weapon": "Sword"
                 },
                 {
                     "location": {
-                        "x": 300,
-                        "y": 300
+                        "x": 600,
+                        "y": 200
                     },
                     "enemyState": "Moving",
                     "weapon": "Claw"
@@ -103,6 +105,38 @@
                 {
                     "direction": "Left",
                     "toRoom": "room3"
+                }
+            ],
+            "walls": [
+                {
+                    "location": {
+                        "x": 200,
+                        "y": 200
+                    },
+                    "size": {
+                        "width": 50,
+                        "height": 300
+                    }
+                },
+                {
+                    "location": {
+                        "x": 250,
+                        "y": 325
+                    },
+                    "size": {
+                        "width": 400,
+                        "height": 50
+                    }
+                },
+                {
+                    "location": {
+                        "x": 650,
+                        "y": 200
+                    },
+                    "size": {
+                        "width": 50,
+                        "height": 300
+                    }
                 }
             ]
         },
@@ -131,7 +165,8 @@
                     "direction": "Right",
                     "toRoom": "room3"
                 }
-            ]
+            ],
+            "walls": []
         }
     ]
 }

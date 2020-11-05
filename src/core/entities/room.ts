@@ -11,6 +11,7 @@ export class Room extends Entity implements IRoom {
     private readonly _size: ISize
     private readonly _myScreen: IMyScreen
     private _walls: IWall[] = []
+    private _extraWalls: IWall[] = []
     private _roomToNorth: IRoom
     private _roomToRight: IRoom
     private _roomToSouth: IRoom
@@ -51,6 +52,10 @@ export class Room extends Entity implements IRoom {
         const difference = getVectorDistanceBetween(this._location, newLocation)
         this._location = newLocation
         this._walls.forEach(w => {
+            const wLoc = w.getLocation()
+            w.setLocation({ x: wLoc.x + difference.x, y: wLoc.y + difference.y })
+        })
+        this._extraWalls.forEach(w => {
             const wLoc = w.getLocation()
             w.setLocation({ x: wLoc.x + difference.x, y: wLoc.y + difference.y })
         })
@@ -164,6 +169,8 @@ export class Room extends Entity implements IRoom {
     }
 
     public addEnemyToRoom(enemy: IEnemy): void {
+        const eLocation = enemy.getLocation()
+        enemy.setLocation({ x: eLocation.x + this._location.x, y: eLocation.y + this._location.y })
         this._enemies.push(enemy)
         enemy.setRoom(this)
     }
@@ -194,7 +201,13 @@ export class Room extends Entity implements IRoom {
     }
 
     public getWalls(): IWall[] {
-        return this._walls
+        return this._walls.concat(this._extraWalls)
+    }
+
+    public addWallToRoom(wall: IWall): void {
+        const wallLocation = wall.getLocation()
+        wall.setLocation({ x: wallLocation.x + this._location.x, y: wallLocation.y + this._location.y })
+        this._extraWalls.push(wall)
     }
 
     // ----------------------------------------
@@ -206,7 +219,6 @@ export class Room extends Entity implements IRoom {
         for (let x = 0; x <= this._size.width; x += this._size.width / 20) {
             this._myScreen.drawStraightLine({ x: this._location.x + x, y: this._location.y }, { x: this._location.x + x, y: this._location.y + this._size.height }, Colors.LightGray)
         }
-        this._myScreen.drawStraightLine({ x: this._location.x + this._size.width, y: this._location.y }, { x: this._location.x + this._size.width, y: this._location.y + this._size.height }, Colors.LightGray)
         for (let y = 0; y <= this._size.height; y += this._size.height / 15) {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + y }, { x: this._location.x + this._size.width, y: this._location.y + y }, Colors.LightGray)
         }
@@ -258,6 +270,7 @@ export class Room extends Entity implements IRoom {
         this.draw()
 
         this._walls.forEach(w => w.update())
+        this._extraWalls.forEach(w => w.update())
 
         if (this._northDoor) {
             this._northDoor.update()
@@ -350,8 +363,6 @@ export class Room extends Entity implements IRoom {
                 new Wall(this._myScreen, { x: this._location.x - 10, y: this._location.y + 10 }, { width: 20, height: this._size.height - 20 })
             )
         }
-
-        this._walls.push(new Wall(this._myScreen, { x: this._location.x + this._size.width / 2 - 200, y: this._location.y + this._size.height / 2 - 20 }, { width: 400, height: 40 }))
     }
 
     private createDoors(): void {
