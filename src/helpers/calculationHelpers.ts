@@ -1,5 +1,6 @@
+import { IPoint, IRectangle } from '../gui'
+
 import { Direction } from '../core'
-import { IPoint } from '../gui'
 
 export function calculateVelocity(direction: Direction, maxSpeed: number): IPoint {
     if (direction === Direction.Up) {
@@ -134,4 +135,10 @@ export function getVectorDistanceBetween(point1: IPoint, point2: IPoint): IPoint
 
 export function getMagnitude(point1: IPoint): number {
     return Math.sqrt(Math.pow(point1.x, 2) + Math.pow(point1.y, 2))
+}
+
+export function areRectanglesOverlapping(rectangle1: IRectangle, rectangle2: IRectangle): boolean {
+    if (rectangle1.location.x + rectangle1.size.width < rectangle2.location.x || rectangle2.location.x + rectangle2.size.width < rectangle1.location.x) return false
+    if (rectangle1.location.y + rectangle1.size.height < rectangle2.location.y || rectangle2.location.y + rectangle2.size.height < rectangle1.location.y) return false
+    return true
 }

@@ -4,7 +4,6 @@ import { Door, Enemy, IDoor, IEnemy, IPlayer, IRoom, IRoomTransition, IWall, Roo
 
 import { Config } from '../../config'
 import { Entity } from './entity'
-import { ICollidable } from '../collision'
 import { getVectorDistanceBetween } from '../../helpers'
 
 export class Room extends Entity implements IRoom {
@@ -194,6 +193,10 @@ export class Room extends Entity implements IRoom {
         this._text.push(text)
     }
 
+    public getWalls(): IWall[] {
+        return this._walls
+    }
+
     // ----------------------------------------
     //              IDrawable
     // ----------------------------------------
@@ -292,22 +295,6 @@ export class Room extends Entity implements IRoom {
             e.aiTick()
             e.update(deltaTime)
         })
-    }
-
-    // ----------------------------------------
-    //              IHasCollisions
-    // ----------------------------------------
-
-    public getCollisionShapes(): ICollidable[] {
-        let wallCollisions: ICollidable[] = []
-        this._walls.forEach(w => {
-            wallCollisions = wallCollisions.concat(w.getCollisionShapes())
-        })
-        return wallCollisions
-    }
-
-    public checkForCollisionsWith(collidables: ICollidable[]): void {
-        this._walls.forEach(w => w.checkForCollisionsWith(collidables))
     }
 
     // ----------------------------------------

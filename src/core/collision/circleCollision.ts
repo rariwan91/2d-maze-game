@@ -2,7 +2,7 @@ import { BoxCollision } from './boxCollision'
 import { Entity } from '../entities/entity'
 import { ICollidable } from '.'
 import { IPoint } from '../../gui'
-import { getDistanceBetween } from '../../helpers/calculationHelpers'
+import { areRectanglesOverlapping } from '../../helpers/calculationHelpers'
 
 export class CircleCollision implements ICollidable {
     private _location: IPoint
@@ -39,23 +39,7 @@ export class CircleCollision implements ICollidable {
             }
             const bLoc = shape.getLocation()
             const bSize = shape.getSize()
-
-            if (aLoc.x + aSize.width < bLoc.x || bLoc.x + bSize.width < aLoc.x) return false
-            if (aLoc.y + aSize.height < bLoc.y || bLoc.y + bSize.height < aLoc.y) return false
-
-            // If the center of the circle is beyond the bounds of the rectangle do a
-            // check to see if the corner of the rectangle is within the circle
-            if (this._location.x > bLoc.x + bSize.width || this._location.x < bLoc.x) {
-                const shortestDistance = Math.min(
-                    getDistanceBetween(this._location, bLoc),
-                    getDistanceBetween(this._location, { x: bLoc.x + bSize.width, y: bLoc.y }),
-                    getDistanceBetween(this._location, { x: bLoc.x + bSize.width, y: bLoc.y + bSize.height }),
-                    getDistanceBetween(this._location, { x: bLoc.x, y: bLoc.y + bSize.height })
-                )
-                if (shortestDistance < this._radius) return true
-            }
-
-            return true
+            return areRectanglesOverlapping({ location: aLoc, size: aSize }, { location: bLoc, size: bSize })
         }
         return false
     }

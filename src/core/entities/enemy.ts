@@ -1,13 +1,13 @@
 import { Direction, IMyScreen } from '..'
 import { Door, EnemyState, IEnemy, Player, Wall } from '.'
 import { EnemyCollision, ICollidable } from '../collision'
+import { IPoint, IRectangle } from '../../gui'
 import { Weapon, WeaponState } from './weapons'
-import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
+import { areRectanglesOverlapping, calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
 
 import { CircleCollision } from '../collision/circleCollision'
 import { Config } from '../../config'
 import { Entity } from './entity'
-import { IPoint } from '../../gui'
 import { IRoom } from './room.h'
 import { IWeapon } from './weapons/weapon.h'
 import { RoomState } from './roomState.enum'
@@ -132,23 +132,39 @@ export class Enemy extends Entity implements IEnemy {
             if (entity instanceof Door) {
                 this.setLocation(this._oldLocation)
             }
-            else if(entity instanceof Wall) {
+            else if (entity instanceof Wall) {
                 const wall = entity as Wall
-                const wallLocation = wall.getLocation()
-                const wallSize = wall.getSize()
-                if([Direction.DownRight, Direction.DownLeft, Direction.UpLeft, Direction.UpRight].includes(this._direction)) {
-                    if(this._location.y <= wallLocation.y || this._location.y >= wallLocation.y + wallSize.height) {
-                        const newLocation = { x: this._location.x, y: this._oldLocation.y }
-                        this.setLocation(newLocation)
+                const wallRectangle = wall.getRectangle()
+                let resultingLocation = this._oldLocation
+                const moveHorizontalRectangle: IRectangle = {
+                    location: { x: this._location.x - this._collisionShape.getRadius(), y: this._oldLocation.y - this._collisionShape.getRadius() },
+                    size: { width: 2 * this._collisionShape.getRadius(), height: 2 * this._collisionShape.getRadius() }
+                }
+                const moveVerticalRectangle: IRectangle = {
+                    location: { x: this._oldLocation.x - this._collisionShape.getRadius(), y: this._location.y - this._collisionShape.getRadius() },
+                    size: { width: 2 * this._collisionShape.getRadius(), height: 2 * this._collisionShape.getRadius() }
+                }
+
+                if (this._direction === Direction.DownRight || this._direction === Direction.DownLeft || this._direction === Direction.UpLeft || this._direction === Direction.UpRight) {
+                    const isHorizOverlapping = areRectanglesOverlapping(moveHorizontalRectangle, wallRectangle)
+                    const isVertOverlapping = areRectanglesOverlapping(moveVerticalRectangle, wallRectangle)
+                    const distance = this._movementSpeed * deltaTime
+                    if (!isHorizOverlapping) {
+                        const deltaX = this._location.x - this._oldLocation.x
+                        resultingLocation = {
+                            x: this._location.x + (deltaX < 0 ? -distance : distance),
+                            y: this._oldLocation.y
+                        }
                     }
-                    else if(this._location.x >= wallLocation.x + wallSize.width || this._location.x <= wallLocation.x) {
-                        const newLocation = { x: this._oldLocation.x, y: this._location.y }
-                        this.setLocation(newLocation)
+                    else if (!isVertOverlapping) {
+                        const deltaY = this._location.y - this._oldLocation.y
+                        resultingLocation = {
+                            x: this._oldLocation.x,
+                            y: this._location.y + (deltaY < 0 ? -distance : distance)
+                        }
                     }
                 }
-                else {
-                    this.setLocation(this._oldLocation)
-                }
+                this.setLocation(resultingLocation)
             }
             else if (entity instanceof Weapon) {
                 if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy)) {
@@ -160,10 +176,12 @@ export class Enemy extends Entity implements IEnemy {
                     const deltaY = myLoc.y - theirLoc.y
 
                     let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
-                    if (deltaX < 0 && deltaY < 0) { angle = 180 + angle }
-
-                    else if (deltaX < 0 && deltaY > 0) { angle = angle - 180 }
-
+                    if (deltaX < 0 && deltaY < 0) {
+                        angle = 180 + angle
+                    }
+                    else if (deltaX < 0 && deltaY > 0) {
+                        angle = angle - 180
+                    }
 
                     this._oldState = this._state
                     this._state = EnemyState.KnockbackFromDamage
@@ -182,16 +200,15 @@ export class Enemy extends Entity implements IEnemy {
             this.nudge(this, enemiesCollidingWithMe)
             this.checkForCollisionsWith(this._shapesCollidingWithMe)
         }
-        else {
-            this.calculateLocation(deltaTime)
-            this._collisionShape.setLocation(this._location)
+
+        if(this._entitiesCollidingWithMe.length === 0) {
+            const newLocation = this.calculateNewLocation(deltaTime)    
+            this.setLocation(newLocation)
         }
 
         if (this._entitiesActivatingMe.length > 0 && this._weapon) {
             this._weapon.attack()
         }
-
-        this._activationShape.setLocation(this._location)
 
         if (this._weapon) {
             this._weapon.update(deltaTime)
@@ -357,12 +374,11 @@ export class Enemy extends Entity implements IEnemy {
     //              private
     // ----------------------------------------
 
-    private calculateLocation(deltaTime: number): void {
+    private calculateNewLocation(deltaTime: number): IPoint {
         if (this._state === EnemyState.Moving) {
             const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
             const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)
-            this._oldLocation = this._location
-            this._location = newLocation
+            return newLocation
         }
         else if (this._state === EnemyState.KnockbackFromDamage) {
             const myLoc = this._location
@@ -375,10 +391,9 @@ export class Enemy extends Entity implements IEnemy {
                 x: myLoc.x + newVelocity.x * deltaTime,
                 y: myLoc.y - newVelocity.y * deltaTime
             }
-
-            this._oldLocation = this._location
-            this._location = newLocation
+            return newLocation
         }
+        return this._location
     }
 
     private isColliding(): boolean {

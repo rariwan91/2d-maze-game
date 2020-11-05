@@ -1,4 +1,4 @@
-import { IPoint, ISize } from '../../gui'
+import { IPoint, IRectangle, ISize } from '../../gui'
 import { IWall, Player } from '.'
 
 import { BoxCollision } from '../collision/boxCollision'
@@ -38,6 +38,13 @@ export class Wall extends Entity implements IWall {
 
     public getSize(): ISize {
         return this._size
+    }
+
+    public getRectangle(): IRectangle {
+        return {
+            location: this._location,
+            size: this._size
+        }
     }
 
     // ----------------------------------------

@@ -3,9 +3,9 @@ import { IDoor, IEnemy, IPlayer, IRoomTransition, RoomState } from '.'
 import { IDrawable, IPoint, ISize } from '../../gui'
 
 import { Entity } from './entity'
-import { IHasCollisions } from '../collision'
+import { IWall } from './wall.h'
 
-export interface IRoom extends IDrawable, IUpdatable, IHasCollisions {
+export interface IRoom extends IDrawable, IUpdatable {
     getLocation(): IPoint
     setLocation(newLocation: IPoint): void
     getSize(): ISize
@@ -20,4 +20,5 @@ export interface IRoom extends IDrawable, IUpdatable, IHasCollisions {
     getRoomState(): RoomState
     setRoomState(newRoomState: RoomState): void
     getPlayer(): IPlayer
+    getWalls(): IWall[]
 }

@@ -79,7 +79,6 @@ export class Game {
                 this.updateTransition()
             }
         }
-
         else if (this._gameState === GameState.Playing) {
             this._myScreen.clearScreen()
             this.updateEntities(time)
@@ -94,8 +93,9 @@ export class Game {
         const concerns = this.getConcerns(shapes)
         this.checkForCollisions(concerns)
 
-        this._rooms[this._activeRoom].update((time - this._lastTime) / 1000.0)
-        this._player.update((time - this._lastTime) / 1000.0)
+        const deltaTime = (time - this._lastTime) / 1000.0
+        this._rooms[this._activeRoom].update(deltaTime)
+        this._player.update(deltaTime)
     }
 
     // ----------------------------------------
@@ -186,7 +186,11 @@ export class Game {
         enemyWeaponShapes: ICollidable[],
         weaponShapes: ICollidable[]
     } {
-        const wallShapes = this._rooms[this._activeRoom].getCollisionShapes()
+        const walls = this._rooms[this._activeRoom].getWalls()
+        const wallShapes: ICollidable[] = []
+        walls.forEach(w => {
+            w.getCollisionShapes().forEach(c => wallShapes.push(c))
+        })
 
         const doors = this._rooms[this._activeRoom].getDoors()
         const doorShapes: ICollidable[] = []
@@ -210,10 +214,6 @@ export class Game {
             const enemyCollisions = enemy.getCollisionShapes()
             enemyCollisions.forEach(collision => {
                 enemyShapes.push(collision)
-            })
-            const enemyActivations = enemy.getActivationShapes()
-            enemyActivations.forEach(activation => {
-                enemyActivations.push(activation)
             })
             const weapon = enemy.getWeapon()
             const weaponCollisions = weapon.getCollisionShapes()
@@ -293,10 +293,11 @@ export class Game {
         }
     ): void {
         const doors = this._rooms[this._activeRoom].getDoors()
+        const walls = this._rooms[this._activeRoom].getWalls()
         const roomTransitions = this._rooms[this._activeRoom].getRoomTransitions()
         const enemies = this._rooms[this._activeRoom].getEnemies()
 
-        this._rooms[this._activeRoom].checkForCollisionsWith(concerns.wallConcerns)
+        walls.forEach(w => w.checkForCollisionsWith(concerns.wallConcerns))
         doors.forEach(d => d.checkForCollisionsWith(concerns.doorConcerns))
         roomTransitions.forEach(rt => rt.checkForCollisionsWith(concerns.roomTransitionConcerns))
         this._player.checkForCollisionsWith(concerns.playerConcerns)
