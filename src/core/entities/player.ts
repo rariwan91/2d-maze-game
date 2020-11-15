@@ -82,7 +82,7 @@ export class Player extends Entity implements IPlayer {
         return [this._collisionCircle]
     }
 
-    public checkForCollisionsWith(shapes: ICollidable[]): void {
+    public setCollisionEntityConcerns(shapes: ICollidable[]): void {
         const collidingShapes = this._collisionCircle.isCollidingWithShapes(shapes)
         const collidingEntities: Entity[] = []
         collidingShapes.forEach(collidable => {

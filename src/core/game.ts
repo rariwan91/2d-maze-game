@@ -91,7 +91,7 @@ export class Game {
     private updateEntities(time: number): void {
         const shapes = this.getCollidableShapes()
         const concerns = this.getConcerns(shapes)
-        this.checkForCollisions(concerns)
+        this.setEntityConcerns(concerns)
 
         const deltaTime = (time - this._lastTime) / 1000.0
         this._rooms[this._activeRoom].update(deltaTime)
@@ -269,7 +269,7 @@ export class Game {
             roomTransitionConcerns: shapes.playerShapes,
             // Players care about walls, enemies, and enemy weapons
             playerConcerns: shapes.wallShapes.concat(shapes.enemyShapes).concat(shapes.doorShapes).concat(shapes.roomTransitionShapes).concat(shapes.enemyWeaponShapes),
-            // Enemies care about walls, players, weapons, and other enemies
+            // Enemies care about walls, doors, players, weapons, and other enemies
             enemyConcerns: shapes.wallShapes.concat(shapes.playerShapes).concat(shapes.weaponShapes).concat(shapes.enemyShapes).concat(shapes.doorShapes),
             // Enemy activations care about players
             enemyActivationConcerns: shapes.playerShapes,
@@ -280,7 +280,7 @@ export class Game {
         }
     }
 
-    private checkForCollisions(
+    private setEntityConcerns(
         concerns: {
             wallConcerns: ICollidable[],
             doorConcerns: ICollidable[],
@@ -297,16 +297,16 @@ export class Game {
         const roomTransitions = this._rooms[this._activeRoom].getRoomTransitions()
         const enemies = this._rooms[this._activeRoom].getEnemies()
 
-        walls.forEach(w => w.checkForCollisionsWith(concerns.wallConcerns))
-        doors.forEach(d => d.checkForCollisionsWith(concerns.doorConcerns))
-        roomTransitions.forEach(rt => rt.checkForCollisionsWith(concerns.roomTransitionConcerns))
-        this._player.checkForCollisionsWith(concerns.playerConcerns)
+        walls.forEach(w => w.setCollisionEntityConcerns(concerns.wallConcerns))
+        doors.forEach(d => d.setCollisionEntityConcerns(concerns.doorConcerns))
+        roomTransitions.forEach(rt => rt.setCollisionEntityConcerns(concerns.roomTransitionConcerns))
+        this._player.setCollisionEntityConcerns(concerns.playerConcerns)
         enemies.forEach(enemy => {
-            enemy.checkForCollisionsWith(concerns.enemyConcerns)
-            enemy.checkForActivationsWith(concerns.enemyActivationConcerns)
-            enemy.getWeapon().checkForCollisionsWith(concerns.enemyWeaponConcerns)
+            enemy.setCollisionEntityConcerns(concerns.enemyConcerns)
+            enemy.setActivationEntityConcerns(concerns.enemyActivationConcerns)
+            enemy.getWeapon().setCollisionEntityConcerns(concerns.enemyWeaponConcerns)
         })
-        this._player.getWeapon().checkForCollisionsWith(concerns.weaponConcerns)
+        this._player.getWeapon().setCollisionEntityConcerns(concerns.weaponConcerns)
     }
 
     // ----------------------------------------

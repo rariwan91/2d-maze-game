@@ -76,7 +76,7 @@ export class Wall extends Entity implements IWall {
         return [this._boxCollision]
     }
 
-    public checkForCollisionsWith(collidables: ICollidable[]): void {
+    public setCollisionEntityConcerns(collidables: ICollidable[]): void {
         const entities: Entity[] = []
         collidables.forEach(collidable => {
             const result = collidable.isCollidingWithShapes(this.getCollisionShapes())

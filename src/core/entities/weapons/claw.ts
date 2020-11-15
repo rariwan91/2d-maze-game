@@ -97,7 +97,7 @@ export class Claw extends Weapon {
         return [this._hitbox]
     }
 
-    public checkForCollisionsWith(collidables: ICollidable[]): void {
+    public setCollisionEntityConcerns(collidables: ICollidable[]): void {
         const entities: Entity[] = []
 
         collidables.forEach(collidable => {

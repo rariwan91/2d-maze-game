@@ -105,7 +105,7 @@ export class Door extends Entity implements IDoor {
         return [this._activationBox]
     }
 
-    public checkForCollisionsWith(collidables: ICollidable[]): void {
+    public setCollisionEntityConcerns(collidables: ICollidable[]): void {
         const entitiesCollidingWithMe: Entity[] = []
         const entitiesActivatingMe: Entity[] = []
 

@@ -120,7 +120,7 @@ export class EnemySword extends Weapon {
         return this._hitboxes
     }
 
-    public checkForCollisionsWith(collidables: ICollidable[]): void {
+    public setCollisionEntityConcerns(collidables: ICollidable[]): void {
         const entities: Entity[] = []
 
         collidables.forEach(collidable => {

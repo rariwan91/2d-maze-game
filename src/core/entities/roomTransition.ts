@@ -73,7 +73,7 @@ export class RoomTransition extends Entity implements IRoomTransition {
         return [this._transitionBox]
     }
 
-    public checkForCollisionsWith(collidables: ICollidable[]): void {
+    public setCollisionEntityConcerns(collidables: ICollidable[]): void {
         const entities: Entity[] = []
         collidables.forEach(collidable => {
             const result = collidable.isCollidingWithShapes(this.getCollisionShapes())

@@ -13,7 +13,7 @@ export const Config = {
         MainColor: Colors.Red,
         SecondaryColor: Colors.Green,
         InvincibleColor: Colors.Blue,
-        DefaultState: EnemyState.TargetDummy
+        DefaultState: EnemyState.Moving
     },
     Weapons: {
         ShowCollisionBoxes: false,

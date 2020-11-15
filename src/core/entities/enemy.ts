@@ -1,13 +1,13 @@
 import { Direction, IMyScreen } from '..'
 import { Door, EnemyState, IEnemy, Player, Wall } from '.'
 import { EnemyCollision, ICollidable } from '../collision'
-import { IPoint, IRectangle } from '../../gui'
 import { Weapon, WeaponState } from './weapons'
-import { areRectanglesOverlapping, calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude } from '../../helpers'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../../helpers'
 
 import { CircleCollision } from '../collision/circleCollision'
 import { Config } from '../../config'
 import { Entity } from './entity'
+import { IPoint } from '../../gui'
 import { IRoom } from './room.h'
 import { IWeapon } from './weapons/weapon.h'
 import { RoomState } from './roomState.enum'
@@ -16,20 +16,23 @@ export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
     private _oldLocation: IPoint
     private readonly _radius: number = 25
-    private _direction = Direction.Down
     private readonly _myScreen: IMyScreen
-    private _collisionShape: EnemyCollision
-    private _activationShape: CircleCollision
     private readonly _movementSpeed = 50
     private readonly _knockbackSpeed = 200
+    private _direction = Direction.Down
     private _maxHealth = 100
     private _currentHealth = 100
     private _state = EnemyState.TargetDummy
     private _oldState = EnemyState.TargetDummy
     private _knockbackAngle: number
-    private _entitiesCollidingWithMe: Entity[] = []
-    private _entitiesActivatingMe: Entity[] = []
-    private _shapesCollidingWithMe: ICollidable[] = []
+
+    private _collisionShape: EnemyCollision
+    private _activationShape: CircleCollision
+    private _collisionConcerns: ICollidable[] = []
+    private _activationConcerns: ICollidable[] = []
+
+    private _lastAiTick: number
+
     private _lastTookDamage: number
     private _room: IRoom
     private _weapon: IWeapon
@@ -111,7 +114,7 @@ export class Enemy extends Entity implements IEnemy {
                 drawCollision(this._myScreen, this._collisionShape.getLocation(), this._collisionShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isColliding())
             }
 
-            drawCollision(this._myScreen, this._activationShape.getLocation(), this._activationShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isActivating())
+            drawCollision(this._myScreen, this._activationShape.getLocation(), this._activationShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isWithinRangeOfTargets())
         }
 
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
@@ -127,88 +130,29 @@ export class Enemy extends Entity implements IEnemy {
             return
         }
 
-        const enemiesCollidingWithMe: Enemy[] = []
-        this._entitiesCollidingWithMe.forEach(entity => {
-            if (entity instanceof Door) {
-                this.setLocation(this._oldLocation)
-            }
-            else if (entity instanceof Wall) {
-                const wall = entity as Wall
-                const wallRectangle = wall.getRectangle()
-                let resultingLocation = this._oldLocation
-                const moveHorizontalRectangle: IRectangle = {
-                    location: { x: this._location.x - this._collisionShape.getRadius(), y: this._oldLocation.y - this._collisionShape.getRadius() },
-                    size: { width: 2 * this._collisionShape.getRadius(), height: 2 * this._collisionShape.getRadius() }
+        if(this.isCollidiingWithDamageSources()) {
+            if (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy) {
+                this.takeDamage(10)
+                const theirLoc = this._room.getPlayer().getLocation()
+                const myLoc = this._location
+                const deltaX = myLoc.x - theirLoc.x
+                const deltaY = myLoc.y - theirLoc.y
+
+                let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
+                if(deltaX < 0 && deltaY < 0) {
+                    angle += 180
                 }
-                const moveVerticalRectangle: IRectangle = {
-                    location: { x: this._oldLocation.x - this._collisionShape.getRadius(), y: this._location.y - this._collisionShape.getRadius() },
-                    size: { width: 2 * this._collisionShape.getRadius(), height: 2 * this._collisionShape.getRadius() }
+                else if(deltaX < 0 && deltaY > 0) {
+                    angle -= 180
                 }
 
-                if (this._direction === Direction.DownRight || this._direction === Direction.DownLeft || this._direction === Direction.UpLeft || this._direction === Direction.UpRight) {
-                    const isHorizOverlapping = areRectanglesOverlapping(moveHorizontalRectangle, wallRectangle)
-                    const isVertOverlapping = areRectanglesOverlapping(moveVerticalRectangle, wallRectangle)
-                    const distance = this._movementSpeed * deltaTime
-                    if (!isHorizOverlapping) {
-                        const deltaX = this._location.x - this._oldLocation.x
-                        resultingLocation = {
-                            x: this._location.x + (deltaX < 0 ? -distance : distance),
-                            y: this._oldLocation.y
-                        }
-                    }
-                    else if (!isVertOverlapping) {
-                        const deltaY = this._location.y - this._oldLocation.y
-                        resultingLocation = {
-                            x: this._oldLocation.x,
-                            y: this._location.y + (deltaY < 0 ? -distance : distance)
-                        }
-                    }
-                }
-                this.setLocation(resultingLocation)
+                this._oldState = this._state
+                this._state = EnemyState.KnockbackFromDamage
+                this._knockbackAngle = angle
             }
-            else if (entity instanceof Weapon) {
-                if ((entity.getState() === WeaponState.Swinging || entity.getState() === WeaponState.ReturnSwinging) && (this._state === EnemyState.Moving || this._state === EnemyState.CollidingWithPlayer || this._state === EnemyState.TargetDummy)) {
-                    this.takeDamage(10)
-                    this._lastTookDamage = Date.now()
-                    const theirLoc = this._room.getPlayer().getLocation()
-                    const myLoc = this._location
-                    const deltaX = myLoc.x - theirLoc.x
-                    const deltaY = myLoc.y - theirLoc.y
-
-                    let angle = Math.atan(-deltaY / deltaX) * 180.0 / Math.PI
-                    if (deltaX < 0 && deltaY < 0) {
-                        angle = 180 + angle
-                    }
-                    else if (deltaX < 0 && deltaY > 0) {
-                        angle = angle - 180
-                    }
-
-                    this._oldState = this._state
-                    this._state = EnemyState.KnockbackFromDamage
-                    this._knockbackAngle = angle
-                }
-            }
-            else if (entity instanceof Enemy && entity !== this as Entity) {
-                enemiesCollidingWithMe.push(entity)
-            }
-            else if (entity instanceof Player) {
-                this._location = this._oldLocation
-            }
-        })
-
-        if (enemiesCollidingWithMe.length > 0) {
-            this.nudge(this, enemiesCollidingWithMe)
-            this.checkForCollisionsWith(this._shapesCollidingWithMe)
         }
 
-        if(this._entitiesCollidingWithMe.length === 0) {
-            const newLocation = this.calculateNewLocation(deltaTime)    
-            this.setLocation(newLocation)
-        }
-
-        if (this._entitiesActivatingMe.length > 0 && this._weapon) {
-            this._weapon.attack()
-        }
+        this.calculateNewLocation(deltaTime)
 
         if (this._weapon) {
             this._weapon.update(deltaTime)
@@ -225,17 +169,8 @@ export class Enemy extends Entity implements IEnemy {
         return [this._collisionShape]
     }
 
-    public checkForCollisionsWith(shapes: ICollidable[]): void {
-        const collidingShapes = this._collisionShape.isCollidingWithShapes(shapes)
-        const collidingEntities: Entity[] = []
-        collidingShapes.forEach(collidable => {
-            const entity = collidable.getEntity()
-            if (!collidingEntities.includes(entity) && entity !== (this as Entity)) {
-                collidingEntities.push(entity)
-            }
-        })
-        this._entitiesCollidingWithMe = collidingEntities
-        this._shapesCollidingWithMe = collidingShapes
+    public setCollisionEntityConcerns(shapes: ICollidable[]): void {
+        this._collisionConcerns = shapes
     }
 
     // ----------------------------------------
@@ -246,16 +181,8 @@ export class Enemy extends Entity implements IEnemy {
         return [this._activationShape]
     }
 
-    public checkForActivationsWith(shapes: ICollidable[]): void {
-        const activatingShapes = this._activationShape.isCollidingWithShapes(shapes)
-        const activatingEntities: Entity[] = []
-        activatingShapes.forEach(shape => {
-            const entity = shape.getEntity()
-            if (!activatingEntities.includes(entity) && entity instanceof Player) {
-                activatingEntities.push(entity)
-            }
-        })
-        this._entitiesActivatingMe = activatingEntities
+    public setActivationEntityConcerns(shapes: ICollidable[]): void {
+        this._activationConcerns = shapes
     }
 
     // ----------------------------------------
@@ -263,6 +190,10 @@ export class Enemy extends Entity implements IEnemy {
     // ----------------------------------------
 
     public aiTick(): void {
+        if(this._lastAiTick && ((Date.now() - this._lastAiTick) / 1000.0) < 0.50) return
+
+        this._lastAiTick = Date.now()
+
         if (this._state === EnemyState.KnockbackFromDamage) {
             if (!this._lastTookDamage || ((Date.now() - this._lastTookDamage) / 1000.0) >= 0.25) {
                 this._state = EnemyState.InvincibleDueToDamage
@@ -275,6 +206,10 @@ export class Enemy extends Entity implements IEnemy {
                 this._state = this._oldState
             }
             return
+        }
+
+        if(this.isWithinRangeOfTargets() && this._weapon) {
+            this._weapon.attack()
         }
 
         const myLoc = this._location
@@ -361,6 +296,7 @@ export class Enemy extends Entity implements IEnemy {
 
     public takeDamage(amount: number): void {
         this._currentHealth = Math.max(this._currentHealth - amount, 0)
+        this._lastTookDamage = Date.now()
         if (this._currentHealth <= 0) {
             const event = new CustomEvent('onEnemyDeath', {
                 detail: this
@@ -374,64 +310,99 @@ export class Enemy extends Entity implements IEnemy {
     //              private
     // ----------------------------------------
 
-    private calculateNewLocation(deltaTime: number): IPoint {
+    private calculateNewLocation(deltaTime: number): void {
         if (this._state === EnemyState.Moving) {
-            const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
-            const newLocation = calculateNewPosition(this._location, newVelocity, deltaTime)
-            return newLocation
+            const possibleLocations = this.calculatePossibleNewLocations(deltaTime)
+            this.setLocation(this.getFurthestPossibleLocation(possibleLocations))
         }
         else if (this._state === EnemyState.KnockbackFromDamage) {
-            const myLoc = this._location
+            const possibleLocations = this.calculatePossibleNewLocations(deltaTime)
+            this.setLocation(this.getFurthestPossibleLocation(possibleLocations))
+        }
+    }
 
+    private calculatePossibleNewLocations(deltaTime: number): IPoint[] {
+        if (this._state === EnemyState.Moving) {
+            const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
+            return [
+                calculateNewPosition(this._location, newVelocity, 0.125 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.25 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.375 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.5 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.625 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.75 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.875 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, deltaTime)
+            ]
+        }
+        else if (this._state === EnemyState.KnockbackFromDamage) {
             const newVelocity: IPoint = {
                 x: this._knockbackSpeed * Math.cos(this._knockbackAngle * Math.PI / 180.0),
-                y: this._knockbackSpeed * Math.sin(this._knockbackAngle * Math.PI / 180.0)
+                y: -this._knockbackSpeed * Math.sin(this._knockbackAngle * Math.PI / 180.0)
             }
-            const newLocation: IPoint = {
-                x: myLoc.x + newVelocity.x * deltaTime,
-                y: myLoc.y - newVelocity.y * deltaTime
-            }
-            return newLocation
+            return [
+                calculateNewPosition(this._location, newVelocity, 0.125 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.25 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.375 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.5 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.625 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.75 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, 0.875 * deltaTime),
+                calculateNewPosition(this._location, newVelocity, deltaTime)
+            ]
         }
-        return this._location
+        return []
+    }
+
+    private getFurthestPossibleLocation(possibleLocations: IPoint[]): IPoint {
+        const oldLocation = this.getLocation()
+        let furthestPossibleIndex = -1
+
+        for(let i = 0; i < possibleLocations.length; i++) {
+            this.setLocation(possibleLocations[i])
+            if(this.isCollidiingWithSolids()) break
+            furthestPossibleIndex = i
+        }
+
+        return furthestPossibleIndex === -1 ? oldLocation : possibleLocations[furthestPossibleIndex]
+    }
+
+    private isCollidiingWithSolids(): boolean {
+        const solids = this._collisionConcerns.filter(c => 
+            c.getEntity() instanceof Player ||
+            c.getEntity() instanceof Wall ||
+            c.getEntity() instanceof Door ||
+            (c.getEntity() instanceof Enemy && c.getEntity() as Enemy !== this)
+        )
+        for(let i = 0; i < solids.length; i++) {
+            if(solids[i].isCollidingWithShapes(this.getCollisionShapes()).length > 0) return true
+        }
+        return false
+    }
+
+    private isCollidiingWithDamageSources(): boolean {
+        const damageSources = this._collisionConcerns.filter(c => {
+            if(!(c.getEntity() instanceof Weapon)) return false
+            const weapon = c.getEntity() as Weapon
+            return weapon.getState() === WeaponState.Swinging || weapon.getState() === WeaponState.ReturnSwinging
+        })
+        for(let i = 0; i < damageSources.length; i++) {
+            if(damageSources[i].isCollidingWithShapes(this.getCollisionShapes()).length > 0) return true
+        }
+        return false
     }
 
     private isColliding(): boolean {
-        return this._entitiesCollidingWithMe.length > 0
+        for(let i = 0; i < this._collisionConcerns.length; i++) {
+            if(this._collisionConcerns[i].isCollidingWithShapes(this.getCollisionShapes()).length > 0) return true
+        }
+        return false
     }
 
-    private isActivating(): boolean {
-        return this._entitiesActivatingMe.length > 0
-    }
-
-    private nudge(me: IEnemy, them: IEnemy[]): void {
-        const myLoc = this._location
-        const myOldLoc = this._oldLocation
-        const distance: IPoint = {
-            x: myLoc.x - myOldLoc.x,
-            y: myLoc.y - myOldLoc.y
+    private isWithinRangeOfTargets(): boolean {
+        for(let i = 0; i < this._activationConcerns.length; i++) {
+            if(this._activationConcerns[i].isCollidingWithShapes(this.getActivationShapes()).length > 0) return true
         }
-
-        const combinedDifference: IPoint = {
-            x: 0,
-            y: 0
-        }
-        them.forEach(enemy => {
-            const loc = enemy.getLocation()
-            combinedDifference.x += (myLoc.x - loc.x)
-            combinedDifference.y += (myLoc.y - loc.y)
-        })
-
-        const distanceMoved = getMagnitude(distance)
-        const combinedLength = getMagnitude(combinedDifference)
-        const unitCombinedDifference: IPoint = {
-            x: combinedDifference.x / combinedLength,
-            y: combinedDifference.y / combinedLength
-        }
-        me.setOldLocation(myLoc)
-        me.setLocation({
-            x: myLoc.x + unitCombinedDifference.x * distanceMoved,
-            y: myLoc.y + unitCombinedDifference.y * distanceMoved
-        })
+        return false
     }
 }
