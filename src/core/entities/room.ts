@@ -225,52 +225,55 @@ export class Room extends Entity implements IRoom {
         const validPaths = new Map<string, string[]>()
         const graph = createGraph()
 
-        for(let x = 12.5; x <= this._size.width - 12.5; x += 25) {
-            for(let y = 12.5; y <= this._size.height - 12.5; y += 25) {
+        for(let x = 0; x <= this._size.width; x += 25) {
+            for(let y = 0; y <= this._size.height; y += 25) {
+                const nodeLocation = offsetVector(addVectors(this._location, { x, y }), -12.5)
                 let isWall = false
                 for(const wall of this._walls) {
-                    const nodeRect: IRectangle = { location: offsetVector(addVectors(this._location, { x, y }), -12.5), size: { width: 25, height: 25 } }
+                    const nodeRect: IRectangle = { location: nodeLocation, size: { width: 25, height: 25 } }
                     const wallRect = wall.getRectangle()
-                    if(areRectanglesOverlapping(nodeRect, wallRect)) {
+                    const biggerWallRect: IRectangle = { location: { x: wallRect.location.x - 25, y: wallRect.location.y - 25 }, size: { width: wallRect.size.width + 25, height: wallRect.size.height + 25 } }
+                    if(areRectanglesOverlapping(nodeRect, biggerWallRect)) {
                         isWall = true
                         break
                     }
                 }
 
                 for(const wall of this._extraWalls) {
-                    const nodeRect: IRectangle = { location: offsetVector(addVectors(this._location, { x, y }), -12.5), size: { width: 25, height: 25 } }
+                    const nodeRect: IRectangle = { location: nodeLocation, size: { width: 25, height: 25 } }
                     const wallRect = wall.getRectangle()
-                    if(areRectanglesOverlapping(nodeRect, wallRect)) {
+                    const biggerWallRect: IRectangle = { location: { x: wallRect.location.x - 25, y: wallRect.location.y - 25 }, size: { width: wallRect.size.width + 50, height: wallRect.size.height + 50 } }
+                    if(areRectanglesOverlapping(nodeRect, biggerWallRect)) {
                         isWall = true
                         break
                     }
                 }
 
                 if(!isWall) {
-                    const nodeLabel = `${x}_${y}`
-                    validNodes.set(nodeLabel, {x, y})
-                    graph.addNode(`${x}_${y}`, { location: { x, y } })
-                    this._graphPoints.push({ x, y })
+                    const nodeLabel = `${nodeLocation.x}_${nodeLocation.y}`
+                    validNodes.set(nodeLabel, nodeLocation)
+                    graph.addNode(`${nodeLocation.x}_${nodeLocation.y}`, { location: nodeLocation })
+                    this._graphPoints.push(nodeLocation)
                 }
                 else {
-                    const nodeLabel = `${x}_${y}`
-                    invalidNodes.set(nodeLabel, {x, y})
+                    const nodeLabel = `${nodeLocation.x}_${nodeLocation.y}`
+                    invalidNodes.set(nodeLabel, nodeLocation)
                 }
             }
         }
 
-        for(let x = 12.5; x <= this._size.width - 12.5; x += 25) {
-            for(let y = 12.5; y <= this._size.height - 12.5; y += 25) {
-                const node: IPoint = { x, y }
+        for(let x = 0; x <= this._size.width; x += 25) {
+            for(let y = 0; y <= this._size.height; y += 25) {
+                const node: IPoint = offsetVector(addVectors(this._location, { x, y }), -12.5)
 
-                const northNode: IPoint = { x, y: y - 25 }
-                const northEastNode: IPoint = { x: x + 25, y: y - 25 }
-                const eastNode: IPoint = { x: x + 25, y }
-                const southEastNode: IPoint = { x: x + 25, y: y + 25 }
-                const southNode: IPoint = { x, y: y + 25 }
-                const southWestNode: IPoint = { x: x - 25, y: y + 25 }
-                const westNode: IPoint = { x: x - 25, y }
-                const northWestNode: IPoint = { x: x - 25, y: y - 25 }
+                const northNode: IPoint = { x: node.x, y: node.y - 25 }
+                const northEastNode: IPoint = { x: node.x + 25, y: node.y - 25 }
+                const eastNode: IPoint = { x: node.x + 25, y: node.y }
+                const southEastNode: IPoint = { x: node.x + 25, y: node.y + 25 }
+                const southNode: IPoint = { x: node.x, y: node.y + 25 }
+                const southWestNode: IPoint = { x: node.x - 25, y: node.y + 25 }
+                const westNode: IPoint = { x: node.x - 25, y: node.y }
+                const northWestNode: IPoint = { x: node.x - 25, y: node.y - 25 }
 
                 const nodeLabel = `${node.x}_${node.y}`
                 const northNodeLabel = `${northNode.x}_${northNode.y}`
@@ -288,45 +291,42 @@ export class Room extends Entity implements IRoom {
 
                 if(validNodes.has(northNodeLabel)) {
                     validPaths.get(nodeLabel).push(northNodeLabel)
-                    graph.addLink(nodeLabel, northNodeLabel, { weight: 25 })
+                    graph.addLink(nodeLabel, northNodeLabel, { weight: 25, direction: Direction.Up })
                 }
                 if(validNodes.has(northEastNodeLabel)) {
                     validPaths.get(nodeLabel).push(northEastNodeLabel)
-                    graph.addLink(nodeLabel, northEastNodeLabel, { weight: 35 })
+                    graph.addLink(nodeLabel, northEastNodeLabel, { weight: 35, direction: Direction.UpRight })
                 }
                 if(validNodes.has(eastNodeLabel)) {
                     validPaths.get(nodeLabel).push(eastNodeLabel)
-                    graph.addLink(nodeLabel, eastNodeLabel, { weight: 25 })
+                    graph.addLink(nodeLabel, eastNodeLabel, { weight: 25, direction: Direction.Right })
                 }
                 if(validNodes.has(southEastNodeLabel)) {
                     validPaths.get(nodeLabel).push(southEastNodeLabel)
-                    graph.addLink(nodeLabel, southEastNodeLabel, { weight: 35 })
+                    graph.addLink(nodeLabel, southEastNodeLabel, { weight: 35, direction: Direction.DownRight })
                 }
                 if(validNodes.has(southNodeLabel)) {
                     validPaths.get(nodeLabel).push(southNodeLabel)
-                    graph.addLink(nodeLabel, southNodeLabel, { weight: 25 })
+                    graph.addLink(nodeLabel, southNodeLabel, { weight: 25, direction: Direction.Down })
                 }
                 if(validNodes.has(southWestNodeLabel)) {
                     validPaths.get(nodeLabel).push(southWestNodeLabel)
-                    graph.addLink(nodeLabel, southWestNodeLabel, { weight: 35 })
+                    graph.addLink(nodeLabel, southWestNodeLabel, { weight: 35, direction: Direction.DownLeft })
                 }
                 if(validNodes.has(westNodeLabel)) {
                     validPaths.get(nodeLabel).push(westNodeLabel)
-                    graph.addLink(nodeLabel, westNodeLabel, { weight: 25 })
+                    graph.addLink(nodeLabel, westNodeLabel, { weight: 25, direction: Direction.Left })
                 }
                 if(validNodes.has(northWestNodeLabel)) {
                     validPaths.get(nodeLabel).push(northWestNodeLabel)
-                    graph.addLink(nodeLabel, northWestNodeLabel, { weight: 35 })
+                    graph.addLink(nodeLabel, northWestNodeLabel, { weight: 35, direction: Direction.UpLeft })
                 }
             }
         }
 
         this._validPaths = validPaths
-        // console.dir(validPaths)
         this._validNodes = validNodes
-        // console.dir(validNodes)
         this._invalidNodes = invalidNodes
-        // console.dir(invalidNodes)
         this._graph = graph
         return graph
     }
@@ -348,13 +348,15 @@ export class Room extends Entity implements IRoom {
             this._myScreen.drawStraightLine({ x: this._location.x, y: this._location.y + y }, { x: this._location.x + this._size.width, y: this._location.y + y }, Colors.LightGray)
         }
 
-        this._validNodes.forEach(point => {
-            this._myScreen.drawRect(offsetVector(addVectors(this._location, point), -12.5), { width: 25, height: 25 }, Colors.Black)
-        })
-
-        this._invalidNodes.forEach(point => {
-            this._myScreen.drawRect(offsetVector(addVectors(this._location, point), -12.5), { width: 25, height: 25 }, Colors.Red)
-        })
+        if(Config.Rooms.ShowMovementGraph) {
+            this._validNodes.forEach(point => {
+                this._myScreen.drawRect(point, { width: 25, height: 25 }, Colors.Black)
+            })
+    
+            this._invalidNodes.forEach(point => {
+                this._myScreen.drawRect(point, { width: 25, height: 25 }, Colors.Red)
+            })
+        }
 
         if (this._roomToNorth) {
             this._myScreen.drawRect({ x: this._location.x - 10, y: this._location.y - 10 }, { width: 0.4 * this._size.width + 10, height: 20 }, Config.Rooms.WallColor, Colors.Gray)

@@ -71,38 +71,7 @@
                     "toRoom": "room4"
                 }
             ],
-            "walls": [
-                {
-                    "location": {
-                        "x": 200,
-                        "y": 200
-                    },
-                    "size": {
-                        "width": 50,
-                        "height": 300
-                    }
-                },
-                {
-                    "location": {
-                        "x": 250,
-                        "y": 325
-                    },
-                    "size": {
-                        "width": 400,
-                        "height": 50
-                    }
-                },
-                {
-                    "location": {
-                        "x": 650,
-                        "y": 200
-                    },
-                    "size": {
-                        "width": 50,
-                        "height": 300
-                    }
-                }
-            ]
+            "walls": []
         },
         {
             "name": "room3",

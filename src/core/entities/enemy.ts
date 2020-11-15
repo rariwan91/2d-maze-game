@@ -3,7 +3,7 @@ import { Direction, IMyScreen } from '..'
 import { Door, EnemyState, IEnemy, Player, Wall } from '.'
 import { EnemyCollision, ICollidable } from '../collision'
 import { Weapon, WeaponState } from './weapons'
-import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude, offsetVector, subtractVectors } from '../../helpers'
+import { calculateNewPosition, drawCharacter, drawCollision, drawHealthBar, getMagnitude, offsetVector, subtractVectors } from '../../helpers'
 
 import { CircleCollision } from '../collision/circleCollision'
 import { Config } from '../../config'
@@ -120,9 +120,11 @@ export class Enemy extends Entity implements IEnemy {
             drawCollision(this._myScreen, this._activationShape.getLocation(), this._activationShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isWithinRangeOfTargets())
         }
 
-        this._currentPath.forEach(point => {
-            this._myScreen.drawArc(point, 10, 0, 360, Colors.Red, Colors.Black)
-        })
+        if(Config.Enemies.ShowMovementPath) {
+            this._currentPath.forEach(point => {
+                this._myScreen.drawArc(point, 5, 0, 360, Colors.Red, Colors.Black)
+            })
+        }
 
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
@@ -239,21 +241,18 @@ export class Enemy extends Entity implements IEnemy {
             y: 25 * Math.round(this._room.getPlayer().getLocation().y / 25.0) - 12.5
         }
 
-        if(!this._room.isValidPoint(startLocation)) {
-            console.log(`not a valid start point: (${startLocation.x}, ${startLocation.y})`)
-            return
-        }
-
-        if(!this._room.isValidPoint(endLocation)) {
-            console.log(`not a valid end point: (${endLocation.x}, ${endLocation.y})`)
-            return
-        }
+        if(!this._room.isValidPoint(startLocation)) return
+        if(!this._room.isValidPoint(endLocation)) return
 
         const startingNode = `${startLocation.x}_${startLocation.y}`
         const endingNode = `${endLocation.x}_${endLocation.y}`
         const pathFinder = aStar(roomGraph, {
-            distance(_fromNode, _toNode, link) {
-                return (link.data as CustomData).weight
+            distance(fromNode, toNode) {
+                const fromLoc = (fromNode.data as CustomData).location
+                const toLoc = (toNode.data as CustomData).location
+                const dx = fromLoc.x - toLoc.x
+                const dy = fromLoc.y - toLoc.y
+                return Math.sqrt(dx * dx + dy * dy)
             },
             heuristic(fromNode, toNode) {
                 // this is where we "guess" distance between two nodes.
@@ -321,11 +320,12 @@ export class Enemy extends Entity implements IEnemy {
             let difference = subtractVectors(this._targetLocation, this._location)
             while(getMagnitude(difference) < this._radius) {
                 this._targetLocation = this._currentPath.pop()
+                if(!this._targetLocation) return [this._location]
                 difference = subtractVectors(this._targetLocation, this._location)
             }
             const newVelocity: IPoint = {
-                x: this._movementSpeed * difference.x / getMagnitude(difference),
-                y: this._movementSpeed * difference.y / getMagnitude(difference)
+                x: Math.min(this._movementSpeed * difference.x / getMagnitude(difference), this._movementSpeed),
+                y: Math.min(this._movementSpeed * difference.y / getMagnitude(difference), this._movementSpeed)
             }
             return [
                 calculateNewPosition(this._location, newVelocity, 0.125 * deltaTime),
