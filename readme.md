@@ -7,10 +7,15 @@ I will be adding features over time.
 ## Features
 
 * Rooms
+  * Loaded from src/levels.json
 * Pursuing Enemies
-* Weapons:
+  * Enemies path around obstructions
+  * Enemies with a punch attack
+  * Enemies with a sword attack
+* Player Weapons:
   * Sword
 * Health
+* Configurable debug values from src/config.ts
 
 ## How to Run
 
