@@ -142,3 +142,24 @@ export function areRectanglesOverlapping(rectangle1: IRectangle, rectangle2: IRe
     if (rectangle1.location.y + rectangle1.size.height < rectangle2.location.y || rectangle2.location.y + rectangle2.size.height < rectangle1.location.y) return false
     return true
 }
+
+export function addVectors(vector1: IPoint, vector2: IPoint): IPoint {
+    return {
+        x: vector1.x + vector2.x,
+        y: vector1.y + vector2.y
+    }
+}
+
+export function subtractVectors(vector1: IPoint, vector2: IPoint): IPoint {
+    return addVectors(vector1, {
+        x: -vector2.x,
+        y: -vector2.y
+    })
+}
+
+export function offsetVector(vector: IPoint, amount: number): IPoint {
+    return addVectors(vector, {
+        x: amount,
+        y: amount
+    })
+}

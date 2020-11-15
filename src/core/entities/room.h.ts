@@ -22,4 +22,7 @@ export interface IRoom extends IDrawable, IUpdatable {
     getPlayer(): IPlayer
     getWalls(): IWall[]
     addWallToRoom(wall: IWall): void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getRoomGraph(): any
+    isValidPoint(point: IPoint): boolean
 }

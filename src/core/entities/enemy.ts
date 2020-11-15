@@ -1,16 +1,17 @@
+import { Colors, IPoint } from '../../gui'
 import { Direction, IMyScreen } from '..'
 import { Door, EnemyState, IEnemy, Player, Wall } from '.'
 import { EnemyCollision, ICollidable } from '../collision'
 import { Weapon, WeaponState } from './weapons'
-import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar } from '../../helpers'
+import { calculateNewPosition, calculateVelocity, drawCharacter, drawCollision, drawHealthBar, getMagnitude, offsetVector, subtractVectors } from '../../helpers'
 
 import { CircleCollision } from '../collision/circleCollision'
 import { Config } from '../../config'
 import { Entity } from './entity'
-import { IPoint } from '../../gui'
 import { IRoom } from './room.h'
 import { IWeapon } from './weapons/weapon.h'
 import { RoomState } from './roomState.enum'
+import {aStar} from 'ngraph.path'
 
 export class Enemy extends Entity implements IEnemy {
     private _location: IPoint
@@ -32,6 +33,8 @@ export class Enemy extends Entity implements IEnemy {
     private _activationConcerns: ICollidable[] = []
 
     private _lastAiTick: number
+    private _currentPath: IPoint[] = []
+    private _targetLocation: IPoint
 
     private _lastTookDamage: number
     private _room: IRoom
@@ -117,6 +120,10 @@ export class Enemy extends Entity implements IEnemy {
             drawCollision(this._myScreen, this._activationShape.getLocation(), this._activationShape.getRadius(), Config.Collisions.YesCollisionColor, Config.Collisions.NoCollisionColor, this.isWithinRangeOfTargets())
         }
 
+        this._currentPath.forEach(point => {
+            this._myScreen.drawArc(point, 10, 0, 360, Colors.Red, Colors.Black)
+        })
+
         drawHealthBar(this._myScreen, this._location, this._radius, this._maxHealth, this._currentHealth)
     }
 
@@ -191,6 +198,10 @@ export class Enemy extends Entity implements IEnemy {
 
     public aiTick(): void {
         if(this._lastAiTick && ((Date.now() - this._lastAiTick) / 1000.0) < 0.50) return
+        if (this._room.getRoomState() === RoomState.Transitioning) {
+            this.draw()
+            return
+        }
 
         this._lastAiTick = Date.now()
 
@@ -212,74 +223,56 @@ export class Enemy extends Entity implements IEnemy {
             this._weapon.attack()
         }
 
-        const myLoc = this._location
-        const pLoc = this._room.getPlayer().getLocation()
-        const deltaY = pLoc.y - myLoc.y
-        const deltaX = pLoc.x - myLoc.x
-        let angle = Math.atan(-deltaY / deltaX) * 180 / Math.PI
-
-        // player is down and to the right of me
-        if (deltaX > 0 && deltaY > 0) {
-            angle = 360 + angle
-        }
-        // player is up and to the right of me
-        else if (deltaX > 0 && deltaY < 0) {
-            // do nothing
-        }
-        // player is down and to the left of me
-        else if (deltaX < 0 && deltaY > 0) {
-            angle = 180 + angle
-        }
-        // player is up and to the left of me
-        else if (deltaX < 0 && deltaY < 0) {
-            angle = 180 + angle
-        }
-        else if (deltaX === 0 && deltaY > 0) {
-            angle = 270
-        }
-        else if (deltaX === 0 && deltaY < 0) {
-            angle = 90
-        }
-        else if (deltaY === 0 && deltaX > 0) {
-            angle = 0
-        }
-        else if (deltaY === 0 && deltaX < 0) {
-            angle = 180
+        interface CustomData {
+            location: IPoint
+            weight: number
         }
 
-        if (angle < 22.5 || angle >= 337.5) {
-            this._direction = Direction.Right
+        const roomGraph = this._room.getRoomGraph()
+
+        const startLocation: IPoint = {
+            x: 25 * Math.round(this._location.x / 25.0) - 12.5,
+            y: 25 * Math.round(this._location.y / 25.0) - 12.5
         }
-        else if (angle >= 22.5 && angle < 67.5) {
-            this._direction = Direction.UpRight
-        }
-        else if (angle >= 67.5 && angle < 112.5) {
-            this._direction = Direction.Up
-        }
-        else if (angle >= 112.5 && angle < 157.5) {
-            this._direction = Direction.UpLeft
-        }
-        else if (angle >= 157.5 && angle < 202.5) {
-            this._direction = Direction.Left
-        }
-        else if (angle >= 202.5 && angle < 247.5) {
-            this._direction = Direction.DownLeft
-        }
-        else if (angle >= 247.5 && angle < 292.5) {
-            this._direction = Direction.Down
-        }
-        else if (angle >= 292.5 && angle < 337.5) {
-            this._direction = Direction.DownRight
+        const endLocation: IPoint = {
+            x: 25 * Math.round(this._room.getPlayer().getLocation().x / 25.0) - 12.5,
+            y: 25 * Math.round(this._room.getPlayer().getLocation().y / 25.0) - 12.5
         }
 
-        if (this._state !== EnemyState.TargetDummy) {
-            if (Math.pow(deltaY, 2) + Math.pow(deltaX, 2) < Math.pow(this._radius + this._room.getPlayer().getRadius(), 2)) {
-                this._state = EnemyState.CollidingWithPlayer
+        if(!this._room.isValidPoint(startLocation)) {
+            console.log(`not a valid start point: (${startLocation.x}, ${startLocation.y})`)
+            return
+        }
+
+        if(!this._room.isValidPoint(endLocation)) {
+            console.log(`not a valid end point: (${endLocation.x}, ${endLocation.y})`)
+            return
+        }
+
+        const startingNode = `${startLocation.x}_${startLocation.y}`
+        const endingNode = `${endLocation.x}_${endLocation.y}`
+        const pathFinder = aStar(roomGraph, {
+            distance(_fromNode, _toNode, link) {
+                return (link.data as CustomData).weight
+            },
+            heuristic(fromNode, toNode) {
+                // this is where we "guess" distance between two nodes.
+                // In this particular case our guess is the same as our distance
+                // function:
+                const fromLoc = (fromNode.data as CustomData).location
+                const toLoc = (toNode.data as CustomData).location
+                const dx = fromLoc.x - toLoc.x
+                const dy = fromLoc.y - toLoc.y
+                return Math.sqrt(dx * dx + dy * dy)
             }
-            else {
-                this._state = EnemyState.Moving
-            }
+        })
+        const foundPath = pathFinder.find(startingNode, endingNode)
+        this._currentPath = []
+        for(const node of foundPath) {
+            const data = node.data as CustomData
+            this._currentPath.push(data.location)
         }
+        this._targetLocation = this._currentPath.pop()
     }
 
     // ----------------------------------------
@@ -311,6 +304,8 @@ export class Enemy extends Entity implements IEnemy {
     // ----------------------------------------
 
     private calculateNewLocation(deltaTime: number): void {
+        if(!this._targetLocation) return
+
         if (this._state === EnemyState.Moving) {
             const possibleLocations = this.calculatePossibleNewLocations(deltaTime)
             this.setLocation(this.getFurthestPossibleLocation(possibleLocations))
@@ -323,7 +318,15 @@ export class Enemy extends Entity implements IEnemy {
 
     private calculatePossibleNewLocations(deltaTime: number): IPoint[] {
         if (this._state === EnemyState.Moving) {
-            const newVelocity = calculateVelocity(this._direction, this._movementSpeed)
+            let difference = subtractVectors(this._targetLocation, this._location)
+            while(getMagnitude(difference) < this._radius) {
+                this._targetLocation = this._currentPath.pop()
+                difference = subtractVectors(this._targetLocation, this._location)
+            }
+            const newVelocity: IPoint = {
+                x: this._movementSpeed * difference.x / getMagnitude(difference),
+                y: this._movementSpeed * difference.y / getMagnitude(difference)
+            }
             return [
                 calculateNewPosition(this._location, newVelocity, 0.125 * deltaTime),
                 calculateNewPosition(this._location, newVelocity, 0.25 * deltaTime),

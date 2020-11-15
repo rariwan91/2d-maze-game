@@ -205,7 +205,8 @@ export class Player extends Entity implements IPlayer {
     }
 
     public takeDamage(amount: number): void {
-        this._currentHealth = Math.max(this._currentHealth - amount, 0)
+        amount
+        // this._currentHealth = Math.max(this._currentHealth - amount, 0)
         if (this._currentHealth <= 0) {
             const event = new CustomEvent('onPlayerDeath', {
                 detail: this
