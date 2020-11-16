@@ -14,7 +14,7 @@ export const Config = {
         SecondaryColor: Colors.Green,
         InvincibleColor: Colors.Blue,
         DefaultState: EnemyState.Moving,
-        ShowMovementPath: true
+        ShowMovementPath: false
     },
     Weapons: {
         ShowCollisionBoxes: false,
@@ -23,7 +23,7 @@ export const Config = {
     Rooms: {
         ShowWallCollisionBoxes: false,
         WallColor: Colors.Black,
-        ShowMovementGraph: true
+        ShowMovementGraph: false
     },
     Doors: {
         ShowActivationBoxes: false,

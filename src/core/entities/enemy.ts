@@ -269,7 +269,7 @@ export class Enemy extends Entity implements IEnemy {
         this._currentPath = []
         for(const node of foundPath) {
             const data = node.data as CustomData
-            this._currentPath.push(data.location)
+            this._currentPath.push(offsetVector(data.location, 12.5))
         }
         this._targetLocation = this._currentPath.pop()
     }
